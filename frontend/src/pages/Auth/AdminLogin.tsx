@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Shield, Key, Lock, ShieldAlert, ArrowRight, Sparkles } from 'lucide-react';
+import { Shield, Key, Lock, ShieldAlert, ArrowRight, Sparkles, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 import { GlowingButton } from '../../components/ui/GlowingButton';
@@ -8,27 +8,31 @@ import { GlassCard } from '../../components/ui/GlassCard';
 import { PageTransition } from '../../components/ui/PageTransition';
 
 export const AdminLogin: React.FC = () => {
-  const [adminId, setAdminId] = useState('ADM-CHIEF-01');
-  const [password, setPassword] = useState('adminpass123');
-  const [code2FA, setCode2FA] = useState('849201');
+  const [adminId, setAdminId] = useState('');
+  const [password, setPassword] = useState('');
+  const [code2FA, setCode2FA] = useState('');
   const [show2FA, setShow2FA] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const { loginAdmin } = useAuth();
   const navigate = useNavigate();
 
   const handleInitialSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage('');
     setShow2FA(true);
   };
 
   const handleFinalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setErrorMessage('');
     try {
       await loginAdmin(adminId, password, code2FA);
       navigate('/admin/dashboard');
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Invalid admin credentials or passphrase.');
+      setShow2FA(false);
     } finally {
       setLoading(false);
     }
@@ -52,6 +56,13 @@ export const AdminLogin: React.FC = () => {
               <h2 className="text-3xl font-bold text-white tracking-tight">Proctor Admin Command Login</h2>
               <p className="text-sm text-slate-400">Restricted authentication portal for chief administrators and proctors.</p>
             </div>
+
+            {errorMessage && (
+              <div className="flex items-center gap-2 rounded-2xl border border-rose-500/30 bg-rose-500/15 p-3 text-xs font-semibold text-rose-300 font-sans">
+                <AlertCircle className="h-4 w-4 shrink-0 text-rose-400" />
+                <span>{errorMessage}</span>
+              </div>
+            )}
 
         {!show2FA ? (
           <form onSubmit={handleInitialSubmit} className="space-y-4 font-serif-luxury">

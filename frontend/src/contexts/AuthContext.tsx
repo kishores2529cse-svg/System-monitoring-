@@ -18,16 +18,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserProfile | null>(() => {
     const saved = localStorage.getItem('codeshield_auth_user');
-    return saved ? JSON.parse(saved) : {
-      id: 'USR001',
-      name: 'Vijay Rathinam',
-      email: 'vijay@shakthi.edu',
-      role: 'candidate',
-      college: 'Sri Shakthi Institute of Engineering and Technology',
-      department: 'Computer Science & Engineering',
-      phone: '+91 9876543210',
-      avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
-    };
+    return saved ? JSON.parse(saved) : null;
   });
 
   const role = user?.role || null;

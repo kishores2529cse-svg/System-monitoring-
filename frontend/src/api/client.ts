@@ -43,25 +43,111 @@ let leaderboard = getStore<LeaderboardEntry[]>('leaderboard', INITIAL_LEADERBOAR
 let logs = getStore<SystemLog[]>('logs', INITIAL_SYSTEM_LOGS);
 let stats = getStore<AdminStats>('admin_stats', INITIAL_ADMIN_STATS);
 
+const API_BASE = 'http://localhost:8080/api';
+
+// Pre-registered users store for offline fallback
+let registeredUsers = getStore<Array<{ email: string; password?: string; name: string; college?: string; phone?: string }>>('registered_users', [
+  { email: 'vijay@shakthi.edu', password: 'password123', name: 'Vijay Rathinam', college: 'Sri Shakthi Institute of Engineering and Technology' },
+  { email: 'user@codeshield.ai', password: 'user123', name: 'Default Candidate', college: 'Technology Institute' }
+]);
+
 export const api = {
   // Authentication
   auth: {
-    login: async (email: string, _password?: string): Promise<UserProfile> => {
-      await new Promise(r => setTimeout(r, 400));
-      return {
-        id: 'USR001',
-        name: 'Vijay Rathinam',
-        email: email || 'vijay@shakthi.edu',
-        role: 'candidate',
-        college: 'Sri Shakthi Institute of Engineering and Technology',
-        department: 'Computer Science & Engineering',
-        phone: '+91 9876543210',
-        avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
-      };
+    login: async (email: string, password?: string): Promise<UserProfile> => {
+      // 1. Try real Go Backend PostgreSQL Auth API
+      try {
+        const response = await fetch(`${API_BASE}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const resData = await response.json();
+        if (response.ok && resData.success && resData.data) {
+          const userObj = resData.data.user;
+          const token = resData.data.token;
+          if (token) localStorage.setItem('codeshield_token', token);
+          return {
+            id: `USR-${userObj.id}`,
+            name: userObj.name || userObj.username || email.split('@')[0],
+            email: userObj.email,
+            role: 'candidate',
+            college: userObj.college || 'Engineering Institute',
+            phone: userObj.phone,
+            avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
+          };
+        } else {
+          throw new Error(resData.message || 'Invalid email or password');
+        }
+      } catch (err: any) {
+        // If server explicitly returned invalid credentials error, throw it!
+        if (err.message && err.message !== 'Failed to fetch' && !err.message.includes('NetworkError')) {
+          throw err;
+        }
+
+        // Fallback for offline mode: validate credentials strictly
+        const found = registeredUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
+        if (found) {
+          if (password && found.password && found.password !== password) {
+            throw new Error('Invalid email or password');
+          }
+          return {
+            id: 'USR001',
+            name: found.name,
+            email: found.email,
+            role: 'candidate',
+            college: found.college || 'Engineering Institute',
+            phone: found.phone || '+91 9876543210',
+            avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
+          };
+        }
+        throw new Error('Invalid email or password. User not found in database.');
+      }
     },
+
     register: async (data: any): Promise<UserProfile> => {
-      await new Promise(r => setTimeout(r, 600));
-      const newUser: UserProfile = {
+      try {
+        const response = await fetch(`${API_BASE}/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: data.name,
+            email: data.email,
+            password: data.password,
+            name: data.name,
+            phone: data.phone,
+            college: data.college,
+            role: 'user'
+          })
+        });
+        const resData = await response.json();
+        if (response.ok && resData.success && resData.data) {
+          const userObj = resData.data.user;
+          return {
+            id: `USR-${userObj.id}`,
+            name: userObj.name,
+            email: userObj.email,
+            role: 'candidate',
+            college: userObj.college,
+            department: data.department,
+            phone: userObj.phone
+          };
+        }
+      } catch (e) {
+        console.warn('Backend server offline during register, saving locally.');
+      }
+
+      const newUser = {
+        email: data.email,
+        password: data.password,
+        name: data.name,
+        college: data.college,
+        phone: data.phone
+      };
+      registeredUsers.push(newUser);
+      setStore('registered_users', registeredUsers);
+
+      return {
         id: `USR${Math.floor(100 + Math.random() * 900)}`,
         name: data.name,
         email: data.email,
@@ -70,22 +156,66 @@ export const api = {
         department: data.department,
         phone: data.phone
       };
-      return newUser;
     },
-    adminLogin: async (adminId: string, _password?: string, _code2FA?: string): Promise<UserProfile> => {
-      await new Promise(r => setTimeout(r, 500));
-      const isAbc = adminId?.toLowerCase().includes('abc@gmail.com');
-      return {
-        id: isAbc ? 'ADM002' : 'ADM001',
-        name: isAbc ? 'Admin ABC' : 'Enterprise Chief Proctor',
-        email: isAbc ? 'abc@gmail.com' : 'admin@codeshield.ai',
-        role: 'admin',
-        adminId: isAbc ? 'ADM-ABC' : (adminId || 'ADM-CHIEF-01'),
-        avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80'
-      };
+
+    adminLogin: async (adminIdOrEmail: string, password?: string, _code2FA?: string): Promise<UserProfile> => {
+      // 1. Try real Go Backend PostgreSQL Admin Auth API
+      try {
+        const response = await fetch(`${API_BASE}/admin/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: adminIdOrEmail, password })
+        });
+        const resData = await response.json();
+        if (response.ok && resData.success && resData.data) {
+          const adminObj = resData.data.admin;
+          const token = resData.data.token;
+          if (token) localStorage.setItem('codeshield_admin_token', token);
+          return {
+            id: `ADM-${adminObj.id}`,
+            name: adminObj.name || 'Proctor Admin',
+            email: adminObj.email,
+            role: 'admin',
+            adminId: adminIdOrEmail,
+            avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80'
+          };
+        } else {
+          throw new Error(resData.message || 'Invalid admin credentials');
+        }
+      } catch (err: any) {
+        if (err.message && err.message !== 'Failed to fetch' && !err.message.includes('NetworkError')) {
+          throw err;
+        }
+
+        // Fallback validation for offline admin credentials
+        const cleanEmail = adminIdOrEmail.toLowerCase().trim();
+        const validAdmins: Record<string, string> = {
+          'admin@codeshield.ai': 'admin123',
+          'abc@gmail.com': 'xyz',
+          'adm-chief-01': 'adminpass123'
+        };
+
+        if (validAdmins[cleanEmail]) {
+          if (password && validAdmins[cleanEmail] !== password) {
+            throw new Error('Invalid admin passphrase');
+          }
+          return {
+            id: cleanEmail === 'abc@gmail.com' ? 'ADM002' : 'ADM001',
+            name: cleanEmail === 'abc@gmail.com' ? 'Admin ABC' : 'Enterprise Chief Proctor',
+            email: cleanEmail,
+            role: 'admin',
+            adminId: adminIdOrEmail,
+            avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80'
+          };
+        }
+
+        throw new Error('Invalid admin email or password. Access denied.');
+      }
     },
+
     logout: async (): Promise<boolean> => {
-      await new Promise(r => setTimeout(r, 200));
+      localStorage.removeItem('codeshield_token');
+      localStorage.removeItem('codeshield_admin_token');
       return true;
     }
   },

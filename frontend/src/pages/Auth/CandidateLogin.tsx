@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Shield, Mail, Lock, LogIn, Sparkles } from 'lucide-react';
+import { Shield, Mail, Lock, LogIn, Sparkles, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 import { GlowingButton } from '../../components/ui/GlowingButton';
@@ -8,21 +8,23 @@ import { GlassCard } from '../../components/ui/GlassCard';
 import { PageTransition } from '../../components/ui/PageTransition';
 
 export const CandidateLogin: React.FC = () => {
-  const [email, setEmail] = useState('vijay@shakthi.edu');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const { loginCandidate } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setErrorMessage('');
     try {
       await loginCandidate(email, password);
       navigate('/dashboard');
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Invalid email or password. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -53,6 +55,12 @@ export const CandidateLogin: React.FC = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4 font-sans">
+              {errorMessage && (
+                <div className="flex items-center gap-2 rounded-2xl border border-rose-500/30 bg-rose-500/15 p-3 text-xs font-semibold text-rose-300">
+                  <AlertCircle className="h-4 w-4 shrink-0" />
+                  <span>{errorMessage}</span>
+                </div>
+              )}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-slate-200">College Email Address</label>
                 <div className="relative">
