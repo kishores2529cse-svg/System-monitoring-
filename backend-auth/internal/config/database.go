@@ -64,6 +64,22 @@ func SeedInitialData(db *gorm.DB) {
 		}
 	}
 
+	// Seed Admin abc@gmail.com
+	var abcAdmin models.Admin
+	if err := db.Where("email = ?", "abc@gmail.com").First(&abcAdmin).Error; err != nil {
+		hashedPwd, err := bcrypt.GenerateFromPassword([]byte("xyz"), bcrypt.DefaultCost)
+		if err == nil {
+			admin := models.Admin{
+				Email:    "abc@gmail.com",
+				Password: string(hashedPwd),
+				Name:     "Admin ABC",
+			}
+			if err := db.Create(&admin).Error; err == nil {
+				log.Println("Seeded Admin account: abc@gmail.com")
+			}
+		}
+	}
+
 	// Seed User
 	var userCount int64
 	db.Model(&models.User{}).Count(&userCount)

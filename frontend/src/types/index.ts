@@ -56,6 +56,11 @@ export interface ProblemData {
   examples: ProblemExample[];
   tags?: string[];
   starterCode: Partial<Record<SupportedLanguage, string>>;
+  testCases?: Array<{
+    input: string;
+    expectedOutput: string;
+    type?: string;
+  }>;
 }
 
 export interface MonitoringEvent {

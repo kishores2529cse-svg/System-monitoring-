@@ -74,12 +74,13 @@ export const api = {
     },
     adminLogin: async (adminId: string, _password?: string, _code2FA?: string): Promise<UserProfile> => {
       await new Promise(r => setTimeout(r, 500));
+      const isAbc = adminId?.toLowerCase().includes('abc@gmail.com');
       return {
-        id: 'ADM001',
-        name: 'Enterprise Chief Proctor',
-        email: 'admin@codeshield.ai',
+        id: isAbc ? 'ADM002' : 'ADM001',
+        name: isAbc ? 'Admin ABC' : 'Enterprise Chief Proctor',
+        email: isAbc ? 'abc@gmail.com' : 'admin@codeshield.ai',
         role: 'admin',
-        adminId: adminId || 'ADM-CHIEF-01',
+        adminId: isAbc ? 'ADM-ABC' : (adminId || 'ADM-CHIEF-01'),
         avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80'
       };
     },
@@ -114,51 +115,96 @@ export const api = {
   // Problems API
   problems: {
     getAll: async (): Promise<ProblemData[]> => {
-      return problems;
+      return getStore<ProblemData[]>('problems', problems);
     },
     getById: async (problemId: number): Promise<ProblemData | undefined> => {
-      return problems.find(p => p.id === problemId) || problems[0];
+      const currentList = getStore<ProblemData[]>('problems', problems);
+      return currentList.find(p => p.id === problemId) || currentList[0];
+    },
+    create: async (newProbData: Omit<ProblemData, 'id'> & { id?: number }): Promise<ProblemData> => {
+      await new Promise(r => setTimeout(r, 400));
+      const currentList = getStore<ProblemData[]>('problems', problems);
+      const newId = newProbData.id || Math.max(...currentList.map(p => p.id), 0) + 1;
+      const createdProblem: ProblemData = {
+        ...newProbData,
+        id: newId,
+        starterCode: newProbData.starterCode || {
+          go: 'package main\n\nimport "fmt"\n\nfunc main() {\n    // Solution code here\n    fmt.Println("Result")\n}',
+          python: 'def solution():\n    # Solution code here\n    pass',
+          javascript: 'function solution() {\n    // Solution code here\n}'
+        }
+      };
+      const updatedList = [createdProblem, ...currentList];
+      problems = updatedList;
+      setStore('problems', updatedList);
+      return createdProblem;
     }
   },
 
   // Compiler Execution Simulator
   compiler: {
-    run: async (_code: string, language: string, input?: string): Promise<CompilerResult> => {
+    run: async (_code: string, language: string, input?: string, problemId?: number): Promise<CompilerResult> => {
       await new Promise(r => setTimeout(r, 800));
-      const isGo = language.toLowerCase() === 'go';
+      const currentList = getStore<ProblemData[]>('problems', problems);
+      const targetProblem = currentList.find(p => p.id === problemId) || currentList[0];
+      
+      const customCases = targetProblem?.testCases && targetProblem.testCases.length > 0
+        ? targetProblem.testCases.map((tc, idx) => ({
+            testId: idx + 1,
+            passed: true,
+            input: tc.input,
+            expectedOutput: tc.expectedOutput,
+            actualOutput: tc.expectedOutput,
+            timeMs: 4 + idx * 2
+          }))
+        : [
+            { testId: 1, passed: true, input: input || 'nums = [2,7,11,15], target = 9', expectedOutput: '[0,1]', actualOutput: '[0,1]', timeMs: 4 },
+            { testId: 2, passed: true, input: 'nums = [3,2,4], target = 6', expectedOutput: '[1,2]', actualOutput: '[1,2]', timeMs: 5 }
+          ];
+
       return {
         status: 'Accepted',
-        stdout: isGo ? `[Output] Executed Go binary successfully.\nInput: ${input || 'nums = [2,7,11,15], target = 9'}\nResult: [0, 1]` : `Executed ${language} script.\nResult: [0, 1]`,
+        stdout: `[Output] Executed ${language.toUpperCase()} binary successfully in sandbox.\nInput: ${input || customCases[0]?.input || 'sample'}\nResult: Accepted`,
         stderr: '',
         executionTimeMs: 14,
         memoryKb: 2048,
-        passedTests: 3,
-        totalTests: 3,
-        testDetails: [
-          { testId: 1, passed: true, input: '[2,7,11,15], 9', expectedOutput: '[0,1]', actualOutput: '[0,1]', timeMs: 4 },
-          { testId: 2, passed: true, input: '[3,2,4], 6', expectedOutput: '[1,2]', actualOutput: '[1,2]', timeMs: 5 },
-          { testId: 3, passed: true, input: '[3,3], 6', expectedOutput: '[0,1]', actualOutput: '[0,1]', timeMs: 5 }
-        ]
+        passedTests: customCases.length,
+        totalTests: customCases.length,
+        testDetails: customCases
       };
     },
-    submit: async (_code?: string, _language?: string, _problemId?: number): Promise<CompilerResult> => {
+    submit: async (_code?: string, _language?: string, problemId?: number): Promise<CompilerResult> => {
       await new Promise(r => setTimeout(r, 1200));
+      const currentList = getStore<ProblemData[]>('problems', problems);
+      const targetProblem = currentList.find(p => p.id === problemId) || currentList[0];
+      
+      const customCases = targetProblem?.testCases && targetProblem.testCases.length > 0
+        ? targetProblem.testCases.map((tc, idx) => ({
+            testId: idx + 1,
+            passed: true,
+            input: tc.input,
+            expectedOutput: tc.expectedOutput,
+            actualOutput: tc.expectedOutput,
+            timeMs: 3 + idx * 2
+          }))
+        : Array.from({ length: 5 }).map((_, i) => ({
+            testId: i + 1,
+            passed: true,
+            input: `Sample Testcase #${i + 1}`,
+            expectedOutput: `Valid Output #${i + 1}`,
+            actualOutput: `Valid Output #${i + 1}`,
+            timeMs: 2 + i
+          }));
+
       return {
         status: 'Accepted',
-        stdout: 'All 15 hidden test cases PASSED successfully! Score: +100 Points',
+        stdout: `All ${customCases.length} test cases PASSED successfully in isolated sandbox! Score: +100 Points`,
         stderr: '',
         executionTimeMs: 12,
         memoryKb: 1920,
-        passedTests: 15,
-        totalTests: 15,
-        testDetails: Array.from({ length: 5 }).map((_, i) => ({
-          testId: i + 1,
-          passed: true,
-          input: `Sample Test #${i+1}`,
-          expectedOutput: `Valid Output #${i+1}`,
-          actualOutput: `Valid Output #${i+1}`,
-          timeMs: 2 + i
-        }))
+        passedTests: customCases.length,
+        totalTests: customCases.length,
+        testDetails: customCases
       };
     }
   },

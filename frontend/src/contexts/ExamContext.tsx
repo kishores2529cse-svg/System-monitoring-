@@ -27,9 +27,28 @@ interface ExamContextType {
 const ExamContext = createContext<ExamContextType | undefined>(undefined);
 
 export const ExamProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [problems] = useState<ProblemData[]>(INITIAL_PROBLEMS);
+  const [problems, setProblems] = useState<ProblemData[]>(INITIAL_PROBLEMS);
   const [currentProblem, setCurrentProblem] = useState<ProblemData>(INITIAL_PROBLEMS[0]);
   const [selectedLanguage, setSelectedLanguage] = useState<SupportedLanguage>('go');
+
+  const refreshProblems = async () => {
+    try {
+      const list = await api.problems.getAll();
+      if (list && list.length > 0) {
+        setProblems(list);
+        // If current problem is not in list, pick the first
+        if (!list.some(p => p.id === currentProblem.id)) {
+          setCurrentProblem(list[0]);
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  useEffect(() => {
+    refreshProblems();
+  }, []);
 
   const [codeMap, setCodeMap] = useState<Record<SupportedLanguage, string>>({
     c: INITIAL_PROBLEMS[0].starterCode.c ?? '',
@@ -78,6 +97,9 @@ export const ExamProvider: React.FC<{ children: React.ReactNode }> = ({ children
         kotlin: prob.starterCode.kotlin ?? '',
         swift: prob.starterCode.swift ?? ''
       });
+      if (prob.testCases && prob.testCases.length > 0) {
+        setCustomInput(prob.testCases[0].input);
+      }
     }
   };
 
@@ -92,7 +114,7 @@ export const ExamProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setActiveConsoleTab('output');
     try {
       const code = codeMap[selectedLanguage];
-      const res = await api.compiler.run(code, selectedLanguage, customInput);
+      const res = await api.compiler.run(code, selectedLanguage, customInput, currentProblem.id);
       setCompilerResult(res);
     } catch (e) {
       console.error(e);

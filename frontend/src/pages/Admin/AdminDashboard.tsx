@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Lock, Activity, Search, Cpu, RefreshCw } from 'lucide-react';
+import { Users, Lock, Activity, Search, Cpu, RefreshCw, PlusCircle, ExternalLink } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { api } from '../../api/client';
 import type { CandidateCardData, MonitoringEvent, AdminStats } from '../../types';
 import { Navbar } from '../../components/common/Navbar';
@@ -8,6 +9,7 @@ import { StatCard } from '../../components/dashboard/StatCard';
 import { ActivityChart } from '../../components/dashboard/ActivityChart';
 import { LiveCandidateCard } from '../../components/dashboard/LiveCandidateCard';
 import { CandidateDetailModal } from '../../components/dashboard/CandidateDetailModal';
+import { CreateProblemModal } from '../../components/dashboard/CreateProblemModal';
 import { PageTransition } from '../../components/ui/PageTransition';
 
 export const AdminDashboard: React.FC = () => {
@@ -17,6 +19,7 @@ export const AdminDashboard: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('All');
   const [selectedCandidate, setSelectedCandidate] = useState<CandidateCardData | null>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const loadData = async () => {
     const cData = await api.admin.getLiveSessions();
@@ -78,7 +81,23 @@ export const AdminDashboard: React.FC = () => {
             <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Live Candidate Telemetry & Proctoring</h1>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={() => setIsCreateModalOpen(true)}
+              className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-sky-500 to-blue-600 text-white font-bold text-xs shadow-lg hover:opacity-90 transition-all flex items-center gap-2"
+            >
+              <PlusCircle className="w-4 h-4" />
+              <span>Create Question & Test Cases</span>
+            </button>
+
+            <Link
+              to="/sandbox"
+              className="px-4 py-2.5 rounded-2xl bg-slate-800 border border-slate-700 text-slate-200 hover:text-white hover:border-sky-400/40 shadow-sm transition-all flex items-center gap-2 text-xs font-medium"
+            >
+              <ExternalLink className="w-4 h-4 text-cyan-400" />
+              <span>Open Code Sandbox</span>
+            </Link>
+
             <button
               onClick={loadData}
               className="p-2.5 rounded-2xl bg-slate-900/70 border border-slate-700 text-slate-200 hover:text-white hover:border-sky-400/40 shadow-sm transition-all cursor-pointer flex items-center gap-2 text-xs font-sans font-medium"
@@ -188,6 +207,12 @@ export const AdminDashboard: React.FC = () => {
         onUnlock={handleUnlock}
         onExtend={handleExtend}
         onTerminate={handleTerminate}
+      />
+
+      {/* Admin Create Question & Testcases Modal */}
+      <CreateProblemModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
       />
 
       <Footer />
