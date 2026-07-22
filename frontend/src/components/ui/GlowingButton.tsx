@@ -45,12 +45,12 @@ export const GlowingButton: React.FC<GlowingButtonProps> = ({
   };
 
   const variantClasses = {
-    cyan: 'bg-gradient-to-r from-sky-600 via-cyan-500 to-indigo-600 text-white shadow-[0_10px_30px_rgba(14,165,233,0.22)] hover:shadow-[0_14px_40px_rgba(14,165,233,0.28)] hover:from-sky-500 hover:to-indigo-500 border border-sky-400/40',
-    purple: 'bg-gradient-to-r from-violet-600 via-fuchsia-500 to-indigo-600 text-white shadow-[0_10px_30px_rgba(139,92,246,0.22)] hover:shadow-[0_14px_40px_rgba(139,92,246,0.28)] hover:from-violet-500 hover:to-indigo-500 border border-violet-400/40',
-    emerald: 'bg-gradient-to-r from-emerald-600 to-teal-700 text-white shadow-[0_10px_30px_rgba(16,185,129,0.22)] hover:shadow-[0_14px_40px_rgba(16,185,129,0.28)] border border-emerald-400/40',
-    rose: 'bg-gradient-to-r from-rose-600 to-red-700 text-white shadow-[0_10px_30px_rgba(244,63,94,0.22)] hover:shadow-[0_14px_40px_rgba(244,63,94,0.28)] border border-rose-400/40',
-    secondary: 'bg-slate-900/70 hover:bg-slate-800/90 text-slate-100 border border-slate-700/80 hover:border-slate-500 shadow-sm hover:shadow-md',
-    ghost: 'bg-transparent hover:bg-white/10 text-slate-200 hover:text-white',
+    cyan: 'bg-gradient-to-r from-emerald-600 via-lime-500 to-amber-500 text-white shadow-[0_10px_30px_rgba(132,204,22,0.22)] hover:shadow-[0_14px_40px_rgba(250,204,21,0.24)] hover:from-emerald-500 hover:to-amber-400 border border-emerald-400/40',
+    purple: 'bg-gradient-to-r from-amber-500 via-lime-500 to-emerald-600 text-white shadow-[0_10px_30px_rgba(250,204,21,0.2)] hover:shadow-[0_14px_40px_rgba(132,204,22,0.24)] hover:from-amber-400 hover:to-emerald-500 border border-amber-400/40',
+    emerald: 'bg-gradient-to-r from-emerald-700 to-lime-600 text-white shadow-[0_10px_30px_rgba(132,204,22,0.2)] hover:shadow-[0_14px_40px_rgba(132,204,22,0.24)] border border-emerald-400/40',
+    rose: 'bg-gradient-to-r from-amber-600 to-yellow-700 text-white shadow-[0_10px_30px_rgba(250,204,21,0.22)] hover:shadow-[0_14px_40px_rgba(250,204,21,0.28)] border border-amber-400/40',
+    secondary: 'bg-[#142212]/80 hover:bg-[#1d3118]/90 text-amber-50 border border-amber-400/20 hover:border-lime-400/40 shadow-sm hover:shadow-md',
+    ghost: 'bg-transparent hover:bg-white/10 text-amber-50 hover:text-white',
   };
 
   return (

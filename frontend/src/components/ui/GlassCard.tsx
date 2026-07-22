@@ -43,7 +43,7 @@ export const GlassCard: React.FC<GlassCardProps> = ({
       className={cn(
         'rounded-[28px] transition-[transform,box-shadow,border-color,background] duration-500 ease-out relative overflow-hidden',
         glow ? 'glass-panel-glow' : 'glass-card',
-        hoverEffect && 'hover:border-sky-400/50 hover:shadow-xl hover:shadow-sky-500/10',
+        hoverEffect && 'hover:border-amber-400/50 hover:shadow-xl hover:shadow-lime-500/10',
         className
       )}
       onMouseMove={handleMouseMove}
