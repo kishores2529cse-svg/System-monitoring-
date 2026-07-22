@@ -4,6 +4,7 @@ package config
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"backend-auth/internal/models"
 
@@ -15,16 +16,32 @@ import (
 
 // InitDB establishes a connection to PostgreSQL and runs auto-migrations.
 func InitDB(cfg *Config) *gorm.DB {
-	dsn := fmt.Sprintf(
-		"host=%s user=%s password=%s dbname=%s port=%s sslmode=%s TimeZone=UTC",
-		cfg.DBHost, cfg.DBUser, cfg.DBPassword, cfg.DBName, cfg.DBPort, cfg.DBSSLMode,
-	)
+	var dsn string
+	if strings.Contains(cfg.DBHost, "supabase.co") {
+		dsn = fmt.Sprintf("postgresql://%s:%s@%s:%s/%s?sslmode=%s",
+			cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName, cfg.DBSSLMode)
+	} else {
+		dsn = fmt.Sprintf(
+			"host=%s user=%s password=%s dbname=%s port=%s sslmode=%s TimeZone=UTC",
+			cfg.DBHost, cfg.DBUser, cfg.DBPassword, cfg.DBName, cfg.DBPort, cfg.DBSSLMode,
+		)
+	}
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
 	})
 	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
+		log.Printf("Warning: Failed to connect via primary DSN (%v), trying fallback format...", err)
+		fallbackDSN := fmt.Sprintf(
+			"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
+			cfg.DBHost, cfg.DBUser, cfg.DBPassword, cfg.DBName, cfg.DBPort,
+		)
+		db, err = gorm.Open(postgres.Open(fallbackDSN), &gorm.Config{
+			Logger: logger.Default.LogMode(logger.Info),
+		})
+		if err != nil {
+			log.Fatalf("Failed to connect to database: %v", err)
+		}
 	}
 
 	// Auto-migrate all models

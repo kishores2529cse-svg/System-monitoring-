@@ -2,8 +2,10 @@
 package config
 
 import (
+	"bufio"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -35,22 +37,49 @@ type Config struct {
 
 // Load reads configuration from environment variables and returns a Config struct.
 func Load() *Config {
+	loadDotEnv(".env")
+
 	return &Config{
 		ServerPort:       getEnv("SERVER_PORT", "8080"),
 		AppEnv:           getEnv("APP_ENV", "development"),
-		DBHost:           getEnv("DB_HOST", "localhost"),
+		DBHost:           getEnv("DB_HOST", "db.wdtshwffstjzfclwsqox.supabase.co"),
 		DBPort:           getEnv("DB_PORT", "5432"),
 		DBUser:           getEnv("DB_USER", "postgres"),
-		DBPassword:       getEnv("DB_PASSWORD", ""),
-		DBName:           getEnv("DB_NAME", "assessment_db"),
-		DBSSLMode:        getEnv("DB_SSLMODE", "disable"),
-		JWTSecret:        getEnv("JWT_SECRET", "your-secret-key-change-in-production"),
+		DBPassword:       getEnv("DB_PASSWORD", "Kishores@2029"),
+		DBName:           getEnv("DB_NAME", "postgres"),
+		DBSSLMode:        getEnv("DB_SSLMODE", "require"),
+		JWTSecret:        getEnv("JWT_SECRET", "codeshield-user-secret-key-change-in-production-2026"),
 		JWTExpiry:        getDurationEnv("JWT_EXPIRY_HOURS", 24),
-		AdminJWTSecret:   getEnv("ADMIN_JWT_SECRET", "admin-secret-key-change-in-production"),
+		AdminJWTSecret:   getEnv("ADMIN_JWT_SECRET", "codeshield-admin-secret-key-change-in-production-2026"),
 		AdminJWTExpiry:   getDurationEnv("ADMIN_JWT_EXPIRY_HOURS", 12),
 		CompilerTimeout:  getDurationEnv("COMPILER_TIMEOUT_SECONDS", 5),
 		MaxCodeSize:      getIntEnv("MAX_CODE_SIZE_KB", 100) * 1024,
 		TempDir:          getEnv("TEMP_DIR", os.TempDir()),
+	}
+}
+
+// loadDotEnv parses a simple .env file into OS environment variables.
+func loadDotEnv(filepath string) {
+	file, err := os.Open(filepath)
+	if err != nil {
+		return
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		parts := strings.SplitN(line, "=", 2)
+		if len(parts) == 2 {
+			key := strings.TrimSpace(parts[0])
+			val := strings.TrimSpace(parts[1])
+			if os.Getenv(key) == "" {
+				os.Setenv(key, val)
+			}
+		}
 	}
 }
 
