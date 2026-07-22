@@ -52,3 +52,26 @@ func (r *ProblemRepo) CountTotalTestCases(problemID uint) (int64, error) {
 	err := r.db.Model(&models.TestCase{}).Where("problem_id = ?", problemID).Count(&count).Error
 	return count, err
 }
+
+// Create inserts a new problem along with its test cases transactionally.
+func (r *ProblemRepo) Create(problem *models.Problem) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		testCases := problem.TestCases
+		problem.TestCases = nil
+
+		if err := tx.Create(problem).Error; err != nil {
+			return err
+		}
+
+		for i := range testCases {
+			testCases[i].ProblemID = problem.ID
+			if err := tx.Create(&testCases[i]).Error; err != nil {
+				return err
+			}
+		}
+
+		problem.TestCases = testCases
+		return nil
+	})
+}
+

@@ -52,10 +52,21 @@ func (s *AuthService) Register(req models.RegisterRequest) (*models.User, error)
 		return nil, errors.New("failed to hash password")
 	}
 
+	role := req.Role
+	if role == "" {
+		role = "user"
+	}
+	username := req.Username
+	if username == "" {
+		username = req.Email
+	}
+
 	user := &models.User{
+		Username: username,
 		Email:    req.Email,
 		Password: string(hashedPassword),
 		Name:     req.Name,
+		Role:     role,
 		Phone:    req.Phone,
 		College:  req.College,
 	}
@@ -82,8 +93,13 @@ func (s *AuthService) AuthenticateUser(req models.LoginRequest) (*models.User, s
 		return nil, "", errors.New("invalid email or password")
 	}
 
+	role := user.Role
+	if role == "" {
+		role = "user"
+	}
+
 	// Generate JWT
-	token, err := s.generateToken(user.ID, user.Email, "user", s.cfg.JWTSecret, s.cfg.JWTExpiry)
+	token, err := s.generateToken(user.ID, user.Email, role, s.cfg.JWTSecret, s.cfg.JWTExpiry)
 	if err != nil {
 		return nil, "", errors.New("failed to generate token")
 	}

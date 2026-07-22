@@ -45,10 +45,16 @@ func Setup(
 		auth.POST("/logout", authMiddleware.RequireAuth(), authCtrl.Logout)
 	}
 
-	// ======== Admin Auth Routes ========
+	// ======== Admin Routes ========
 	admin := api.Group("/admin")
 	{
 		admin.POST("/login", authCtrl.AdminLogin)
+	}
+
+	adminProtected := api.Group("/admin")
+	adminProtected.Use(authMiddleware.RequireAdmin())
+	{
+		adminProtected.POST("/problems", problemCtrl.CreateProblem)
 	}
 
 	// ======== Protected User Routes ========

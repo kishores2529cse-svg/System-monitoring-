@@ -4,13 +4,14 @@ import (
 	"net/http"
 	"strconv"
 
+	"backend-auth/internal/models"
 	"backend-auth/internal/services"
 	"backend-auth/pkg/utils"
 
 	"github.com/gin-gonic/gin"
 )
 
-// ProblemController handles problem retrieval endpoints.
+// ProblemController handles problem endpoints.
 type ProblemController struct {
 	problemService *services.ProblemService
 }
@@ -50,3 +51,23 @@ func (ctrl *ProblemController) GetProblemByID(c *gin.Context) {
 
 	utils.SuccessResponse(c, http.StatusOK, "problem fetched successfully", problem)
 }
+
+// CreateProblem handles POST /api/admin/problems (Admin only)
+// Body: CreateProblemRequest JSON
+// Response 201: { "success": true, "message": "...", "data": problem }
+func (ctrl *ProblemController) CreateProblem(c *gin.Context) {
+	var req models.CreateProblemRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.BadRequest(c, "invalid request payload: "+err.Error())
+		return
+	}
+
+	problem, err := ctrl.problemService.CreateProblem(req)
+	if err != nil {
+		utils.InternalError(c, err.Error())
+		return
+	}
+
+	utils.SuccessResponse(c, http.StatusCreated, "problem created successfully", problem)
+}
+

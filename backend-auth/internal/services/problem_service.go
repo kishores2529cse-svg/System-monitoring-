@@ -68,3 +68,48 @@ func (s *ProblemService) GetTestCaseCount(problemID uint) (int, error) {
 	count, err := s.problemRepo.CountTotalTestCases(problemID)
 	return int(count), err
 }
+
+// CreateProblem creates a new problem with test cases in the database (admin only).
+func (s *ProblemService) CreateProblem(req models.CreateProblemRequest) (*models.Problem, error) {
+	timeLimit := req.TimeLimit
+	if timeLimit <= 0 {
+		timeLimit = 2
+	}
+	memoryLimit := req.MemoryLimit
+	if memoryLimit <= 0 {
+		memoryLimit = 256
+	}
+
+	var testCases []models.TestCase
+	for _, tc := range req.TestCases {
+		tcType := tc.Type
+		if tcType == "" {
+			tcType = models.TestCaseTypeSample
+		}
+		testCases = append(testCases, models.TestCase{
+			Input:    tc.Input,
+			Expected: tc.Expected,
+			Type:     tcType,
+		})
+	}
+
+	problem := &models.Problem{
+		Title:        req.Title,
+		Description:  req.Description,
+		Constraints:  req.Constraints,
+		Difficulty:   req.Difficulty,
+		Tags:         req.Tags,
+		SampleInput:  req.SampleInput,
+		SampleOutput: req.SampleOutput,
+		TimeLimit:    timeLimit,
+		MemoryLimit:  memoryLimit,
+		TestCases:    testCases,
+	}
+
+	if err := s.problemRepo.Create(problem); err != nil {
+		return nil, errors.New("failed to create problem: " + err.Error())
+	}
+
+	return problem, nil
+}
+

@@ -9,12 +9,14 @@ import (
 
 // ==================== User ====================
 
-// User represents a registered candidate.
+// User represents a registered user or admin.
 type User struct {
 	ID        uint           `gorm:"primaryKey" json:"id"`
+	Username  string         `gorm:"uniqueIndex;size:50" json:"username"`
 	Email     string         `gorm:"uniqueIndex;size:255;not null" json:"email" binding:"required,email"`
 	Password  string         `gorm:"not null" json:"-"`
 	Name      string         `gorm:"size:255;not null" json:"name" binding:"required"`
+	Role      string         `gorm:"size:20;default:user;not null" json:"role"` // "admin" or "user"
 	Phone     string         `gorm:"size:20" json:"phone"`
 	College   string         `gorm:"size:255" json:"college"`
 	CreatedAt time.Time      `json:"created_at"`
@@ -24,9 +26,11 @@ type User struct {
 
 // RegisterRequest is the DTO for user registration.
 type RegisterRequest struct {
+	Username string `json:"username"`
 	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required,min=6"`
 	Name     string `json:"name" binding:"required"`
+	Role     string `json:"role"` // "admin" or "user" (default: "user")
 	Phone    string `json:"phone"`
 	College  string `json:"college"`
 }
@@ -47,8 +51,10 @@ type UpdateProfileRequest struct {
 // UserResponse is the DTO returned to the client for user data.
 type UserResponse struct {
 	ID        uint      `json:"id"`
+	Username  string    `json:"username"`
 	Email     string    `json:"email"`
 	Name      string    `json:"name"`
+	Role      string    `json:"role"`
 	Phone     string    `json:"phone"`
 	College   string    `json:"college"`
 	CreatedAt time.Time `json:"created_at"`
@@ -58,8 +64,10 @@ type UserResponse struct {
 func (u *User) ToUserResponse() UserResponse {
 	return UserResponse{
 		ID:        u.ID,
+		Username:  u.Username,
 		Email:     u.Email,
 		Name:      u.Name,
+		Role:      u.Role,
 		Phone:     u.Phone,
 		College:   u.College,
 		CreatedAt: u.CreatedAt,
@@ -158,6 +166,11 @@ type Problem struct {
 	UpdatedAt   time.Time  `json:"updated_at"`
 }
 
+// TableName sets the table name to "questions".
+func (Problem) TableName() string {
+	return "questions"
+}
+
 // ProblemResponse is a condensed DTO for listing problems.
 type ProblemResponse struct {
 	ID         uint       `json:"id"`
@@ -178,6 +191,27 @@ type ProblemDetailResponse struct {
 	SampleOutput string     `json:"sample_output"`
 	TimeLimit    int        `json:"time_limit"`
 	MemoryLimit  int        `json:"memory_limit"`
+}
+
+// CreateTestCaseInput is the DTO for adding a test case to a problem.
+type CreateTestCaseInput struct {
+	Input    string         `json:"input" binding:"required"`
+	Expected string         `json:"expected_output" binding:"required"`
+	Type     SampleOrHidden `json:"type" binding:"omitempty"`
+}
+
+// CreateProblemRequest is the DTO for creating a new problem (admin only).
+type CreateProblemRequest struct {
+	Title        string                `json:"title" binding:"required"`
+	Description  string                `json:"description" binding:"required"`
+	Constraints  string                `json:"constraints"`
+	Difficulty   Difficulty            `json:"difficulty" binding:"required"`
+	Tags         string                `json:"tags"`
+	SampleInput  string                `json:"sample_input"`
+	SampleOutput string                `json:"sample_output"`
+	TimeLimit    int                   `json:"time_limit"`
+	MemoryLimit  int                   `json:"memory_limit"`
+	TestCases    []CreateTestCaseInput `json:"test_cases"`
 }
 
 // ==================== TestCase ====================
