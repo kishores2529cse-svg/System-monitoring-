@@ -9,7 +9,6 @@ import { ExamPage } from '../pages/Compiler/ExamPage';
 import { AdminDashboard } from '../pages/Admin/AdminDashboard';
 import { LeaderboardPage } from '../pages/Leaderboard/LeaderboardPage';
 import { UserProfilePage } from '../pages/Profile/UserProfilePage';
-import { SystemLogsPage } from '../pages/Logs/SystemLogsPage';
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -26,7 +25,6 @@ export const AppRoutes: React.FC = () => {
 
       {/* Admin Pages */}
       <Route path="/admin/dashboard" element={<AdminDashboard />} />
-      <Route path="/admin/logs" element={<SystemLogsPage />} />
 
       {/* Common Pages */}
       <Route path="/leaderboard" element={<LeaderboardPage />} />
