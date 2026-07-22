@@ -8,6 +8,7 @@ import { ProblemDescription } from '../../components/compiler/ProblemDescription
 import { MonacoWrapper } from '../../components/compiler/MonacoWrapper';
 import { ConsoleOutput } from '../../components/compiler/ConsoleOutput';
 import { LockScreenOverlay } from '../../components/monitoring/LockScreenOverlay';
+import { FullscreenOverlay } from '../../components/monitoring/FullscreenOverlay';
 import { SecurityViolationModal } from '../../components/monitoring/SecurityViolationModal';
 import { formatTime } from '../../utils/cn';
 
@@ -84,6 +85,7 @@ export const ExamPage: React.FC = () => {
       </div>
 
       <LockScreenOverlay />
+      <FullscreenOverlay />
       <SecurityViolationModal />
     </div>
   );

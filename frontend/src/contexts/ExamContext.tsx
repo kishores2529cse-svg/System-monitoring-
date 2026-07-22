@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useRef, useCallb
 import type { ProblemData, CompilerResult, SupportedLanguage } from '../types';
 import { api } from '../api/client';
 import { INITIAL_PROBLEMS } from '../services/mockData';
+import { useMonitoring } from './MonitoringContext';
 
 interface ExamContextType {
   problems: ProblemData[];
@@ -18,6 +19,7 @@ interface ExamContextType {
   compilerResult: CompilerResult | null;
   isRunning: boolean;
   isSubmitting: boolean;
+  isSubmittedSuccessfully: boolean;
   secondsRemaining: number;
   autoSaveStatus: 'Saved' | 'Saving...' | 'Unsaved';
   runCode: () => Promise<void>;
@@ -27,6 +29,7 @@ interface ExamContextType {
 const ExamContext = createContext<ExamContextType | undefined>(undefined);
 
 export const ExamProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isLocked, isFullscreen } = useMonitoring();
   const [problems, setProblems] = useState<ProblemData[]>(INITIAL_PROBLEMS);
   const [currentProblem, setCurrentProblem] = useState<ProblemData>(INITIAL_PROBLEMS[0]);
   const [selectedLanguage, setSelectedLanguage] = useState<SupportedLanguage>('go');
@@ -69,18 +72,22 @@ export const ExamProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [compilerResult, setCompilerResult] = useState<CompilerResult | null>(null);
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [isSubmittedSuccessfully, setIsSubmittedSuccessfully] = useState<boolean>(false);
   const [secondsRemaining, setSecondsRemaining] = useState<number>(4365); // 01:12:45
   const [autoSaveStatus, setAutoSaveStatus] = useState<'Saved' | 'Saving...' | 'Unsaved'>('Saved');
 
   // Exam Countdown Timer
   useEffect(() => {
+    if (isLocked || !isFullscreen) return;
+
     const timer = setInterval(() => {
       setSecondsRemaining(prev => Math.max(0, prev - 1));
     }, 1000);
     return () => clearInterval(timer);
-  }, []);
+  }, [isLocked, isFullscreen]);
 
   const setCurrentProblemId = (id: number) => {
+    setIsSubmittedSuccessfully(false);
     const prob = problems.find(p => p.id === id);
     if (prob) {
       setCurrentProblem(prob);
@@ -137,6 +144,20 @@ export const ExamProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const code = codeMap[selectedLanguage];
       const res = await api.compiler.submit(code, selectedLanguage, currentProblem.id);
       setCompilerResult(res);
+
+      const allPassed = res.status === 'Accepted' || (res.totalTests > 0 && res.passedTests === res.totalTests);
+      if (allPassed) {
+        setIsSubmittedSuccessfully(true);
+        if (document.fullscreenElement) {
+          try {
+            await document.exitFullscreen();
+          } catch (e) {
+            console.warn('Exit fullscreen on successful submit:', e);
+          }
+        }
+      } else {
+        setIsSubmittedSuccessfully(false);
+      }
     } catch (e) {
       console.error(e);
     } finally {
@@ -160,6 +181,7 @@ export const ExamProvider: React.FC<{ children: React.ReactNode }> = ({ children
       compilerResult,
       isRunning,
       isSubmitting,
+      isSubmittedSuccessfully,
       secondsRemaining,
       autoSaveStatus,
       runCode,

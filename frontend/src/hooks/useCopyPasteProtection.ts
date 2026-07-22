@@ -45,13 +45,15 @@ export const useCopyPasteProtection = ({
     const isCtrlShiftJ = isCtrl && e.shiftKey && e.key.toLowerCase() === 'j';
     const isCtrlShiftC = isCtrl && e.shiftKey && e.key.toLowerCase() === 'c';
 
-    if (isAllowedTarget(e.target)) return;
+    const isEsc = e.key === 'Escape' || e.key === 'Esc' || e.keyCode === 27;
 
-    if (isCtrlA || isCtrlC || isCtrlV || isCtrlX || isCtrlS || isCtrlP || isCtrlU || isF12 || isCtrlShiftI || isCtrlShiftJ || isCtrlShiftC) {
+    if (isEsc || isCtrlA || isCtrlC || isCtrlV || isCtrlX || isCtrlS || isCtrlP || isCtrlU || isF12 || isCtrlShiftI || isCtrlShiftJ || isCtrlShiftC) {
       e.preventDefault();
       e.stopPropagation();
       e.stopImmediatePropagation();
-      onViolationRef.current?.(e.key.toLowerCase());
+      if (!isEsc) {
+        onViolationRef.current?.(e.key.toLowerCase());
+      }
       return false;
     }
   };

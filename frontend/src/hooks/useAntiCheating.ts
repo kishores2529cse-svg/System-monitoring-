@@ -1,9 +1,19 @@
 import { useEffect, useRef } from 'react';
 import { useMonitoring } from '../contexts/MonitoringContext';
+import { useExam } from '../contexts/ExamContext';
 
 export function useAntiCheating(enabled: boolean = true) {
-  const { reportViolation, isLocked } = useMonitoring();
+  const { reportViolation, isLocked, setIsFullscreen } = useMonitoring();
+  let isSubmittedSuccessfully = false;
+  try {
+    const exam = useExam();
+    isSubmittedSuccessfully = exam.isSubmittedSuccessfully;
+  } catch (e) {
+    // Fallback if rendered outside ExamProvider
+  }
+
   const lastBlurTime = useRef<number>(0);
+  const lastEscTime = useRef<number>(0);
 
   useEffect(() => {
     if (!enabled || isLocked) return;
@@ -36,6 +46,15 @@ export function useAntiCheating(enabled: boolean = true) {
     // 3. Keydown Shortcut Guards
     const handleKeyDown = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
+      
+      // Block Escape explicitly
+      if (key === 'escape' || key === 'esc') {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        reportViolation('Escape Key Pressed', 'Medium', -5, 'Attempted to press Escape to exit fullscreen.', false);
+        return;
+      }
+
       const isCtrl = e.ctrlKey || e.metaKey;
       const isShift = e.shiftKey;
       const isAlt = e.altKey;
@@ -73,8 +92,19 @@ export function useAntiCheating(enabled: boolean = true) {
     };
 
     const handleFullscreenChange = () => {
-      if (!document.fullscreenElement) {
-        reportViolation('Fullscreen Mode Exited', 'High', -15, 'Candidate exited mandated safe browser full screen viewport.');
+      const isFS = !!document.fullscreenElement;
+      setIsFullscreen(isFS);
+
+      if (!isFS) {
+        if (!isSubmittedSuccessfully && !isLocked) {
+          reportViolation(
+            'Fullscreen Mode Exited',
+            'High',
+            -15,
+            'Candidate exited constant fullscreen mode.',
+            false
+          );
+        }
       }
     };
 
@@ -128,7 +158,18 @@ export function useAntiCheating(enabled: boolean = true) {
       }
     };
 
+    const handleKeyDownCapture = (e: KeyboardEvent) => {
+      const key = e.key.toLowerCase();
+      if (key === 'escape' || key === 'esc') {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        lastEscTime.current = Date.now();
+      }
+    };
+
     // Attach Listeners
+    window.addEventListener('keydown', handleKeyDownCapture, true);
     window.addEventListener('contextmenu', handleContextMenu);
     window.addEventListener('copy', handleCopy);
     window.addEventListener('paste', handlePaste);
@@ -148,6 +189,7 @@ export function useAntiCheating(enabled: boolean = true) {
     window.addEventListener('focusin', handleFocusAttempt);
 
     return () => {
+      window.removeEventListener('keydown', handleKeyDownCapture, true);
       window.removeEventListener('contextmenu', handleContextMenu);
       window.removeEventListener('copy', handleCopy);
       window.removeEventListener('paste', handlePaste);

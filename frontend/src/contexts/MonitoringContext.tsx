@@ -38,12 +38,24 @@ export const MonitoringProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [lockReason, setLockReason] = useState<string>('');
   const [cameraActive, setCameraActive] = useState<boolean>(true);
   const [micActive, setMicActive] = useState<boolean>(true);
-  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(!!document.fullscreenElement);
   const [riskScore, setRiskScore] = useState<number>(12);
   const [tabFocused, setTabFocused] = useState<boolean>(true);
   const [voiceDetected] = useState<boolean>(false);
   const [events, setEvents] = useState<MonitoringEvent[]>(INITIAL_MONITORING_EVENTS);
   const [activeWarningModal, setActiveWarningModal] = useState<{ open: boolean; title: string; message: string; severity: SeverityLevel } | null>(null);
+
+  // Sync fullscreen state
+  useEffect(() => {
+    const handleFsChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFsChange);
+    setIsFullscreen(!!document.fullscreenElement);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFsChange);
+    };
+  }, []);
 
   // Copy/Paste Protection - enabled when exam is locked or in fullscreen proctoring mode
   const isProctoringActive = isLocked || isFullscreen;
@@ -148,6 +160,15 @@ export const MonitoringProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       if (!document.fullscreenElement) {
         await document.documentElement.requestFullscreen();
         setIsFullscreen(true);
+        
+        // Use the Keyboard Lock API to prevent the Escape key from exiting fullscreen
+        if ('keyboard' in navigator && (navigator as any).keyboard && typeof (navigator as any).keyboard.lock === 'function') {
+          try {
+            await (navigator as any).keyboard.lock(['Escape']);
+          } catch (lockError) {
+            console.warn('Keyboard lock failed or not supported:', lockError);
+          }
+        }
       }
     } catch (e) {
       console.warn('Fullscreen request rejected by user browser permissions');
