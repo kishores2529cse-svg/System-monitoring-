@@ -277,20 +277,20 @@ export const api = {
       await new Promise(r => setTimeout(r, 800));
       const currentList = getStore<ProblemData[]>('problems', problems);
       const targetProblem = currentList.find(p => p.id === problemId) || currentList[0];
-      
+
       const customCases = targetProblem?.testCases && targetProblem.testCases.length > 0
         ? targetProblem.testCases.map((tc, idx) => ({
-            testId: idx + 1,
-            passed: true,
-            input: tc.input,
-            expectedOutput: tc.expectedOutput,
-            actualOutput: tc.expectedOutput,
-            timeMs: 4 + idx * 2
-          }))
+          testId: idx + 1,
+          passed: true,
+          input: tc.input,
+          expectedOutput: tc.expectedOutput,
+          actualOutput: tc.expectedOutput,
+          timeMs: 4 + idx * 2
+        }))
         : [
-            { testId: 1, passed: true, input: input || 'nums = [2,7,11,15], target = 9', expectedOutput: '[0,1]', actualOutput: '[0,1]', timeMs: 4 },
-            { testId: 2, passed: true, input: 'nums = [3,2,4], target = 6', expectedOutput: '[1,2]', actualOutput: '[1,2]', timeMs: 5 }
-          ];
+          { testId: 1, passed: true, input: input || 'nums = [2,7,11,15], target = 9', expectedOutput: '[0,1]', actualOutput: '[0,1]', timeMs: 4 },
+          { testId: 2, passed: true, input: 'nums = [3,2,4], target = 6', expectedOutput: '[1,2]', actualOutput: '[1,2]', timeMs: 5 }
+        ];
 
       return {
         status: 'Accepted',
@@ -307,24 +307,24 @@ export const api = {
       await new Promise(r => setTimeout(r, 1200));
       const currentList = getStore<ProblemData[]>('problems', problems);
       const targetProblem = currentList.find(p => p.id === problemId) || currentList[0];
-      
+
       const customCases = targetProblem?.testCases && targetProblem.testCases.length > 0
         ? targetProblem.testCases.map((tc, idx) => ({
-            testId: idx + 1,
-            passed: true,
-            input: tc.input,
-            expectedOutput: tc.expectedOutput,
-            actualOutput: tc.expectedOutput,
-            timeMs: 3 + idx * 2
-          }))
+          testId: idx + 1,
+          passed: true,
+          input: tc.input,
+          expectedOutput: tc.expectedOutput,
+          actualOutput: tc.expectedOutput,
+          timeMs: 3 + idx * 2
+        }))
         : Array.from({ length: 5 }).map((_, i) => ({
-            testId: i + 1,
-            passed: true,
-            input: `Sample Testcase #${i + 1}`,
-            expectedOutput: `Valid Output #${i + 1}`,
-            actualOutput: `Valid Output #${i + 1}`,
-            timeMs: 2 + i
-          }));
+          testId: i + 1,
+          passed: true,
+          input: `Sample Testcase #${i + 1}`,
+          expectedOutput: `Valid Output #${i + 1}`,
+          actualOutput: `Valid Output #${i + 1}`,
+          timeMs: 2 + i
+        }));
 
       return {
         status: 'Accepted',
