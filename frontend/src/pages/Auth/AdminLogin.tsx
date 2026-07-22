@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Shield, Key, Lock, ShieldAlert, ArrowRight } from 'lucide-react';
+import { Shield, Key, Lock, ShieldAlert, ArrowRight, Sparkles } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 import { GlowingButton } from '../../components/ui/GlowingButton';
 import { GlassCard } from '../../components/ui/GlassCard';
+import { PageTransition } from '../../components/ui/PageTransition';
 
 export const AdminLogin: React.FC = () => {
   const [adminId, setAdminId] = useState('ADM-CHIEF-01');
@@ -33,24 +35,26 @@ export const AdminLogin: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAFCFF] flex items-center justify-center p-4 relative overflow-hidden font-serif-luxury">
-      
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-rose-100/40 rounded-full blur-[120px] pointer-events-none" />
-
-      <GlassCard className="max-w-md w-full p-8 border border-slate-200 space-y-6 relative z-10 shadow-xl bg-white/95 backdrop-blur-xl">
-        
-        <div className="text-center space-y-2">
-          <Link to="/" className="inline-flex items-center gap-2 mb-2">
-            <div className="w-10 h-10 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 shadow-2xs">
-              <ShieldAlert className="w-5 h-5" />
+    <PageTransition>
+      <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden font-serif-luxury selection:bg-rose-500/20 selection:text-white">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(244,63,94,0.16),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(56,189,248,0.14),_transparent_32%)]" />
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="w-full max-w-md relative z-10">
+          <GlassCard glow className="p-8 border border-slate-700/60 space-y-6 bg-slate-950/70 backdrop-blur-2xl">
+            <div className="text-center space-y-2">
+              <Link to="/" className="inline-flex items-center gap-2 mb-2">
+                <div className="w-10 h-10 rounded-2xl bg-slate-900/80 border border-rose-400/30 flex items-center justify-center text-rose-400 shadow-[0_0_16px_rgba(244,63,94,0.2)]">
+                  <ShieldAlert className="w-5 h-5" />
+                </div>
+              </Link>
+              <div className="inline-flex items-center gap-2 rounded-full border border-rose-400/20 bg-rose-400/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.25em] text-rose-300">
+                <Sparkles className="w-3 h-3" /> Secure admin access
+              </div>
+              <h2 className="text-3xl font-bold text-white tracking-tight">Proctor Admin Command Login</h2>
+              <p className="text-sm text-slate-400">Restricted authentication portal for chief administrators and proctors.</p>
             </div>
-          </Link>
-          <h2 className="text-3xl font-bold text-slate-900 tracking-tight font-serif-luxury">Proctor Admin Command Login</h2>
-          <p className="text-xs text-slate-600 font-sans">Restricted authentication portal for Chief Administrators & Proctors</p>
-        </div>
 
         {!show2FA ? (
-          <form onSubmit={handleInitialSubmit} className="space-y-4 font-sans">
+          <form onSubmit={handleInitialSubmit} className="space-y-4 font-serif-luxury">
             
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-slate-800 font-serif-luxury">Admin Identity Key (ID)</label>
@@ -62,7 +66,7 @@ export const AdminLogin: React.FC = () => {
                   value={adminId}
                   onChange={(e) => setAdminId(e.target.value)}
                   placeholder="ADM-CHIEF-01"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:outline-none focus:border-rose-500 font-mono shadow-2xs"
+                  className="w-full pl-10 pr-4 py-2.75 rounded-2xl bg-slate-900/80 border border-slate-700/80 text-white text-sm transition-all duration-300 focus:outline-none focus:border-rose-400 focus:shadow-[0_0_0_3px_rgba(244,63,94,0.12)] placeholder:text-slate-500 font-mono"
                 />
               </div>
             </div>
@@ -107,7 +111,7 @@ export const AdminLogin: React.FC = () => {
                 value={code2FA}
                 onChange={(e) => setCode2FA(e.target.value)}
                 placeholder="849201"
-                className="w-full text-center py-3 rounded-xl bg-slate-50 border border-slate-200 text-sky-700 text-xl font-mono tracking-[0.5em] focus:outline-none focus:border-sky-500 shadow-2xs font-bold"
+                className="w-full text-center py-3 rounded-2xl bg-slate-900/80 border border-slate-700/80 text-sky-300 text-xl font-mono tracking-[0.5em] focus:outline-none focus:border-sky-400 focus:shadow-[0_0_0_3px_rgba(56,189,248,0.12)] font-bold"
               />
             </div>
 
@@ -123,14 +127,15 @@ export const AdminLogin: React.FC = () => {
           </form>
         )}
 
-        <div className="text-center text-xs text-slate-600 font-sans">
-          Switching to candidate view?{' '}
-          <Link to="/login" className="text-sky-700 font-semibold hover:underline font-serif-luxury">
-            Candidate Login Portal
-          </Link>
-        </div>
-
-      </GlassCard>
-    </div>
+            <div className="text-center text-sm text-slate-400 font-sans">
+              Switching to candidate view?{' '}
+              <Link to="/login" className="text-sky-300 font-semibold hover:text-sky-200 transition-colors">
+                Candidate Login Portal
+              </Link>
+            </div>
+          </GlassCard>
+        </motion.div>
+      </div>
+    </PageTransition>
   );
 };

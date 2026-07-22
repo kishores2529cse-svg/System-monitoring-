@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import type { ProblemData, CompilerResult } from '../types';
+import type { ProblemData, CompilerResult, SupportedLanguage } from '../types';
 import { api } from '../api/client';
 import { INITIAL_PROBLEMS } from '../services/mockData';
 
@@ -7,8 +7,8 @@ interface ExamContextType {
   problems: ProblemData[];
   currentProblem: ProblemData;
   setCurrentProblemId: (id: number) => void;
-  selectedLanguage: 'go' | 'python' | 'javascript' | 'cpp';
-  setSelectedLanguage: (lang: 'go' | 'python' | 'javascript' | 'cpp') => void;
+  selectedLanguage: SupportedLanguage;
+  setSelectedLanguage: (lang: SupportedLanguage) => void;
   codeMap: Record<string, string>;
   setCodeForLang: (code: string) => void;
   customInput: string;
@@ -29,13 +29,20 @@ const ExamContext = createContext<ExamContextType | undefined>(undefined);
 export const ExamProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [problems] = useState<ProblemData[]>(INITIAL_PROBLEMS);
   const [currentProblem, setCurrentProblem] = useState<ProblemData>(INITIAL_PROBLEMS[0]);
-  const [selectedLanguage, setSelectedLanguage] = useState<'go' | 'python' | 'javascript' | 'cpp'>('go');
-  
-  const [codeMap, setCodeMap] = useState<Record<string, string>>({
-    go: INITIAL_PROBLEMS[0].starterCode.go,
-    python: INITIAL_PROBLEMS[0].starterCode.python,
-    javascript: INITIAL_PROBLEMS[0].starterCode.javascript,
-    cpp: INITIAL_PROBLEMS[0].starterCode.cpp
+  const [selectedLanguage, setSelectedLanguage] = useState<SupportedLanguage>('go');
+
+  const [codeMap, setCodeMap] = useState<Record<SupportedLanguage, string>>({
+    c: INITIAL_PROBLEMS[0].starterCode.c ?? '',
+    cpp: INITIAL_PROBLEMS[0].starterCode.cpp ?? '',
+    java: INITIAL_PROBLEMS[0].starterCode.java ?? '',
+    python: INITIAL_PROBLEMS[0].starterCode.python ?? '',
+    javascript: INITIAL_PROBLEMS[0].starterCode.javascript ?? '',
+    typescript: INITIAL_PROBLEMS[0].starterCode.typescript ?? '',
+    go: INITIAL_PROBLEMS[0].starterCode.go ?? '',
+    rust: INITIAL_PROBLEMS[0].starterCode.rust ?? '',
+    csharp: INITIAL_PROBLEMS[0].starterCode.csharp ?? '',
+    kotlin: INITIAL_PROBLEMS[0].starterCode.kotlin ?? '',
+    swift: INITIAL_PROBLEMS[0].starterCode.swift ?? ''
   });
 
   const [customInput, setCustomInput] = useState<string>('nums = [2,7,11,15], target = 9');
@@ -59,10 +66,17 @@ export const ExamProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (prob) {
       setCurrentProblem(prob);
       setCodeMap({
-        go: prob.starterCode.go,
-        python: prob.starterCode.python,
-        javascript: prob.starterCode.javascript,
-        cpp: prob.starterCode.cpp
+        c: prob.starterCode.c ?? '',
+        cpp: prob.starterCode.cpp ?? '',
+        java: prob.starterCode.java ?? '',
+        python: prob.starterCode.python ?? '',
+        javascript: prob.starterCode.javascript ?? '',
+        typescript: prob.starterCode.typescript ?? '',
+        go: prob.starterCode.go ?? '',
+        rust: prob.starterCode.rust ?? '',
+        csharp: prob.starterCode.csharp ?? '',
+        kotlin: prob.starterCode.kotlin ?? '',
+        swift: prob.starterCode.swift ?? ''
       });
     }
   };

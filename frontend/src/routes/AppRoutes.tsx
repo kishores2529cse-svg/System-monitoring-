@@ -6,6 +6,7 @@ import { CandidateRegister } from '../pages/Auth/CandidateRegister';
 import { AdminLogin } from '../pages/Auth/AdminLogin';
 import { CandidateDashboard } from '../pages/Candidate/CandidateDashboard';
 import { ExamPage } from '../pages/Compiler/ExamPage';
+import { SandboxPage } from '../pages/Compiler/SandboxPage';
 import { AdminDashboard } from '../pages/Admin/AdminDashboard';
 import { LeaderboardPage } from '../pages/Leaderboard/LeaderboardPage';
 import { UserProfilePage } from '../pages/Profile/UserProfilePage';
@@ -22,6 +23,7 @@ export const AppRoutes: React.FC = () => {
       {/* Candidate Pages */}
       <Route path="/dashboard" element={<CandidateDashboard />} />
       <Route path="/exam/:id" element={<ExamPage />} />
+      <Route path="/sandbox" element={<SandboxPage />} />
 
       {/* Admin Pages */}
       <Route path="/admin/dashboard" element={<AdminDashboard />} />

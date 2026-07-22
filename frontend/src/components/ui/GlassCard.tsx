@@ -41,7 +41,7 @@ export const GlassCard: React.FC<GlassCardProps> = ({
     <div
       ref={cardRef}
       className={cn(
-        'rounded-2xl transition-[transform,box-shadow,border-color] duration-500 ease-out relative overflow-hidden',
+        'rounded-[28px] transition-[transform,box-shadow,border-color,background] duration-500 ease-out relative overflow-hidden',
         glow ? 'glass-panel-glow' : 'glass-card',
         hoverEffect && 'hover:border-sky-400/50 hover:shadow-xl hover:shadow-sky-500/10',
         className

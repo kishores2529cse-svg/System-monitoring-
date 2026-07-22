@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Trophy, Search, Award } from 'lucide-react';
+import { Trophy, Search, Award, Sparkles } from 'lucide-react';
 import { api } from '../../api/client';
 import type { LeaderboardEntry } from '../../types';
 import { Navbar } from '../../components/common/Navbar';
 import { Footer } from '../../components/common/Footer';
 import { GlassCard } from '../../components/ui/GlassCard';
+import { PageTransition } from '../../components/ui/PageTransition';
 
 export const LeaderboardPage: React.FC = () => {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
@@ -22,19 +23,21 @@ export const LeaderboardPage: React.FC = () => {
   const topThree = filtered.slice(0, 3);
 
   return (
-    <div className="min-h-screen bg-[#FAFCFF] text-slate-900 flex flex-col selection:bg-sky-500/20 font-serif-luxury">
+    <PageTransition>
+      <div className="min-h-screen text-slate-100 flex flex-col selection:bg-sky-500/20 font-serif-luxury">
       <Navbar />
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         
         {/* Title Header */}
         <div className="text-center space-y-3">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-50 text-amber-800 text-xs font-mono border border-amber-200 shadow-2xs font-semibold">
-            <Trophy className="w-4 h-4 text-amber-600" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-amber-400/20 bg-amber-400/10 text-amber-300 text-xs font-mono font-semibold">
+            <Trophy className="w-4 h-4 text-amber-400" />
             <span>GLOBAL ALGORITHMIC LEADERBOARD</span>
           </div>
-          <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight font-serif-luxury">Top Assessment Performers</h1>
-          <p className="text-slate-600 text-sm max-w-xl mx-auto font-sans">Verified score rankings backed by CodeShield AI proctoring telemetry</p>
+          <div className="inline-flex items-center gap-2 justify-center text-sky-300 text-sm"><Sparkles className="w-4 h-4" /> Premium performance insights</div>
+          <h1 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">Top Assessment Performers</h1>
+          <p className="text-slate-400 text-sm max-w-xl mx-auto font-sans">Verified score rankings backed by CodeShield AI proctoring telemetry</p>
         </div>
 
         {/* Top 3 Podium */}
@@ -43,7 +46,7 @@ export const LeaderboardPage: React.FC = () => {
             
             {/* Rank 2 - Silver */}
             <GlassCard className="p-6 border border-slate-200 text-center space-y-3 order-2 md:order-1 mt-4 shadow-sm">
-              <div className="w-12 h-12 rounded-2xl bg-slate-100 border border-slate-300 flex items-center justify-center mx-auto text-slate-700 font-bold text-lg font-mono">
+              <div className="w-12 h-12 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center mx-auto text-slate-100 font-bold text-lg font-mono">
                 #2
               </div>
               <div>
@@ -56,7 +59,7 @@ export const LeaderboardPage: React.FC = () => {
 
             {/* Rank 1 - Gold */}
             <GlassCard className="p-6 border border-amber-300 text-center space-y-3 order-1 md:order-2 shadow-xl shadow-amber-500/10 bg-gradient-to-b from-amber-50/50 to-white">
-              <div className="w-14 h-14 rounded-2xl bg-amber-100 border border-amber-300 flex items-center justify-center mx-auto text-amber-700 font-bold text-xl font-mono shadow-2xs">
+              <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-400/30 flex items-center justify-center mx-auto text-amber-400 font-bold text-xl font-mono shadow-2xs">
                 <Award className="w-7 h-7 text-amber-600" />
               </div>
               <div>
@@ -69,7 +72,7 @@ export const LeaderboardPage: React.FC = () => {
 
             {/* Rank 3 - Bronze */}
             <GlassCard className="p-6 border border-slate-200 text-center space-y-3 order-3 mt-8 shadow-sm">
-              <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center mx-auto text-amber-700 font-bold text-lg font-mono">
+              <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-400/20 flex items-center justify-center mx-auto text-amber-400 font-bold text-lg font-mono">
                 #3
               </div>
               <div>
@@ -94,7 +97,7 @@ export const LeaderboardPage: React.FC = () => {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search candidate name or college..."
-                className="pl-9 pr-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-800 text-xs focus:outline-none focus:border-sky-500 w-64 shadow-2xs"
+                className="pl-9 pr-3 py-1.5 rounded-2xl bg-slate-900/70 border border-slate-700 text-slate-100 text-xs focus:outline-none focus:border-sky-400 w-64 shadow-sm"
               />
             </div>
           </div>
@@ -137,5 +140,6 @@ export const LeaderboardPage: React.FC = () => {
 
       <Footer />
     </div>
+    </PageTransition>
   );
 };

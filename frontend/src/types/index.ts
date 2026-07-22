@@ -16,6 +16,7 @@ export interface UserProfile {
 
 export type CandidateStatus = 'Active' | 'Warning' | 'Locked' | 'Submitted' | 'Terminated';
 export type SeverityLevel = 'Low' | 'Medium' | 'High' | 'Critical';
+export type SupportedLanguage = 'c' | 'cpp' | 'java' | 'python' | 'javascript' | 'typescript' | 'go' | 'rust' | 'csharp' | 'kotlin' | 'swift';
 
 export interface CandidateCardData {
   id: string;
@@ -53,12 +54,8 @@ export interface ProblemData {
   description: string;
   constraints: string[];
   examples: ProblemExample[];
-  starterCode: {
-    go: string;
-    python: string;
-    javascript: string;
-    cpp: string;
-  };
+  tags?: string[];
+  starterCode: Partial<Record<SupportedLanguage, string>>;
 }
 
 export interface MonitoringEvent {
@@ -88,7 +85,7 @@ export interface LeaderboardEntry {
 }
 
 export interface CompilerResult {
-  status: 'Accepted' | 'Wrong Answer' | 'Time Limit Exceeded' | 'Compilation Error' | 'Runtime Error';
+  status: 'Accepted' | 'Wrong Answer' | 'Time Limit Exceeded' | 'Memory Limit Exceeded' | 'Compilation Error' | 'Runtime Error';
   stdout: string;
   stderr: string;
   executionTimeMs: number;

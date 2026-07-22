@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Award, ShieldCheck, Check } from 'lucide-react';
+import { Award, ShieldCheck, Check, Sparkles } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Navbar } from '../../components/common/Navbar';
 import { Footer } from '../../components/common/Footer';
 import { GlassCard } from '../../components/ui/GlassCard';
 import { GlowingButton } from '../../components/ui/GlowingButton';
+import { PageTransition } from '../../components/ui/PageTransition';
 
 export const UserProfilePage: React.FC = () => {
   const { user, updateProfile } = useAuth();
@@ -25,7 +26,8 @@ export const UserProfilePage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAFCFF] text-slate-900 flex flex-col selection:bg-sky-500/20 font-serif-luxury">
+    <PageTransition>
+      <div className="min-h-screen text-slate-100 flex flex-col selection:bg-sky-500/20 font-serif-luxury">
       <Navbar />
 
       <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 space-y-8">
@@ -38,9 +40,12 @@ export const UserProfilePage: React.FC = () => {
             className="w-20 h-20 rounded-2xl object-cover border-2 border-sky-400 shadow-md"
           />
           <div className="space-y-1 text-center sm:text-left">
-            <h1 className="text-3xl font-bold text-slate-900 tracking-tight font-serif-luxury">{user?.name || 'Vijay Rathinam'}</h1>
-            <p className="text-xs text-slate-600 font-sans">{user?.college} • {user?.department}</p>
-            <span className="inline-block px-2.5 py-0.5 rounded bg-sky-50 text-sky-800 text-xs font-mono border border-sky-200 font-bold uppercase mt-1">
+            <div className="inline-flex items-center gap-2 rounded-full border border-sky-400/20 bg-sky-400/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.25em] text-sky-300">
+              <Sparkles className="w-3 h-3" /> Profile overview
+            </div>
+            <h1 className="text-3xl font-bold text-white tracking-tight">{user?.name || 'Vijay Rathinam'}</h1>
+            <p className="text-xs text-slate-400 font-sans">{user?.college} • {user?.department}</p>
+            <span className="inline-block px-2.5 py-0.5 rounded bg-sky-500/10 text-sky-300 text-xs font-mono border border-sky-400/20 font-bold uppercase mt-1">
               Role: {user?.role || 'candidate'}
             </span>
           </div>
@@ -51,13 +56,13 @@ export const UserProfilePage: React.FC = () => {
           
           <GlassCard className="lg:col-span-2 p-6 border border-slate-200 space-y-4 shadow-sm">
             <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-              <h3 className="text-lg font-bold text-slate-900 font-serif-luxury">Personal & Institutional Details</h3>
-              {saved && <span className="text-xs text-emerald-700 font-mono flex items-center gap-1"><Check className="w-3.5 h-3.5" /> Saved Successfully</span>}
+              <h3 className="text-lg font-bold text-white">Personal & Institutional Details</h3>
+              {saved && <span className="text-xs text-emerald-300 font-mono flex items-center gap-1"><Check className="w-3.5 h-3.5" /> Saved Successfully</span>}
             </div>
 
             <form onSubmit={handleSave} className="space-y-4 text-xs">
               <div className="space-y-1.5">
-                <label className="text-slate-700 font-semibold font-serif-luxury">Full Name</label>
+                <label className="text-slate-200 font-semibold">Full Name</label>
                 <input
                   type="text"
                   value={formData.name}
@@ -119,7 +124,7 @@ export const UserProfilePage: React.FC = () => {
           {/* Badges & Achievements */}
           <div className="space-y-6">
             <GlassCard className="p-6 border border-slate-200 space-y-3 text-xs shadow-sm">
-              <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5 font-serif-luxury">
+              <h3 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
                 <Award className="w-4 h-4 text-amber-600" /> Achievements Wall
               </h3>
               <div className="space-y-2">
@@ -151,5 +156,6 @@ export const UserProfilePage: React.FC = () => {
 
       <Footer />
     </div>
+    </PageTransition>
   );
 };

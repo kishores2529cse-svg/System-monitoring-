@@ -8,6 +8,7 @@ import { StatCard } from '../../components/dashboard/StatCard';
 import { ActivityChart } from '../../components/dashboard/ActivityChart';
 import { LiveCandidateCard } from '../../components/dashboard/LiveCandidateCard';
 import { CandidateDetailModal } from '../../components/dashboard/CandidateDetailModal';
+import { PageTransition } from '../../components/ui/PageTransition';
 
 export const AdminDashboard: React.FC = () => {
   const [candidates, setCandidates] = useState<CandidateCardData[]>([]);
@@ -61,7 +62,8 @@ export const AdminDashboard: React.FC = () => {
   });
 
   return (
-    <div className="min-h-screen bg-[#FAFCFF] text-slate-900 flex flex-col selection:bg-sky-500/20 font-serif-luxury">
+    <PageTransition>
+      <div className="min-h-screen text-slate-100 flex flex-col selection:bg-sky-500/20 font-serif-luxury">
       <Navbar />
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 space-y-8">
@@ -71,15 +73,15 @@ export const AdminDashboard: React.FC = () => {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-xs font-mono text-sky-700 font-bold uppercase tracking-wider">AI Surveillance Command Center</span>
+              <span className="text-xs font-mono text-sky-300 font-bold uppercase tracking-wider">AI Surveillance Command Center</span>
             </div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight font-serif-luxury">Live Candidate Telemetry & Proctoring</h1>
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Live Candidate Telemetry & Proctoring</h1>
           </div>
 
           <div className="flex items-center gap-3">
             <button
               onClick={loadData}
-              className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-700 hover:text-slate-900 shadow-2xs hover:shadow-xs transition-all cursor-pointer flex items-center gap-2 text-xs font-sans font-medium"
+              className="p-2.5 rounded-2xl bg-slate-900/70 border border-slate-700 text-slate-200 hover:text-white hover:border-sky-400/40 shadow-sm transition-all cursor-pointer flex items-center gap-2 text-xs font-sans font-medium"
             >
               <RefreshCw className="w-4 h-4 text-sky-600" />
               <span>Refresh Feed</span>
@@ -128,8 +130,8 @@ export const AdminDashboard: React.FC = () => {
           
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h2 className="text-2xl font-bold text-slate-900 tracking-tight font-serif-luxury">Active Candidates Grid</h2>
-              <p className="text-xs text-slate-600 font-sans">Real-time candidate telemetry feeds and quick proctor overrides</p>
+              <h2 className="text-2xl font-bold text-white tracking-tight">Active Candidates Grid</h2>
+              <p className="text-xs text-slate-400 font-sans">Real-time candidate telemetry feeds and quick proctor overrides</p>
             </div>
 
             {/* Filters */}
@@ -141,14 +143,14 @@ export const AdminDashboard: React.FC = () => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search candidate, college..."
-                  className="pl-9 pr-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-800 text-xs focus:outline-none focus:border-sky-500 w-60 shadow-2xs"
+                  className="pl-9 pr-3 py-1.5 rounded-2xl bg-slate-900/70 border border-slate-700 text-slate-100 text-xs focus:outline-none focus:border-sky-400 w-60 shadow-sm"
                 />
               </div>
 
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-800 text-xs focus:outline-none focus:border-sky-500 cursor-pointer font-mono shadow-2xs"
+                className="px-3 py-1.5 rounded-2xl bg-slate-900/70 border border-slate-700 text-slate-100 text-xs focus:outline-none focus:border-sky-400 cursor-pointer font-mono shadow-sm"
               >
                 <option value="All">All Statuses</option>
                 <option value="Active">Active</option>
@@ -190,5 +192,6 @@ export const AdminDashboard: React.FC = () => {
 
       <Footer />
     </div>
+    </PageTransition>
   );
 };

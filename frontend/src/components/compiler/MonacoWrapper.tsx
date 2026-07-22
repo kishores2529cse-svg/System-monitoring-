@@ -1,8 +1,9 @@
 import React from 'react';
 import Editor from '@monaco-editor/react';
-import { Play, CheckCircle, Check } from 'lucide-react';
+import { Play, CheckCircle, Check, RotateCcw, Copy, Sparkles } from 'lucide-react';
 import { useExam } from '../../contexts/ExamContext';
 import { GlowingButton } from '../ui/GlowingButton';
+import type { SupportedLanguage } from '../../types';
 
 export const MonacoWrapper: React.FC = () => {
   const {
@@ -17,62 +18,76 @@ export const MonacoWrapper: React.FC = () => {
     autoSaveStatus
   } = useExam();
 
-  const handleLanguageChange = (lang: 'go' | 'python' | 'javascript' | 'cpp') => {
+  const handleLanguageChange = (lang: SupportedLanguage) => {
     setSelectedLanguage(lang);
   };
 
+  const languageOptions: Array<{ value: SupportedLanguage; label: string; short: string }> = [
+    { value: 'go', label: 'Go (1.22)', short: 'Go' },
+    { value: 'python', label: 'Python 3.11', short: 'Py' },
+    { value: 'javascript', label: 'JavaScript', short: 'JS' },
+    { value: 'typescript', label: 'TypeScript', short: 'TS' },
+    { value: 'cpp', label: 'C++20', short: 'C++' },
+    { value: 'java', label: 'Java 21', short: 'Java' },
+    { value: 'rust', label: 'Rust', short: 'Rust' },
+    { value: 'csharp', label: 'C#', short: 'C#' }
+  ];
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(codeMap[selectedLanguage]);
+  };
+
+  const handleReset = () => {
+    const current = codeMap[selectedLanguage];
+    if (current && current.trim()) {
+      setCodeForLang('');
+    }
+  };
+
   return (
-    <div className="flex flex-col h-full bg-[#0B0F19] rounded-2xl border border-slate-300 overflow-hidden shadow-md">
-      
-      {/* Editor Control Header */}
-      <div className="px-4 py-2.5 bg-slate-900 border-b border-slate-800 flex items-center justify-between gap-4 font-sans">
-        
-        {/* Language Selector */}
+    <div className="flex h-full flex-col overflow-hidden rounded-[24px] border border-white/10 bg-[#050816] shadow-[0_24px_100px_rgba(2,6,23,0.55)]">
+      <div className="flex items-center justify-between gap-3 border-b border-white/10 bg-slate-900/80 px-4 py-2.5 font-sans">
         <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-400 font-medium font-serif-luxury">Language:</span>
-          <div className="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
-            <button
-              onClick={() => handleLanguageChange('go')}
-              className={`px-3 py-1 rounded-lg font-mono transition-colors ${
-                selectedLanguage === 'go' ? 'bg-sky-500/20 text-sky-300 font-bold border border-sky-500/30' : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              Go (1.22)
-            </button>
-            <button
-              onClick={() => handleLanguageChange('python')}
-              className={`px-3 py-1 rounded-lg font-mono transition-colors ${
-                selectedLanguage === 'python' ? 'bg-sky-500/20 text-sky-300 font-bold border border-sky-500/30' : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              Python 3.11
-            </button>
-            <button
-              onClick={() => handleLanguageChange('javascript')}
-              className={`px-3 py-1 rounded-lg font-mono transition-colors ${
-                selectedLanguage === 'javascript' ? 'bg-sky-500/20 text-sky-300 font-bold border border-sky-500/30' : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              Node.js
-            </button>
-            <button
-              onClick={() => handleLanguageChange('cpp')}
-              className={`px-3 py-1 rounded-lg font-mono transition-colors ${
-                selectedLanguage === 'cpp' ? 'bg-sky-500/20 text-sky-300 font-bold border border-sky-500/30' : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              C++20
-            </button>
+          <div className="flex items-center gap-2 rounded-xl border border-cyan-400/20 bg-cyan-500/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-300">
+            <Sparkles className="h-3.5 w-3.5" />
+            Studio
+          </div>
+          <div className="flex items-center gap-1 rounded-xl border border-white/10 bg-slate-950/80 p-1 text-xs">
+            {languageOptions.map((option) => (
+              <button
+                key={option.value}
+                onClick={() => handleLanguageChange(option.value)}
+                className={`rounded-lg px-2.5 py-1 font-mono transition-colors ${
+                  selectedLanguage === option.value
+                    ? 'border border-cyan-400/30 bg-cyan-500/20 text-cyan-200'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                {option.short}
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* Auto Save Status & Action Buttons */}
-        <div className="flex items-center gap-3">
-          <span className="text-[11px] font-mono text-slate-400 flex items-center gap-1">
-            <Check className="w-3.5 h-3.5 text-emerald-400" />
+        <div className="flex items-center gap-2">
+          <span className="flex items-center gap-1 rounded-lg border border-emerald-400/20 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-mono text-emerald-300">
+            <Check className="h-3.5 w-3.5" />
             {autoSaveStatus}
           </span>
-
+          <button
+            onClick={handleCopy}
+            className="rounded-lg border border-white/10 bg-white/5 p-2 text-slate-400 transition hover:text-slate-200"
+            title="Copy code"
+          >
+            <Copy className="h-3.5 w-3.5" />
+          </button>
+          <button
+            onClick={handleReset}
+            className="rounded-lg border border-white/10 bg-white/5 p-2 text-slate-400 transition hover:text-slate-200"
+            title="Reset snippet"
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
+          </button>
           <GlowingButton
             variant="secondary"
             size="sm"
@@ -82,7 +97,6 @@ export const MonacoWrapper: React.FC = () => {
           >
             {isRunning ? 'Compiling...' : 'Run Code'}
           </GlowingButton>
-
           <GlowingButton
             variant="cyan"
             size="sm"
@@ -93,11 +107,9 @@ export const MonacoWrapper: React.FC = () => {
             {isSubmitting ? 'Submitting...' : 'Submit Code'}
           </GlowingButton>
         </div>
-
       </div>
 
-      {/* Monaco Code Editor Container */}
-      <div className="flex-1 w-full min-h-[350px]">
+      <div className="flex-1 min-h-[350px] w-full">
         <Editor
           height="100%"
           language={selectedLanguage === 'cpp' ? 'cpp' : selectedLanguage}
@@ -115,11 +127,11 @@ export const MonacoWrapper: React.FC = () => {
             cursorBlinking: 'smooth',
             lineNumbers: 'on',
             renderLineHighlight: 'all',
-            padding: { top: 12, bottom: 12 }
+            padding: { top: 12, bottom: 12 },
+            wordWrap: 'on'
           }}
         />
       </div>
-
     </div>
   );
 };

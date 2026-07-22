@@ -45,12 +45,12 @@ export const GlowingButton: React.FC<GlowingButtonProps> = ({
   };
 
   const variantClasses = {
-    cyan: 'bg-gradient-to-r from-sky-600 via-indigo-600 to-blue-700 text-white shadow-md shadow-sky-600/20 hover:shadow-lg hover:shadow-sky-600/30 hover:from-sky-500 hover:to-blue-600 border border-sky-400/40',
-    purple: 'bg-gradient-to-r from-indigo-600 via-purple-600 to-violet-700 text-white shadow-md shadow-purple-600/20 hover:shadow-lg hover:shadow-purple-600/30 hover:from-indigo-500 hover:to-violet-600 border border-indigo-400/40',
-    emerald: 'bg-gradient-to-r from-emerald-600 to-teal-700 text-white shadow-md shadow-emerald-600/20 hover:shadow-lg hover:shadow-emerald-600/30 border border-emerald-400/40',
-    rose: 'bg-gradient-to-r from-rose-600 to-red-700 text-white shadow-md shadow-rose-600/20 hover:shadow-lg hover:shadow-rose-600/30 border border-rose-400/40',
-    secondary: 'bg-white hover:bg-slate-50 text-slate-800 border border-slate-300/80 hover:border-slate-400 shadow-xs hover:shadow-md',
-    ghost: 'bg-transparent hover:bg-slate-100 text-slate-700 hover:text-slate-900',
+    cyan: 'bg-gradient-to-r from-sky-600 via-cyan-500 to-indigo-600 text-white shadow-[0_10px_30px_rgba(14,165,233,0.22)] hover:shadow-[0_14px_40px_rgba(14,165,233,0.28)] hover:from-sky-500 hover:to-indigo-500 border border-sky-400/40',
+    purple: 'bg-gradient-to-r from-violet-600 via-fuchsia-500 to-indigo-600 text-white shadow-[0_10px_30px_rgba(139,92,246,0.22)] hover:shadow-[0_14px_40px_rgba(139,92,246,0.28)] hover:from-violet-500 hover:to-indigo-500 border border-violet-400/40',
+    emerald: 'bg-gradient-to-r from-emerald-600 to-teal-700 text-white shadow-[0_10px_30px_rgba(16,185,129,0.22)] hover:shadow-[0_14px_40px_rgba(16,185,129,0.28)] border border-emerald-400/40',
+    rose: 'bg-gradient-to-r from-rose-600 to-red-700 text-white shadow-[0_10px_30px_rgba(244,63,94,0.22)] hover:shadow-[0_14px_40px_rgba(244,63,94,0.28)] border border-rose-400/40',
+    secondary: 'bg-slate-900/70 hover:bg-slate-800/90 text-slate-100 border border-slate-700/80 hover:border-slate-500 shadow-sm hover:shadow-md',
+    ghost: 'bg-transparent hover:bg-white/10 text-slate-200 hover:text-white',
   };
 
   return (
@@ -58,7 +58,7 @@ export const GlowingButton: React.FC<GlowingButtonProps> = ({
       ref={btnRef}
       disabled={disabled}
       className={cn(
-        'inline-flex items-center justify-center font-medium font-serif-luxury transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 cursor-pointer select-none relative overflow-hidden',
+        'inline-flex items-center justify-center font-medium font-serif-luxury transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 cursor-pointer select-none relative overflow-hidden will-change-transform',
         sizeClasses[size],
         variantClasses[variant],
         className

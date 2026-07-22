@@ -14,119 +14,122 @@ export const ConsoleOutput: React.FC = () => {
   } = useExam();
 
   return (
-    <div className="flex flex-col h-full bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs font-serif-luxury">
-      
-      {/* Console Tab Bar */}
-      <div className="px-4 py-2 bg-slate-50 border-b border-slate-200 flex items-center justify-between font-sans">
+    <div className="flex h-full flex-col overflow-hidden rounded-[24px] border border-white/10 bg-slate-950/70 shadow-[0_20px_80px_rgba(2,6,23,0.45)] backdrop-blur-xl">
+      <div className="flex items-center justify-between border-b border-white/10 bg-white/5 px-4 py-2.5 font-sans">
         <div className="flex items-center gap-2">
           <button
             onClick={() => setActiveConsoleTab('output')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer ${
-              activeConsoleTab === 'output' ? 'bg-white text-sky-800 font-semibold border border-slate-300 shadow-2xs' : 'text-slate-600 hover:text-slate-900'
+            className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+              activeConsoleTab === 'output'
+                ? 'border border-cyan-400/30 bg-cyan-500/15 text-cyan-200'
+                : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <Terminal className="w-3.5 h-3.5" />
-            Console Output
+            <Terminal className="h-3.5 w-3.5" />
+            Console
           </button>
           <button
             onClick={() => setActiveConsoleTab('input')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer ${
-              activeConsoleTab === 'input' ? 'bg-white text-sky-800 font-semibold border border-slate-300 shadow-2xs' : 'text-slate-600 hover:text-slate-900'
+            className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+              activeConsoleTab === 'input'
+                ? 'border border-cyan-400/30 bg-cyan-500/15 text-cyan-200'
+                : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <SlidersHorizontal className="w-3.5 h-3.5" />
-            Custom Test Input
+            <SlidersHorizontal className="h-3.5 w-3.5" />
+            Input
           </button>
           <button
             onClick={() => setActiveConsoleTab('testcases')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer ${
-              activeConsoleTab === 'testcases' ? 'bg-white text-sky-800 font-semibold border border-slate-300 shadow-2xs' : 'text-slate-600 hover:text-slate-900'
+            className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+              activeConsoleTab === 'testcases'
+                ? 'border border-emerald-400/30 bg-emerald-500/15 text-emerald-200'
+                : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-            Test Cases ({compilerResult?.passedTests || 0}/{compilerResult?.totalTests || 3})
+            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+            Tests ({compilerResult?.passedTests || 0}/{compilerResult?.totalTests || 3})
           </button>
         </div>
 
         {compilerResult && (
-          <div className="flex items-center gap-3 text-[11px] font-mono text-slate-600">
-            <span className="flex items-center gap-1"><Clock className="w-3 h-3 text-sky-600" /> {compilerResult.executionTimeMs}ms</span>
-            <span className="flex items-center gap-1"><Cpu className="w-3 h-3 text-indigo-600" /> {compilerResult.memoryKb}KB</span>
+          <div className="flex items-center gap-3 text-[11px] font-mono text-slate-400">
+            <span className="flex items-center gap-1"><Clock className="h-3 w-3 text-cyan-400" /> {compilerResult.executionTimeMs}ms</span>
+            <span className="flex items-center gap-1"><Cpu className="h-3 w-3 text-violet-400" /> {compilerResult.memoryKb}KB</span>
           </div>
         )}
       </div>
 
-      {/* Tab Body */}
-      <div className="flex-1 p-4 overflow-y-auto font-mono text-xs text-slate-800">
-        
+      <div className="flex-1 overflow-y-auto p-4 font-mono text-xs text-slate-200">
         {isRunning || isSubmitting ? (
-          <div className="h-full flex items-center justify-center flex-col gap-2 py-8 text-slate-500 font-sans">
-            <div className="w-6 h-6 border-2 border-sky-600 border-t-transparent rounded-full animate-spin" />
-            <span>Compiling Go / Target code on isolated container worker...</span>
+          <div className="flex h-full flex-col items-center justify-center gap-3 py-8 text-center font-sans text-slate-400">
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-cyan-400 border-t-transparent" />
+            <span>Compiling your solution in an isolated sandbox worker…</span>
           </div>
         ) : activeConsoleTab === 'output' ? (
-          <div>
+          <div className="space-y-3">
             {compilerResult ? (
-              <div className="space-y-3">
-                <div className="flex items-center gap-2 font-semibold font-sans">
-                  <span className="px-2.5 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
+              <>
+                <div className="flex items-center gap-2 font-sans">
+                  <span className="rounded-full border border-emerald-400/20 bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-300">
                     Status: {compilerResult.status}
                   </span>
+                  <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-[11px] text-slate-400">
+                    Live feedback
+                  </span>
                 </div>
-                <pre className="p-3.5 rounded-xl bg-slate-900 text-emerald-400 overflow-x-auto whitespace-pre-wrap shadow-inner">
-                  {compilerResult.stdout}
+                <pre className="overflow-x-auto whitespace-pre-wrap rounded-2xl border border-white/10 bg-slate-950/90 p-3.5 text-[12px] text-emerald-300 shadow-inner">
+                  {compilerResult.stdout || compilerResult.stderr || 'No output produced.'}
                 </pre>
-              </div>
+              </>
             ) : (
-              <div className="text-slate-500 py-6 text-center font-sans">
-                Click "Run Code" to compile and execute program against test cases.
+              <div className="rounded-2xl border border-dashed border-white/10 bg-white/5 p-6 text-center text-slate-400">
+                Run your solution to stream compiler output, runtime traces, and passing status here.
               </div>
             )}
           </div>
         ) : activeConsoleTab === 'input' ? (
           <div className="space-y-2 font-sans">
-            <label className="text-xs text-slate-700 font-semibold font-serif-luxury">Specify Custom Test Case Input Buffer:</label>
+            <label className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">Custom input buffer</label>
             <textarea
               value={customInput}
               onChange={(e) => setCustomInput(e.target.value)}
-              rows={4}
-              className="w-full p-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-sky-500 resize-none font-mono text-xs shadow-2xs"
+              rows={6}
+              className="w-full resize-none rounded-2xl border border-white/10 bg-slate-900/80 p-3 font-mono text-xs text-slate-100 shadow-inner focus:border-cyan-400 focus:outline-none"
             />
           </div>
         ) : (
           <div className="space-y-3 font-sans">
             {compilerResult?.testDetails ? (
-              compilerResult.testDetails.map(t => (
-                <div key={t.testId} className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5 shadow-2xs">
+              compilerResult.testDetails.map((t) => (
+                <div key={t.testId} className="space-y-2 rounded-2xl border border-white/10 bg-white/5 p-3">
                   <div className="flex items-center justify-between">
-                    <span className="font-semibold text-slate-900 flex items-center gap-1.5 font-serif-luxury text-sm">
-                      {t.passed ? <CheckCircle2 className="w-4 h-4 text-emerald-600" /> : <XCircle className="w-4 h-4 text-rose-600" />}
+                    <span className="flex items-center gap-1.5 text-sm font-semibold text-slate-100">
+                      {t.passed ? <CheckCircle2 className="h-4 w-4 text-emerald-400" /> : <XCircle className="h-4 w-4 text-rose-400" />}
                       Test Case #{t.testId}
                     </span>
-                    <span className="text-[10px] text-slate-500 font-mono">{t.timeMs}ms</span>
+                    <span className="text-[10px] text-slate-400">{t.timeMs}ms</span>
                   </div>
-                  <div className="grid grid-cols-2 gap-2 text-[11px] pt-1 font-mono">
+                  <div className="grid gap-2 text-[11px] md:grid-cols-2">
                     <div>
-                      <span className="text-slate-500 font-sans">Input:</span>
-                      <p className="text-slate-800 bg-white p-1.5 rounded border border-slate-200 mt-0.5">{t.input}</p>
+                      <div className="mb-1 text-slate-400">Input</div>
+                      <p className="rounded-xl border border-white/10 bg-slate-900/70 p-2 text-slate-300">{t.input}</p>
                     </div>
                     <div>
-                      <span className="text-slate-500 font-sans">Expected vs Output:</span>
-                      <p className="text-emerald-700 font-bold bg-white p-1.5 rounded border border-slate-200 mt-0.5">{t.actualOutput}</p>
+                      <div className="mb-1 text-slate-400">Expected / observed</div>
+                      <p className="rounded-xl border border-white/10 bg-slate-900/70 p-2 text-emerald-300">{t.expectedOutput} / {t.actualOutput}</p>
                     </div>
                   </div>
                 </div>
               ))
             ) : (
-              <div className="text-slate-500 py-6 text-center font-sans">
-                No test case results yet. Submit code to run against all 15 test suite vectors.
+              <div className="rounded-2xl border border-dashed border-white/10 bg-white/5 p-6 text-center text-slate-400">
+                Submit your code to see a detailed breakdown of each test vector.
               </div>
             )}
           </div>
         )}
-
       </div>
-
     </div>
   );
 };
