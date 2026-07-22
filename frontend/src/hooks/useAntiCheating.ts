@@ -11,39 +11,98 @@ export function useAntiCheating(enabled: boolean = true) {
     // 1. Context Menu (Right Click) Block
     const handleContextMenu = (e: MouseEvent) => {
       e.preventDefault();
-      reportViolation('Right Click Attempt', 'Low', -2, 'Attempted to invoke browser context menu on exam workspace.');
+      reportViolation('Right Click Attempt', 'Low', -2, 'Attempted to invoke browser context menu on exam workspace.', false);
     };
 
     // 2. Clipboard Blocks
     const handleCopy = (e: ClipboardEvent) => {
       e.preventDefault();
-      reportViolation('Clipboard Copy Attempt', 'Medium', -5, 'Attempted to copy problem text or code buffer.');
+      e.stopImmediatePropagation();
+      reportViolation('Clipboard Copy Attempt', 'Medium', -5, 'Attempted to copy problem text or code buffer.', false);
     };
 
     const handlePaste = (e: ClipboardEvent) => {
       e.preventDefault();
-      reportViolation('Clipboard Paste Attempt', 'High', -10, 'Attempted to paste external snippet into Monaco Editor.');
+      e.stopImmediatePropagation();
+      reportViolation('Clipboard Paste Attempt', 'High', -10, 'Attempted to paste external snippet into Monaco Editor.', false);
     };
 
     const handleCut = (e: ClipboardEvent) => {
       e.preventDefault();
-      reportViolation('Clipboard Cut Attempt', 'Low', -2, 'Attempted cut operation.');
+      e.stopImmediatePropagation();
+      reportViolation('Clipboard Cut Attempt', 'Low', -2, 'Attempted cut operation.', false);
     };
 
-    // 3. Keydown Shortcut Guards (F12, DevTools, Ctrl+U, Tab)
+    // 3. Keydown Shortcut Guards
     const handleKeyDown = (e: KeyboardEvent) => {
-      // DevTools Shortcuts
-      if (
-        e.key === 'F12' ||
-        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) ||
-        (e.ctrlKey && (e.key === 'U' || e.key === 'u'))
-      ) {
+      const key = e.key.toLowerCase();
+      const isCtrl = e.ctrlKey || e.metaKey;
+      const isShift = e.shiftKey;
+      const isAlt = e.altKey;
+      const combination = `${isCtrl ? 'Ctrl+' : ''}${isShift ? 'Shift+' : ''}${isAlt ? 'Alt+' : ''}${key}`;
+
+      const isModifierShortcut = isCtrl || isAlt || isShift;
+      const forbiddenShortcut = isModifierShortcut && key !== 'shift' && key !== 'control' && key !== 'alt' && key !== 'meta';
+
+      if (forbiddenShortcut || key === 'f12' || key === 'contextmenu') {
         e.preventDefault();
-        reportViolation('Developer Tools Shortcut Triggered', 'High', -15, `Attempted key combination: ${e.ctrlKey ? 'Ctrl+' : ''}${e.shiftKey ? 'Shift+' : ''}${e.key}`);
+        reportViolation('Browser Shortcut Attempt', 'High', -12, `Attempted key combination: ${combination}`, false);
       }
     };
 
-    // 4. Tab Switch & Visibility Change Detection
+    const handleSelectStart = (e: Event) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.monaco-editor') && !target.closest('textarea') && !target.closest('input')) {
+        e.preventDefault();
+        reportViolation('Text Selection Attempt', 'Medium', -6, 'Attempted to select text outside the secure exam editor.', false);
+      }
+    };
+
+    const handleDragOver = (e: DragEvent) => {
+      e.preventDefault();
+    };
+
+    const handleDrop = (e: DragEvent) => {
+      e.preventDefault();
+      reportViolation('Drag & Drop Attempt', 'Medium', -6, 'Attempted to drop content into the secure exam viewport.', false);
+    };
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement) {
+        reportViolation('Fullscreen Mode Exited', 'High', -15, 'Candidate exited mandated safe browser full screen viewport.');
+      }
+    };
+
+    const handleScroll = (e: Event) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.monaco-editor')) {
+        e.preventDefault();
+        reportViolation('Scroll Attempt Outside Editor', 'Low', -4, 'Attempted to scroll outside the secure exam viewport.');
+      }
+    };
+
+    const handlePointerDown = (e: PointerEvent) => {
+      if (e.button !== 0) {
+        e.preventDefault();
+        reportViolation('Non-primary Click Attempt', 'Low', -3, 'Attempted right-click or alternate mouse button interaction.', false);
+      }
+    };
+
+    const handleDevToolsHeuristic = (e: KeyboardEvent) => {
+      const isCtrl = e.ctrlKey || e.metaKey;
+      const isShift = e.shiftKey;
+      const key = e.key.toLowerCase();
+
+      if (e.key === 'F12' || (isCtrl && isShift && ['i', 'j', 'c'].includes(key)) || (isCtrl && key === 'u') || (isCtrl && key === 's') || (isCtrl && key === 'p')) {
+        reportViolation('Developer Tools / Forbidden Shortcut Attempt', 'High', -15, `Attempted forbidden key combination: ${e.key}`);
+      }
+    };
+
     const handleVisibilityChange = () => {
       if (document.hidden) {
         reportViolation('Tab Switch / Viewport Inactive', 'High', -12, 'Candidate left exam tab or minimized browser viewport.');
@@ -58,10 +117,14 @@ export function useAntiCheating(enabled: boolean = true) {
       }
     };
 
-    // 5. Fullscreen Exit Detector
-    const handleFullscreenChange = () => {
-      if (!document.fullscreenElement) {
-        reportViolation('Fullscreen Mode Exited', 'High', -15, 'Candidate exited mandated safe browser full screen viewport.');
+    const handleWindowFocus = () => {
+      reportViolation('Window Refocus Detected', 'Low', -4, 'Candidate returned to the exam after losing application focus.');
+    };
+
+    const handleFocusAttempt = (e: FocusEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.monaco-editor') && !target.closest('textarea') && !target.closest('input')) {
+        reportViolation('Unauthorized Focus Shift', 'Low', -3, 'Attempted to move focus outside the secure exam editor.');
       }
     };
 
@@ -71,9 +134,18 @@ export function useAntiCheating(enabled: boolean = true) {
     window.addEventListener('paste', handlePaste);
     window.addEventListener('cut', handleCut);
     window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keydown', handleDevToolsHeuristic);
+    document.addEventListener('selectstart', handleSelectStart);
+    window.addEventListener('dragover', handleDragOver);
+    window.addEventListener('drop', handleDrop);
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('blur', handleWindowBlur);
+    window.addEventListener('focus', handleWindowFocus);
+    window.addEventListener('beforeunload', handleBeforeUnload);
     document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('scroll', handleScroll, { passive: false });
+    window.addEventListener('pointerdown', handlePointerDown);
+    window.addEventListener('focusin', handleFocusAttempt);
 
     return () => {
       window.removeEventListener('contextmenu', handleContextMenu);
@@ -81,9 +153,18 @@ export function useAntiCheating(enabled: boolean = true) {
       window.removeEventListener('paste', handlePaste);
       window.removeEventListener('cut', handleCut);
       window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keydown', handleDevToolsHeuristic);
+      document.removeEventListener('selectstart', handleSelectStart);
+      window.removeEventListener('dragover', handleDragOver);
+      window.removeEventListener('drop', handleDrop);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('blur', handleWindowBlur);
+      window.removeEventListener('focus', handleWindowFocus);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('pointerdown', handlePointerDown);
+      window.removeEventListener('focusin', handleFocusAttempt);
     };
   }, [enabled, isLocked, reportViolation]);
 }

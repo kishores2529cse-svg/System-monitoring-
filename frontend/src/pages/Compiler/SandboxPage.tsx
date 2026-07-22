@@ -5,8 +5,11 @@ import { ProblemDescription } from '../../components/compiler/ProblemDescription
 import { MonacoWrapper } from '../../components/compiler/MonacoWrapper';
 import { ConsoleOutput } from '../../components/compiler/ConsoleOutput';
 import { PageTransition } from '../../components/ui/PageTransition';
+import { useAntiCheating } from '../../hooks/useAntiCheating';
 
 export const SandboxPage: React.FC = () => {
+  useAntiCheating(true);
+
   return (
     <PageTransition>
       <div className="min-h-screen w-full overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(34,211,238,0.16),_transparent_30%),linear-gradient(135deg,_#020617,_#0f172a)] text-slate-100">
