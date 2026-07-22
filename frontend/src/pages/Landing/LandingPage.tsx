@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Cpu, Lock, Terminal, BarChart2, ShieldCheck, Eye, Sparkles, Zap, Crosshair, User } from 'lucide-react';
-import { Navbar } from '../../components/common/Navbar';
 import { Footer } from '../../components/common/Footer';
 import { InteractiveBackground } from '../../components/ui/InteractiveBackground';
 import { RobotSection } from '../../components/ui/RobotSection';
@@ -81,9 +80,6 @@ export const LandingPage: React.FC = () => {
       
       {/* Cinematic Canvas Background */}
       <InteractiveBackground />
-
-      {/* Premium Dark Navbar */}
-      <Navbar theme="dark" />
 
       {/* ═══════════════════════════════════════════════ HERO ═══════════════════════════════════════════════ */}
       <section className="relative min-h-[calc(100vh-64px)] flex items-center px-4 sm:px-6 lg:px-8 py-12 lg:py-16 overflow-hidden z-10">

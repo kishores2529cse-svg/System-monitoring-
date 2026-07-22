@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Lock, Activity, Search, Cpu, RefreshCw, PlusCircle, ExternalLink } from 'lucide-react';
+import { Users, Search, Cpu, RefreshCw, PlusCircle, ExternalLink, AlertTriangle, Camera, ClipboardCheck, Clock3, Eye, MonitorUp, Pause, Play, Radio, FileDown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { api } from '../../api/client';
 import type { CandidateCardData, MonitoringEvent, AdminStats } from '../../types';
@@ -20,6 +20,7 @@ export const AdminDashboard: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string>('All');
   const [selectedCandidate, setSelectedCandidate] = useState<CandidateCardData | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [evidenceFilter, setEvidenceFilter] = useState('All');
 
   const loadData = async () => {
     const cData = await api.admin.getLiveSessions();
@@ -63,6 +64,20 @@ export const AdminDashboard: React.FC = () => {
     const matchesStatus = statusFilter === 'All' || c.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  const filteredEvents = events.filter((event) => {
+    if (evidenceFilter === 'High Risk') return event.severity === 'High' || event.severity === 'Critical';
+    if (evidenceFilter === 'Face Detection') return /face|multiple/i.test(event.event);
+    if (evidenceFilter === 'Fullscreen Violations') return /fullscreen/i.test(event.event);
+    if (evidenceFilter === 'Copy\/Paste Attempts') return /copy|paste/i.test(event.event);
+    if (evidenceFilter === 'Tab Switches') return /tab/i.test(event.event);
+    return true;
+  });
+
+  const openCandidate = (candidateId: string) => {
+    const candidate = candidates.find((item) => item.id === candidateId);
+    if (candidate) setSelectedCandidate(candidate);
+  };
 
   return (
     <PageTransition>
@@ -109,40 +124,72 @@ export const AdminDashboard: React.FC = () => {
         </div>
 
         {/* Telemetry Stat Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
           <StatCard
-            title="Live Candidates"
+            title="Students Online"
             value={stats?.liveCandidates || 48}
             change="12%"
             icon={<Users className="w-5 h-5 text-sky-600" />}
             color="cyan"
           />
           <StatCard
-            title="Avg Confidence Score"
-            value={`${stats?.averageConfidenceScore || 92.4}%`}
-            change="1.4%"
-            icon={<Activity className="w-5 h-5 text-emerald-600" />}
+            title="Active Assessments"
+            value={stats?.runningExams || 48}
+            change="6%"
+            icon={<ClipboardCheck className="w-5 h-5 text-emerald-600" />}
             color="emerald"
           />
           <StatCard
-            title="Locked Users"
-            value={stats?.lockedUsers || 3}
-            change="1"
+            title="High-Risk Candidates"
+            value={candidates.filter((candidate) => candidate.confidenceScore < 70).length || 3}
+            change="2"
             isPositive={false}
-            icon={<Lock className="w-5 h-5 text-rose-600" />}
+            icon={<AlertTriangle className="w-5 h-5 text-rose-600" />}
             color="rose"
           />
           <StatCard
-            title="AI Detection Accuracy"
-            value={`${stats?.aiAccuracy || 99.2}%`}
-            change="0.2%"
+            title="AI Events Detected"
+            value={stats?.suspiciousEvents || events.length}
+            change="4"
             icon={<Cpu className="w-5 h-5 text-indigo-600" />}
             color="purple"
           />
+          <StatCard title="Evidence Collected" value={events.length || 18} change="3" icon={<Camera className="w-5 h-5 text-sky-600" />} color="cyan" />
+          <StatCard title="Avg Remaining Time" value="46m" change="2m" icon={<Clock3 className="w-5 h-5 text-amber-600" />} color="amber" />
+        </div>
+
+        <div className="flex flex-wrap gap-2 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm font-sans">
+          <button className="rounded-xl bg-sky-600 px-3 py-2 text-xs font-semibold text-white"><Play className="mr-1 inline h-3.5 w-3.5" />Start Assessment</button>
+          <button className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700"><Pause className="mr-1 inline h-3.5 w-3.5" />Pause Assessment</button>
+          <button className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700"><Play className="mr-1 inline h-3.5 w-3.5" />Resume Assessment</button>
+          <button className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700"><Radio className="mr-1 inline h-3.5 w-3.5" />Broadcast Announcement</button>
+          <button className="rounded-xl border border-rose-200 px-3 py-2 text-xs font-semibold text-rose-700"><AlertTriangle className="mr-1 inline h-3.5 w-3.5" />Flag Candidate</button>
+          <button className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700"><FileDown className="mr-1 inline h-3.5 w-3.5" />Export Report</button>
         </div>
 
         {/* Activity & Violation Analytics Charts */}
         <ActivityChart />
+
+        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+            <div><h2 className="font-bold text-slate-900">Live candidate monitoring</h2><p className="text-xs text-slate-500">Live webcam placeholders, risk indicators, and intervention controls.</p></div>
+            <MonitorUp className="h-5 w-5 text-sky-600" />
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-[1000px] w-full text-left text-xs font-sans">
+              <thead className="bg-slate-50 text-slate-500 uppercase tracking-wider"><tr><th className="p-4">Student</th><th>Assessment / question</th><th>Time</th><th>Risk</th><th>Status</th><th>Webcam</th><th>Last activity</th><th className="p-4">Actions</th></tr></thead>
+              <tbody>{filteredCandidates.map((candidate) => {
+                const risk = 100 - candidate.confidenceScore;
+                return <tr key={candidate.id} className="border-t border-slate-100 hover:bg-slate-50"><td className="p-4 font-semibold text-slate-900">{candidate.name}</td><td><span className="block text-slate-800">{candidate.problem}</span><span className="text-slate-500">Question in progress</span></td><td className="font-mono text-slate-700">{candidate.timeLeft}</td><td><div className="flex items-center gap-2"><span className={`h-2 w-2 rounded-full ${risk >= 40 ? 'bg-rose-500 animate-pulse' : risk >= 20 ? 'bg-amber-500' : 'bg-emerald-500'}`} /><span className={risk >= 40 ? 'font-bold text-rose-700' : 'text-slate-700'}>{risk}%</span></div></td><td><span className={`rounded-full px-2 py-1 font-semibold ${candidate.status === 'Active' ? 'bg-emerald-100 text-emerald-700' : candidate.status === 'Warning' ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700'}`}>{candidate.status}</span></td><td><button onClick={() => openCandidate(candidate.id)} className="rounded-lg bg-slate-900 px-2 py-1 text-white"><Eye className="mr-1 inline h-3 w-3" />Preview</button></td><td className="text-slate-500">{candidate.startedAt}</td><td className="p-4 whitespace-nowrap"><button onClick={() => openCandidate(candidate.id)} className="mr-2 text-sky-700">View</button><button onClick={() => openCandidate(candidate.id)} className="mr-2 text-sky-700">Timeline</button><button onClick={() => openCandidate(candidate.id)} className="mr-2 text-sky-700">Evidence</button><button onClick={() => handleTerminate(candidate.id)} className="text-rose-700">End</button></td></tr>;
+              })}</tbody>
+            </table>
+          </div>
+        </section>
+
+        <section className="grid gap-6 lg:grid-cols-2">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><h2 className="font-bold text-slate-900">Live activity timeline</h2><div className="mt-4 space-y-3">{events.slice().reverse().slice(0, 6).map((event) => <button key={event.id} onClick={() => openCandidate(event.candidateId)} className="flex w-full items-center justify-between rounded-xl border border-slate-100 p-3 text-left hover:border-sky-200"><span><span className="block font-semibold text-slate-800">{event.event} <span className="font-normal text-slate-500">— {event.candidateName}</span></span><span className="text-xs text-slate-500">{event.timestamp} · risk {event.confidenceImpact}%</span></span><span className={`rounded-full px-2 py-1 text-[10px] font-bold ${event.severity === 'Critical' || event.severity === 'High' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700'}`}>{event.severity}</span></button>)}</div></div>
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><div className="flex flex-wrap items-center justify-between gap-2"><h2 className="font-bold text-slate-900">Evidence center</h2><select value={evidenceFilter} onChange={(event) => setEvidenceFilter(event.target.value)} className="rounded-lg border border-slate-200 px-2 py-1 text-xs text-slate-700"><option>All</option><option>High Risk</option><option>Face Detection</option><option>Fullscreen Violations</option><option>Copy/Paste Attempts</option><option>Tab Switches</option></select></div><div className="mt-4 space-y-3">{filteredEvents.slice(0, 5).map((event) => <button key={event.id} onClick={() => openCandidate(event.candidateId)} className="grid w-full grid-cols-[1fr_auto] gap-3 rounded-xl border border-slate-100 p-3 text-left hover:border-sky-200"><span><span className="block font-semibold text-slate-800">{event.candidateName} · {event.event}</span><span className="text-xs text-slate-500">{event.timestamp} · contribution {event.confidenceImpact}%</span><span className="mt-1 block text-xs text-slate-500">Screenshot and webcam snapshot available</span></span><span className="h-12 w-16 rounded-lg bg-slate-200 text-center leading-[3rem] text-[10px] text-slate-500">Evidence</span></button>)}</div></div>
+        </section>
 
         {/* Live Surveillance Candidate Grid Header & Filters */}
         <div className="space-y-4 pt-4">

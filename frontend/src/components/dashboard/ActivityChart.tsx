@@ -4,6 +4,9 @@ import {
   Area,
   BarChart,
   Bar,
+  PieChart,
+  Pie,
+  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -20,6 +23,24 @@ const activityData = [
   { time: '12:20', activeCandidates: 48, violations: 12, avgConfidence: 92 },
   { time: '12:25', activeCandidates: 47, violations: 15, avgConfidence: 93 },
   { time: '12:30', activeCandidates: 48, violations: 18, avgConfidence: 94 },
+];
+
+const riskDistribution = [
+  { name: 'Low risk', value: 38, color: '#10B981' },
+  { name: 'Medium risk', value: 7, color: '#F59E0B' },
+  { name: 'High risk', value: 3, color: '#E11D48' },
+];
+
+const violationTypes = [
+  { type: 'Tab switch', total: 8 },
+  { type: 'Fullscreen', total: 5 },
+  { type: 'Face detect', total: 4 },
+  { type: 'Copy/paste', total: 3 },
+];
+
+const assessmentState = [
+  { name: 'Active', total: 48 },
+  { name: 'Completed', total: 73 },
 ];
 
 export const ActivityChart: React.FC = () => {
@@ -55,6 +76,22 @@ export const ActivityChart: React.FC = () => {
             </AreaChart>
           </ResponsiveContainer>
         </div>
+      </GlassCard>
+
+      <GlassCard className="p-5 border border-slate-200 space-y-4">
+        <div><h3 className="text-base font-bold text-slate-900">Risk Score Distribution</h3><p className="text-xs text-slate-600 font-sans">AI confidence thresholds across active candidates</p></div>
+        <div className="h-64 w-full"><ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={riskDistribution} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={55} outerRadius={88} paddingAngle={4}>{riskDistribution.map((item) => <Cell key={item.name} fill={item.color} />)}</Pie><Tooltip /></PieChart></ResponsiveContainer></div>
+        <div className="flex justify-center gap-3 text-[11px] text-slate-600">{riskDistribution.map((item) => <span key={item.name}><i className="mr-1 inline-block h-2 w-2 rounded-full" style={{ backgroundColor: item.color }} />{item.name}</span>)}</div>
+      </GlassCard>
+
+      <GlassCard className="p-5 border border-slate-200 space-y-4">
+        <div><h3 className="text-base font-bold text-slate-900">Violations by Type</h3><p className="text-xs text-slate-600 font-sans">Flagged event categories in the active monitoring window</p></div>
+        <div className="h-64 w-full"><ResponsiveContainer width="100%" height="100%"><BarChart data={violationTypes}><CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" /><XAxis dataKey="type" stroke="#64748B" fontSize={10} /><YAxis stroke="#64748B" fontSize={11} /><Tooltip /><Bar dataKey="total" fill="#F59E0B" radius={[6, 6, 0, 0]} /></BarChart></ResponsiveContainer></div>
+      </GlassCard>
+
+      <GlassCard className="p-5 border border-slate-200 space-y-4">
+        <div><h3 className="text-base font-bold text-slate-900">Active vs Completed Assessments</h3><p className="text-xs text-slate-600 font-sans">Assessment state distribution for the current session</p></div>
+        <div className="h-64 w-full"><ResponsiveContainer width="100%" height="100%"><BarChart data={assessmentState} layout="vertical"><CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" /><XAxis type="number" stroke="#64748B" fontSize={11} /><YAxis type="category" dataKey="name" stroke="#64748B" fontSize={11} width={75} /><Tooltip /><Bar dataKey="total" fill="#0284C7" radius={[0, 6, 6, 0]} /></BarChart></ResponsiveContainer></div>
       </GlassCard>
 
       {/* Security Violations Breakdown Bar Chart */}
