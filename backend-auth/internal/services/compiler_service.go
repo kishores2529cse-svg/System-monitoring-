@@ -81,9 +81,9 @@ func (s *CompilerService) SubmitCode(userID, problemID uint, req models.SubmitRe
 	}
 
 	// Fetch all test cases for the problem
-	allCases, err := s.problemRepo.GetTestCasesByProblemID(problemID, models.TestCaseTypeSample)
-	if err != nil {
-		// Fallback to all cases
+	allCases, err := s.problemRepo.GetAllTestCasesByProblemID(problemID)
+	if err != nil || len(allCases) == 0 {
+		// Fallback to sample cases
 		allCases, err = s.problemRepo.GetTestCasesByProblemID(problemID, models.TestCaseTypeSample)
 		if err != nil {
 			return nil, errors.New("failed to fetch test cases")

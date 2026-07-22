@@ -39,10 +39,17 @@ func (r *ProblemRepo) FindByIDWithAllCases(id uint) (*models.Problem, error) {
 	return &problem, err
 }
 
-// GetTestCasesByProblemID retrieves all test cases for a problem.
+// GetTestCasesByProblemID retrieves test cases for a problem by type (SAMPLE or HIDDEN).
 func (r *ProblemRepo) GetTestCasesByProblemID(problemID uint, tcType models.SampleOrHidden) ([]models.TestCase, error) {
 	var testCases []models.TestCase
-	err := r.db.Where("problem_id = ? AND type = ?", problemID, tcType).Find(&testCases).Error
+	err := r.db.Where("question_id = ? AND type = ?", problemID, tcType).Find(&testCases).Error
+	return testCases, err
+}
+
+// GetAllTestCasesByProblemID retrieves all test cases for a problem (both sample and hidden).
+func (r *ProblemRepo) GetAllTestCasesByProblemID(problemID uint) ([]models.TestCase, error) {
+	var testCases []models.TestCase
+	err := r.db.Where("question_id = ?", problemID).Find(&testCases).Error
 	return testCases, err
 }
 

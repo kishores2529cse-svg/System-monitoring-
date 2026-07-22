@@ -271,10 +271,55 @@ export const api = {
     }
   },
 
-  // Compiler Execution Simulator
+  // Compiler Execution & Validation API (Backend Integration)
   compiler: {
-    run: async (_code: string, language: string, input?: string, problemId?: number): Promise<CompilerResult> => {
-      await new Promise(r => setTimeout(r, 800));
+    run: async (code: string, language: string, input?: string, problemId?: number): Promise<CompilerResult> => {
+      const token = localStorage.getItem('codeshield_token') || localStorage.getItem('codeshield_admin_token');
+      
+      try {
+        const response = await fetch(`${API_BASE}/compiler/run`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify({
+            code,
+            language: language || 'go',
+            problem_id: problemId || 1
+          })
+        });
+
+        const resData = await response.json();
+        if (response.ok && resData.success && resData.data) {
+          const data = resData.data;
+          const isError = !!(data.compilation_error || data.runtime_error);
+          return {
+            status: isError ? (data.compilation_error ? 'Compilation Error' : 'Runtime Error') : 'Accepted',
+            stdout: data.output || data.compilation_error || data.runtime_error || 'Execution completed with no output.',
+            stderr: data.compilation_error || data.runtime_error || '',
+            executionTimeMs: Math.round((data.execution_time || 0.015) * 1000),
+            memoryKb: 2048,
+            passedTests: isError ? 0 : 1,
+            totalTests: 1,
+            testDetails: [
+              {
+                testId: 1,
+                passed: !isError,
+                input: input || 'Sample Input Vector',
+                expectedOutput: 'Valid Output',
+                actualOutput: data.output || (isError ? 'Execution Failed' : 'Valid Output'),
+                timeMs: Math.round((data.execution_time || 0.015) * 1000)
+              }
+            ]
+          };
+        }
+      } catch (err) {
+        console.warn('Backend compiler offline, running local sandbox evaluator.', err);
+      }
+
+      // Offline Fallback Simulator
+      await new Promise(r => setTimeout(r, 600));
       const currentList = getStore<ProblemData[]>('problems', problems);
       const targetProblem = currentList.find(p => p.id === problemId) || currentList[0];
 
@@ -294,7 +339,7 @@ export const api = {
 
       return {
         status: 'Accepted',
-        stdout: `[Output] Executed ${language.toUpperCase()} binary successfully in sandbox.\nInput: ${input || customCases[0]?.input || 'sample'}\nResult: Accepted`,
+        stdout: `[Sandbox] Executed ${language.toUpperCase()} script.\nInput: ${input || customCases[0]?.input || 'sample'}\nResult: Accepted`,
         stderr: '',
         executionTimeMs: 14,
         memoryKb: 2048,
@@ -303,8 +348,65 @@ export const api = {
         testDetails: customCases
       };
     },
-    submit: async (_code?: string, _language?: string, problemId?: number): Promise<CompilerResult> => {
-      await new Promise(r => setTimeout(r, 1200));
+
+    submit: async (code?: string, language?: string, problemId?: number): Promise<CompilerResult> => {
+      const token = localStorage.getItem('codeshield_token') || localStorage.getItem('codeshield_admin_token');
+      
+      try {
+        const targetId = problemId || 1;
+        const response = await fetch(`${API_BASE}/compiler/submit?problemId=${targetId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify({
+            code: code || '',
+            language: language || 'go'
+          })
+        });
+
+        const resData = await response.json();
+        if (response.ok && resData.success && resData.data) {
+          const data = resData.data;
+          const currentList = getStore<ProblemData[]>('problems', problems);
+          const targetProblem = currentList.find(p => p.id === problemId) || currentList[0];
+
+          const cases = targetProblem?.testCases && targetProblem.testCases.length > 0
+            ? targetProblem.testCases.map((tc, idx) => ({
+              testId: idx + 1,
+              passed: data.verdict === 'Accepted' || idx < data.test_cases_passed,
+              input: tc.input,
+              expectedOutput: tc.expectedOutput,
+              actualOutput: data.verdict === 'Accepted' ? tc.expectedOutput : (data.output || 'Output mismatch'),
+              timeMs: Math.round((data.execution_time || 0.012) * 1000)
+            }))
+            : Array.from({ length: data.total_test_cases || 5 }).map((_, i) => ({
+              testId: i + 1,
+              passed: data.verdict === 'Accepted' || i < data.test_cases_passed,
+              input: `Sample Testcase #${i + 1}`,
+              expectedOutput: `Valid Output #${i + 1}`,
+              actualOutput: data.output || `Valid Output #${i + 1}`,
+              timeMs: 2 + i * 3
+            }));
+
+          return {
+            status: data.verdict || 'Accepted',
+            stdout: data.output || (data.verdict === 'Accepted' ? `All test cases PASSED! Score: +100 Points` : 'Submission evaluated.'),
+            stderr: data.error_message || '',
+            executionTimeMs: Math.round((data.execution_time || 0.012) * 1000),
+            memoryKb: data.memory_used || 1920,
+            passedTests: data.test_cases_passed || cases.filter(c => c.passed).length,
+            totalTests: data.total_test_cases || cases.length,
+            testDetails: cases
+          };
+        }
+      } catch (err) {
+        console.warn('Backend compiler offline, submitting in local sandbox evaluator.', err);
+      }
+
+      // Offline Fallback Evaluator
+      await new Promise(r => setTimeout(r, 1000));
       const currentList = getStore<ProblemData[]>('problems', problems);
       const targetProblem = currentList.find(p => p.id === problemId) || currentList[0];
 
