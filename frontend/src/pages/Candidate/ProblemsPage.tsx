@@ -1,131 +1,28 @@
-import React, { useState } from 'react';
-import { Search, Layers, Zap } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { BarChart3, CheckCircle2, Clock3, Flame, Search, SlidersHorizontal } from 'lucide-react';
 import { Navbar } from '../../components/common/Navbar';
 import { Footer } from '../../components/common/Footer';
 import { GlassCard } from '../../components/ui/GlassCard';
 import { PageTransition } from '../../components/ui/PageTransition';
 
-const problems = [
-  { title: 'Binary Search Tree Traversal', difficulty: 'Medium', category: 'Data Structures' },
-  { title: 'Concurrent Go Pipeline', difficulty: 'Hard', category: 'Concurrency' },
-  { title: 'Sorting Stability Analysis', difficulty: 'Easy', category: 'Algorithms' }
-];
+type Difficulty = 'Easy' | 'Medium' | 'Hard';
+const catalog = [
+  ['Two Sum', 'Easy', 'Arrays', '92%', 'Not Attempted', 101], ['Valid Parentheses', 'Easy', 'Stack', '90%', 'Solved', 101], ['Reverse Linked List', 'Easy', 'Linked List', '88%', 'Attempted', 101], ['Maximum Depth of Binary Tree', 'Easy', 'Trees', '85%', 'Not Attempted', 101], ['Merge Intervals', 'Medium', 'Arrays', '74%', 'Not Attempted', 101], ['Number of Islands', 'Medium', 'Graphs', '69%', 'Attempted', 101], ['Course Schedule', 'Medium', 'Graphs', '63%', 'Not Attempted', 101], ['Longest Increasing Subsequence', 'Medium', 'Dynamic Programming', '56%', 'Not Attempted', 101], ['LRU Cache', 'Hard', 'Design', '41%', 'Locked', 102], ['Merge K Sorted Lists', 'Hard', 'Linked List', '38%', 'Locked', 102]
+].map(([title, difficulty, category, acceptance, status, problemId], index) => ({ id: index + 1, title: title as string, difficulty: difficulty as Difficulty, category: category as string, acceptance: acceptance as string, status: status as string, problemId: problemId as number }));
 
-const categories = ['All', 'Algorithms', 'Data Structures', 'Concurrency', 'Security'];
+const badge: Record<Difficulty, string> = { Easy: 'bg-emerald-50 text-emerald-700 border-emerald-200', Medium: 'bg-orange-50 text-orange-700 border-orange-200', Hard: 'bg-rose-50 text-rose-700 border-rose-200' };
+const categories = ['All', 'Arrays', 'Strings', 'Linked List', 'Trees', 'Graphs', 'Dynamic Programming', 'Stack', 'Queue', 'SQL', 'Design'];
 
 export const ProblemsPage: React.FC = () => {
-  const [search, setSearch] = useState('');
-  const [selected, setSelected] = useState('All');
+  const [query, setQuery] = useState('');
+  const [difficulty, setDifficulty] = useState('All');
+  const [category, setCategory] = useState('All');
+  const [page, setPage] = useState(1);
+  const filtered = useMemo(() => catalog.filter((problem) => problem.title.toLowerCase().includes(query.toLowerCase()) && (difficulty === 'All' || problem.difficulty === difficulty) && (category === 'All' || problem.category === category)), [query, difficulty, category]);
+  const items = filtered.slice((page - 1) * 6, page * 6);
+  const pages = Math.max(1, Math.ceil(filtered.length / 6));
+  const setFilter = (setter: React.Dispatch<React.SetStateAction<string>>, value: string) => { setter(value); setPage(1); };
 
-  const filteredProblems = problems.filter((problem) => {
-    const matchesSearch = problem.title.toLowerCase().includes(search.toLowerCase());
-    const matchesCategory = selected === 'All' || problem.category === selected;
-    return matchesSearch && matchesCategory;
-  });
-
-  return (
-    <PageTransition>
-      <div className="min-h-screen bg-slate-50 text-slate-900 selection:bg-sky-500/20 font-sans">
-        <Navbar />
-
-        <main className="max-w-7xl mx-auto w-full px-4 py-8 sm:px-6 lg:px-8 space-y-8">
-          <section className="grid gap-6 xl:grid-cols-[1.4fr_0.9fr]">
-            <GlassCard className="p-8 bg-white/90 border-slate-200 shadow-sm">
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Practice problems</p>
-              <h1 className="mt-3 text-3xl font-semibold text-slate-950">Sharpen your coding edge</h1>
-              <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-600">Access a curated problem set for algorithms, data structures, and secure assessment readiness.</p>
-            </GlassCard>
-
-            <GlassCard className="p-6 bg-gradient-to-br from-slate-950 to-slate-800 text-white border-slate-900 shadow-lg">
-              <div className="flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-sky-200">Practice readiness</div>
-              <p className="mt-4 text-2xl font-semibold">Problem categories</p>
-              <p className="mt-3 text-sm leading-6 text-slate-200">Filter by difficulty and topic to stay focused on targeted practice.</p>
-              <div className="mt-6 grid gap-3">
-                <div className="rounded-3xl bg-white/10 p-4">
-                  <p className="text-xs uppercase tracking-[0.24em] text-slate-300">Recommended</p>
-                  <p className="mt-2 text-lg font-semibold">Medium difficulty</p>
-                </div>
-                <div className="rounded-3xl bg-white/10 p-4">
-                  <p className="text-xs uppercase tracking-[0.24em] text-slate-300">Focus</p>
-                  <p className="mt-2 text-lg font-semibold">Secure exam flow</p>
-                </div>
-              </div>
-            </GlassCard>
-          </section>
-
-          <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-            <GlassCard className="p-6 bg-white/90 border-slate-200 shadow-sm">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Search problems</p>
-                  <h2 className="mt-2 text-2xl font-semibold text-slate-950">Find the right challenge</h2>
-                </div>
-                <div className="relative w-full sm:w-auto">
-                  <Search className="pointer-events-none absolute left-4 top-3 h-4 w-4 text-slate-400" />
-                  <input
-                    type="text"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Search by title or keyword"
-                    className="w-full rounded-3xl border border-slate-200 bg-white/90 py-3 pl-11 pr-4 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="mt-6 flex flex-wrap gap-2">
-                {categories.map((category) => (
-                  <button
-                    key={category}
-                    type="button"
-                    onClick={() => setSelected(category)}
-                    className={`rounded-full border px-4 py-2 text-xs font-semibold transition ${selected === category ? 'border-sky-500 bg-sky-500/10 text-slate-900' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-100'}`}
-                  >
-                    {category}
-                  </button>
-                ))}
-              </div>
-
-              <div className="mt-8 space-y-4">
-                {filteredProblems.map((problem) => (
-                  <div key={problem.title} className="rounded-3xl border border-slate-200 p-5 hover:border-slate-300 hover:shadow-sm transition">
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <p className="text-lg font-semibold text-slate-950">{problem.title}</p>
-                        <p className="mt-2 text-sm text-slate-500">{problem.category}</p>
-                      </div>
-                      <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-slate-600">{problem.difficulty}</span>
-                    </div>
-                    <div className="mt-4 flex items-center justify-between text-xs uppercase tracking-[0.24em] text-slate-400">
-                      <span>Practice history</span>
-                      <span>Most recent</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </GlassCard>
-
-            <GlassCard className="p-6 bg-white/90 border-slate-200 shadow-sm">
-              <div className="flex items-center gap-3 text-slate-500 text-xs uppercase tracking-[0.3em]">
-                <Layers className="h-4 w-4" />
-                Problem categories
-              </div>
-              <div className="mt-6 grid gap-3">
-                {['Algorithms', 'Data Structures', 'Concurrency', 'Security'].map((category) => (
-                  <div key={category} className="rounded-3xl border border-slate-200 p-4 text-sm text-slate-700 hover:border-slate-300 transition">
-                    {category}
-                  </div>
-                ))}
-              </div>
-              <div className="mt-6 rounded-3xl bg-slate-100 p-4 text-sm text-slate-600">
-                <div className="flex items-center gap-2 text-slate-500 uppercase tracking-[0.3em] text-xs"><Zap className="h-4 w-4" /> Recent practice</div>
-                <p className="mt-3">Continue where you left off in problems that match your exam readiness.</p>
-              </div>
-            </GlassCard>
-          </section>
-        </main>
-
-        <Footer />
-      </div>
-    </PageTransition>
-  );
+  return <PageTransition><div className="min-h-screen bg-slate-50 font-sans text-slate-900"><Navbar /><main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8"><div className="grid gap-6 xl:grid-cols-[1fr_290px]"><section className="min-w-0 space-y-6"><div className="rounded-3xl border border-slate-200 bg-white/85 p-7 shadow-sm backdrop-blur-xl"><p className="text-xs font-semibold uppercase tracking-[0.28em] text-sky-600">Coding practice</p><h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">Problem library</h1><p className="mt-3 text-sm leading-6 text-slate-600">Practice individual coding challenges in a realistic compiler workspace. This page is separate from official assessments.</p></div><div className="sticky top-3 z-20 rounded-2xl border border-slate-200 bg-white/95 p-3 shadow-sm backdrop-blur-xl"><div className="flex flex-col gap-3 lg:flex-row"><div className="relative flex-1"><Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" /><input value={query} onChange={(event) => { setQuery(event.target.value); setPage(1); }} placeholder="Search problems by title" className="w-full rounded-xl border border-slate-200 py-2.5 pl-10 pr-3 text-sm outline-none focus:border-sky-400" /></div><div className="flex gap-2"><select value={difficulty} onChange={(event) => setFilter(setDifficulty, event.target.value)} className="rounded-xl border border-slate-200 bg-white px-3 text-sm"><option>All</option><option>Easy</option><option>Medium</option><option>Hard</option></select><select value={category} onChange={(event) => setFilter(setCategory, event.target.value)} className="max-w-40 rounded-xl border border-slate-200 bg-white px-3 text-sm">{categories.map((item) => <option key={item}>{item}</option>)}</select></div></div></div><div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm"><div className="flex items-center justify-between border-b border-slate-200 px-5 py-4"><div><h2 className="font-semibold text-slate-950">Practice problems</h2><p className="text-xs text-slate-500">{filtered.length} challenges match your filters</p></div><SlidersHorizontal className="h-4 w-4 text-slate-500" /></div><div className="overflow-x-auto"><table className="min-w-[850px] w-full text-left text-sm"><thead className="bg-slate-50 text-xs uppercase tracking-wider text-slate-500"><tr><th className="p-4 pl-5">#</th><th>Problem</th><th>Difficulty</th><th>Category</th><th>Acceptance</th><th>Status</th><th className="p-4 pr-5">Action</th></tr></thead><tbody>{items.map((problem) => <tr key={problem.id} className="border-t border-slate-100 transition hover:bg-sky-50/50"><td className="p-4 pl-5 font-mono text-slate-400">{problem.id}</td><td className="font-semibold text-slate-900">{problem.title}</td><td><span className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${badge[problem.difficulty]}`}>{problem.difficulty}</span></td><td className="text-slate-600">{problem.category}</td><td className="text-slate-600">{problem.acceptance}</td><td><span className={`text-xs font-semibold ${problem.status === 'Solved' ? 'text-emerald-700' : problem.status === 'Attempted' ? 'text-amber-700' : problem.status === 'Locked' ? 'text-slate-500' : 'text-slate-500'}`}>{problem.status === 'Solved' && <CheckCircle2 className="mr-1 inline h-3.5 w-3.5" />}{problem.status}</span></td><td className="p-4 pr-5"><Link to={`/sandbox?problem=${problem.problemId}`} className="rounded-xl bg-slate-950 px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-slate-800">{problem.status === 'Attempted' ? 'Continue' : problem.status === 'Solved' ? 'Solve Again' : 'Solve'}</Link></td></tr>)}</tbody></table></div>{items.length === 0 && <p className="p-10 text-center text-sm text-slate-500">No matching practice problems.</p>}<div className="flex items-center justify-between border-t border-slate-200 px-5 py-4 text-sm"><span className="text-slate-500">Page {page} of {pages}</span><div className="flex gap-2"><button disabled={page === 1} onClick={() => setPage(page - 1)} className="rounded-lg border border-slate-200 px-3 py-1.5 disabled:opacity-40">Previous</button><button disabled={page === pages} onClick={() => setPage(page + 1)} className="rounded-lg border border-slate-200 px-3 py-1.5 disabled:opacity-40">Next</button></div></div></div></section><aside className="space-y-5"><GlassCard className="border-slate-200 bg-white/90 p-5 shadow-sm"><h2 className="font-semibold">Practice progress</h2><div className="mt-5 grid grid-cols-2 gap-3"><div className="rounded-2xl bg-emerald-50 p-3"><p className="text-2xl font-semibold text-emerald-700">24</p><p className="text-xs text-emerald-800">Problems solved</p></div><div className="rounded-2xl bg-orange-50 p-3"><p className="text-2xl font-semibold text-orange-700"><Flame className="inline h-5 w-5" /> 7</p><p className="text-xs text-orange-800">Day streak</p></div></div><div className="mt-6 space-y-3 text-sm">{[['Easy', '72%', 'bg-emerald-500'], ['Medium', '41%', 'bg-orange-500'], ['Hard', '12%', 'bg-rose-500']].map(([label, value, color]) => <div key={label}><div className="mb-1 flex justify-between text-slate-600"><span>{label}</span><span>{value}</span></div><div className="h-2 overflow-hidden rounded-full bg-slate-100"><div className={`h-full rounded-full ${color}`} style={{ width: value }} /></div></div>)}</div></GlassCard><GlassCard className="border-slate-200 bg-white/90 p-5 shadow-sm"><div className="flex items-center gap-2"><BarChart3 className="h-4 w-4 text-sky-600" /><h2 className="font-semibold">Practice analytics</h2></div><div className="mt-5 flex h-24 items-end gap-2">{[34, 62, 48, 74, 57, 88, 66].map((height, index) => <div key={index} className="flex-1 rounded-t bg-gradient-to-t from-sky-500 to-cyan-300" style={{ height: `${height}%` }} />)}</div><p className="mt-3 text-xs text-slate-500">Coding activity — last 7 days</p><div className="mt-5 border-t border-slate-100 pt-4"><p className="text-sm font-semibold">4h 32m</p><p className="text-xs text-slate-500">Total practice time this week</p></div></GlassCard><GlassCard className="border-slate-200 bg-white/90 p-5 shadow-sm"><div className="flex items-center gap-2"><Clock3 className="h-4 w-4 text-sky-600" /><h2 className="font-semibold">Recent solved</h2></div><ul className="mt-4 space-y-3 text-sm text-slate-600"><li>Valid Parentheses</li><li>Binary Search</li><li>Two Sum</li></ul></GlassCard></aside></div></main><Footer /></div></PageTransition>;
 };

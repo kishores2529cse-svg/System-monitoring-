@@ -1,4 +1,4 @@
-import React, { useRef, useCallback } from 'react';
+import React from 'react';
 import { cn } from '../../utils/cn';
 
 interface GlowingButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -17,27 +17,6 @@ export const GlowingButton: React.FC<GlowingButtonProps> = ({
   disabled,
   ...props
 }) => {
-  const btnRef = useRef<HTMLButtonElement>(null);
-
-  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
-    if (!btnRef.current || disabled) return;
-    const rect = btnRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left - rect.width / 2;
-    const y = e.clientY - rect.top - rect.height / 2;
-
-    /* magnetic pull: subtle translate toward cursor */
-    const pullX = x * 0.15;
-    const pullY = y * 0.15;
-    btnRef.current.style.transform = `translate(${pullX}px, ${pullY}px) scale(1.03)`;
-    btnRef.current.style.setProperty('--btn-glow-x', `${e.clientX - rect.left}px`);
-    btnRef.current.style.setProperty('--btn-glow-y', `${e.clientY - rect.top}px`);
-  }, [disabled]);
-
-  const handleMouseLeave = useCallback(() => {
-    if (!btnRef.current) return;
-    btnRef.current.style.transform = 'translate(0px, 0px) scale(1)';
-  }, []);
-
   const sizeClasses = {
     sm: 'px-3.5 py-1.5 text-xs rounded-xl gap-1.5',
     md: 'px-4.5 py-2 text-sm rounded-xl gap-2',
@@ -45,40 +24,25 @@ export const GlowingButton: React.FC<GlowingButtonProps> = ({
   };
 
   const variantClasses = {
-    cyan: 'bg-gradient-to-r from-emerald-600 via-lime-500 to-amber-500 text-white shadow-[0_10px_30px_rgba(132,204,22,0.22)] hover:shadow-[0_14px_40px_rgba(250,204,21,0.24)] hover:from-emerald-500 hover:to-amber-400 border border-emerald-400/40',
-    purple: 'bg-gradient-to-r from-amber-500 via-lime-500 to-emerald-600 text-white shadow-[0_10px_30px_rgba(250,204,21,0.2)] hover:shadow-[0_14px_40px_rgba(132,204,22,0.24)] hover:from-amber-400 hover:to-emerald-500 border border-amber-400/40',
-    emerald: 'bg-gradient-to-r from-emerald-700 to-lime-600 text-white shadow-[0_10px_30px_rgba(132,204,22,0.2)] hover:shadow-[0_14px_40px_rgba(132,204,22,0.24)] border border-emerald-400/40',
-    rose: 'bg-gradient-to-r from-amber-600 to-yellow-700 text-white shadow-[0_10px_30px_rgba(250,204,21,0.22)] hover:shadow-[0_14px_40px_rgba(250,204,21,0.28)] border border-amber-400/40',
-    secondary: 'bg-[#142212]/80 hover:bg-[#1d3118]/90 text-amber-50 border border-amber-400/20 hover:border-lime-400/40 shadow-sm hover:shadow-md',
-    ghost: 'bg-transparent hover:bg-white/10 text-amber-50 hover:text-white',
+    cyan: 'bg-[#7CFF4D] text-[#090909] border border-[#A3FF1A]/70 shadow-[0_10px_28px_rgba(124,255,77,0.16)] hover:bg-[#A3FF1A] hover:-translate-y-0.5',
+    purple: 'bg-[#FFD84D] text-[#090909] border border-[#FFD84D]/70 shadow-[0_10px_28px_rgba(255,216,77,0.14)] hover:bg-[#ffe477] hover:-translate-y-0.5',
+    emerald: 'bg-[#173013] text-[#dfffd2] border border-[#7CFF4D]/30 hover:bg-[#203c1a] hover:-translate-y-0.5',
+    rose: 'bg-[#3a1e19] text-[#ffd8cf] border border-[#d58d7d]/30 hover:bg-[#4a2720] hover:-translate-y-0.5',
+    secondary: 'bg-white/5 hover:bg-white/10 text-[#fdf8e8] border border-white/10 hover:border-[#FFD84D]/30',
+    ghost: 'bg-transparent hover:bg-white/5 text-[#d7dfd2] hover:text-white',
   };
 
   return (
     <button
-      ref={btnRef}
       disabled={disabled}
       className={cn(
-        'inline-flex items-center justify-center font-medium font-serif-luxury transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 cursor-pointer select-none relative overflow-hidden will-change-transform',
+        'inline-flex items-center justify-center font-medium font-serif-luxury transition-all duration-300 ease-out active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer select-none relative overflow-hidden',
         sizeClasses[size],
         variantClasses[variant],
         className
       )}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      style={{
-        willChange: 'transform',
-        '--btn-glow-x': '50%',
-        '--btn-glow-y': '50%',
-      } as React.CSSProperties}
       {...props}
     >
-      {/* Cursor glow effect */}
-      <span
-        className="absolute inset-0 pointer-events-none rounded-[inherit] opacity-0 transition-opacity duration-300"
-        style={{
-          background: 'radial-gradient(circle 80px at var(--btn-glow-x) var(--btn-glow-y), rgba(255,255,255,0.2), transparent 70%)',
-        }}
-      />
       <span className="relative z-10 flex items-center gap-[inherit]">
         {icon && <span className="shrink-0">{icon}</span>}
         {children}

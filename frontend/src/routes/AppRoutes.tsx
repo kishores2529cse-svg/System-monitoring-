@@ -14,6 +14,7 @@ import { UserProfilePage } from '../pages/Profile/UserProfilePage';
 import { AssessmentsPage } from '../pages/Candidate/AssessmentsPage';
 import { ProblemsPage } from '../pages/Candidate/ProblemsPage';
 import { ResultsPage } from '../pages/Candidate/ResultsPage';
+import { AssessmentReadinessPage } from '../pages/Candidate/AssessmentReadinessPage';
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -29,6 +30,7 @@ export const AppRoutes: React.FC = () => {
       <Route path="/assessments" element={<AssessmentsPage />} />
       <Route path="/problems" element={<ProblemsPage />} />
       <Route path="/results" element={<ResultsPage />} />
+      <Route path="/assessment/:id/readiness" element={<AssessmentReadinessPage />} />
       <Route path="/exam/:id" element={<ExamPage />} />
       <Route path="/sandbox" element={<SandboxPage />} />
 

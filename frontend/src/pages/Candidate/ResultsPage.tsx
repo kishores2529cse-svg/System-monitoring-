@@ -1,91 +1,20 @@
 import React from 'react';
-import { Clock3, BarChart3, CheckCircle2 } from 'lucide-react';
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Award, BarChart3, CheckCircle2, Clock3, FileText, Trophy } from 'lucide-react';
 import { Navbar } from '../../components/common/Navbar';
 import { Footer } from '../../components/common/Footer';
-import { GlassCard } from '../../components/ui/GlassCard';
 import { PageTransition } from '../../components/ui/PageTransition';
 
 const results = [
-  { title: 'AI Coding Challenge', score: '94%', time: '32m', status: 'Passed' },
-  { title: 'Algorithms Warmup', score: '92%', time: '28m', status: 'Passed' },
-  { title: 'System Design Sprint', score: '87%', time: '40m', status: 'Passed' }
+  { name: 'DSA Round 1', date: '22 Jul 2026', score: 94, rank: 12, time: '78 min', status: 'Passed', feedback: 'View feedback' },
+  { name: 'Java Programming Assessment', date: '18 Jul 2026', score: 89, rank: 24, time: '54 min', status: 'Passed', feedback: 'View feedback' },
+  { name: 'SQL Fundamentals Assessment', date: '12 Jul 2026', score: 82, rank: 38, time: '41 min', status: 'Passed', feedback: 'View feedback' },
+  { name: 'System Design Round', date: '04 Jul 2026', score: 64, rank: 76, time: '90 min', status: 'Failed', feedback: 'View feedback' }
 ];
+const skillData = [{ skill: 'Java', score: 86 }, { skill: 'DSA', score: 92 }, { skill: 'SQL', score: 82 }, { skill: 'Frontend', score: 76 }, { skill: 'Problem Solving', score: 88 }];
+const trendData = [{ month: 'Mar', score: 69 }, { month: 'Apr', score: 74 }, { month: 'May', score: 78 }, { month: 'Jun', score: 81 }, { month: 'Jul', score: 89 }];
+const difficultyData = [{ name: 'Easy', score: 92 }, { name: 'Medium', score: 84 }, { name: 'Hard', score: 68 }];
 
-export const ResultsPage: React.FC = () => {
-  return (
-    <PageTransition>
-      <div className="min-h-screen bg-slate-50 text-slate-900 selection:bg-sky-500/20 font-sans">
-        <Navbar />
+const panel = 'rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_12px_36px_-24px_rgba(15,23,42,0.28)]';
 
-        <main className="max-w-7xl mx-auto w-full px-4 py-8 sm:px-6 lg:px-8 space-y-8">
-          <div className="grid gap-6 xl:grid-cols-[1.4fr_0.9fr]">
-            <GlassCard className="p-8 bg-white/90 border-slate-200 shadow-sm">
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Results</p>
-              <h1 className="mt-3 text-3xl font-semibold text-slate-950">Performance analytics</h1>
-              <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-600">Review your assessment history, score trends, and exam completion details in one secure candidate dashboard.</p>
-            </GlassCard>
-
-            <GlassCard className="p-6 bg-gradient-to-br from-slate-950 to-slate-800 text-white border-slate-900 shadow-lg">
-              <div className="flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-sky-200">Score analysis</div>
-              <p className="mt-4 text-2xl font-semibold">Consistent exam success</p>
-              <p className="mt-3 text-sm leading-6 text-slate-200">Your recent proctored assessments show strong performance and secure completion metrics.</p>
-              <div className="mt-6 grid gap-3">
-                <div className="rounded-3xl bg-white/10 p-4">
-                  <p className="text-xs uppercase tracking-[0.24em] text-slate-300">Top score</p>
-                  <p className="mt-2 text-3xl font-semibold">94%</p>
-                </div>
-                <div className="rounded-3xl bg-white/10 p-4">
-                  <p className="text-xs uppercase tracking-[0.24em] text-slate-300">Average time</p>
-                  <p className="mt-2 text-3xl font-semibold">33m</p>
-                </div>
-              </div>
-            </GlassCard>
-          </div>
-
-          <section className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
-            <GlassCard className="p-6 bg-white/90 border-slate-200 shadow-sm">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Assessment history</p>
-                  <h2 className="mt-2 text-2xl font-semibold text-slate-950">Recent submissions</h2>
-                </div>
-                <BarChart3 className="h-5 w-5 text-slate-500" />
-              </div>
-
-              <div className="mt-6 space-y-4">
-                {results.map((item) => (
-                  <div key={item.title} className="rounded-3xl border border-slate-200 p-5 hover:border-slate-300 transition">
-                    <div className="flex items-center justify-between gap-4">
-                      <div>
-                        <p className="text-lg font-semibold text-slate-950">{item.title}</p>
-                        <p className="mt-1 text-sm text-slate-500">{item.status}</p>
-                      </div>
-                      <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-slate-600">{item.score}</span>
-                    </div>
-                    <div className="mt-4 flex items-center gap-3 text-xs uppercase tracking-[0.24em] text-slate-400">
-                      <span><Clock3 className="mr-1 inline h-3.5 w-3.5" /> {item.time}</span>
-                      <span>Detailed metrics available</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </GlassCard>
-
-            <GlassCard className="p-6 bg-white/90 border-slate-200 shadow-sm">
-              <div className="flex items-center gap-3 text-slate-500 text-xs uppercase tracking-[0.3em]">
-                <CheckCircle2 className="h-4 w-4" /> Performance summary
-              </div>
-              <div className="mt-6 space-y-4 text-sm text-slate-600">
-                <p className="rounded-3xl border border-slate-200 bg-slate-50 p-4">Your secure scores demonstrate strong exam hygiene and sustained proficiency across assessments.</p>
-                <p className="rounded-3xl border border-slate-200 bg-slate-50 p-4">View time taken, submission patterns, and risk adjustments from live proctoring analytics.</p>
-                <p className="rounded-3xl border border-slate-200 bg-slate-50 p-4">Secure exam mode ensures all results are locked and audit-ready.</p>
-              </div>
-            </GlassCard>
-          </section>
-        </main>
-
-        <Footer />
-      </div>
-    </PageTransition>
-  );
-};
+export const ResultsPage: React.FC = () => <PageTransition><div className="min-h-screen bg-[#f7f8f6] font-sans text-slate-900"><Navbar /><main className="mx-auto w-full max-w-7xl space-y-7 px-4 py-8 sm:px-6 lg:px-8"><section className="flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white px-7 py-7 shadow-sm sm:flex-row sm:items-end sm:justify-between"><div><p className="text-xs font-semibold uppercase tracking-[0.25em] text-emerald-700">Assessment performance</p><h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">Results & analytics</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">A complete view of your completed assessments, score trends, and skills progression.</p></div><div className="rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800"><CheckCircle2 className="mr-2 inline h-4 w-4" />3 of 4 assessments passed</div></section><section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{[['Average Score', '82%', BarChart3, 'text-sky-700 bg-sky-50'], ['Highest Score', '94%', Trophy, 'text-amber-700 bg-amber-50'], ['Assessments Completed', '4', FileText, 'text-emerald-700 bg-emerald-50'], ['Certificates Earned', '2', Award, 'text-violet-700 bg-violet-50']].map(([label, value, Icon, tone]) => { const CardIcon = Icon as React.ElementType; return <div key={label as string} className={panel}><div className="flex items-center justify-between"><div><p className="text-xs font-medium text-slate-500">{label as string}</p><p className="mt-3 text-3xl font-semibold tracking-tight">{value as string}</p></div><span className={`rounded-2xl p-3 ${tone as string}`}><CardIcon className="h-5 w-5" /></span></div></div>; })}</section><section className={panel}><div className="flex items-center justify-between"><div><h2 className="text-lg font-semibold">Assessment results</h2><p className="mt-1 text-sm text-slate-500">Formal assessment records and score reports.</p></div><button className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50">Download report</button></div><div className="mt-5 overflow-x-auto"><table className="min-w-[850px] w-full text-left text-sm"><thead className="bg-slate-50 text-xs uppercase tracking-wider text-slate-500"><tr><th className="p-4">Assessment Name</th><th>Date</th><th>Score</th><th>Rank</th><th>Time Taken</th><th>Status</th><th className="p-4">Feedback</th></tr></thead><tbody>{results.map((result) => <tr key={result.name} className="border-t border-slate-100 transition hover:bg-slate-50"><td className="p-4 font-semibold text-slate-900">{result.name}</td><td className="text-slate-600">{result.date}</td><td><span className="font-semibold text-slate-900">{result.score}%</span></td><td>#{result.rank}</td><td><Clock3 className="mr-1 inline h-3.5 w-3.5 text-slate-400" />{result.time}</td><td><span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${result.status === 'Passed' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>{result.status}</span></td><td className="p-4"><button className="text-xs font-semibold text-sky-700 hover:text-sky-900">{result.feedback}</button></td></tr>)}</tbody></table></div></section><section className="grid gap-5 xl:grid-cols-2"><div className={panel}><h2 className="text-lg font-semibold">Assessment score trend</h2><p className="mt-1 text-sm text-slate-500">Your average score over recent assessment cycles.</p><div className="mt-5 h-64"><ResponsiveContainer width="100%" height="100%"><AreaChart data={trendData}><defs><linearGradient id="scoreFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#52935a" stopOpacity={0.28}/><stop offset="100%" stopColor="#52935a" stopOpacity={0}/></linearGradient></defs><CartesianGrid stroke="#e2e8f0" strokeDasharray="4 4" /><XAxis dataKey="month" tick={{ fill: '#64748b', fontSize: 12 }} /><YAxis domain={[50, 100]} tick={{ fill: '#64748b', fontSize: 12 }} /><Tooltip /><Area type="monotone" dataKey="score" stroke="#3f7d45" strokeWidth={3} fill="url(#scoreFill)" /></AreaChart></ResponsiveContainer></div></div><div className={panel}><h2 className="text-lg font-semibold">Skill breakdown</h2><p className="mt-1 text-sm text-slate-500">Current competency inferred from completed assessments.</p><div className="mt-5 space-y-4">{skillData.map((skill) => <div key={skill.skill}><div className="mb-1.5 flex justify-between text-sm"><span className="font-medium text-slate-700">{skill.skill}</span><span className="text-slate-500">{skill.score}%</span></div><div className="h-2.5 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-[#4f8a54] transition-all duration-500" style={{ width: `${skill.score}%` }} /></div></div>)}</div></div><div className={panel}><h2 className="text-lg font-semibold">Difficulty-wise performance</h2><p className="mt-1 text-sm text-slate-500">Average performance by challenge complexity.</p><div className="mt-5 h-60"><ResponsiveContainer width="100%" height="100%"><BarChart data={difficultyData}><CartesianGrid stroke="#e2e8f0" strokeDasharray="4 4" /><XAxis dataKey="name" tick={{ fill: '#64748b', fontSize: 12 }} /><YAxis domain={[0, 100]} tick={{ fill: '#64748b', fontSize: 12 }} /><Tooltip /><Bar dataKey="score" radius={[7, 7, 0, 0]}>{difficultyData.map((item) => <Cell key={item.name} fill={item.name === 'Easy' ? '#4f8a54' : item.name === 'Medium' ? '#c48a2c' : '#a9675c'} />)}</Bar></BarChart></ResponsiveContainer></div></div><div className={panel}><h2 className="text-lg font-semibold">Overall success rate</h2><p className="mt-1 text-sm text-slate-500">Passed assessments across all completed attempts.</p><div className="mt-3 h-52"><ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={[{ name: 'Passed', value: 75 }, { name: 'Other', value: 25 }]} dataKey="value" innerRadius={62} outerRadius={82} startAngle={90} endAngle={-270}>{[<Cell key="pass" fill="#4f8a54" />, <Cell key="other" fill="#e8ece7" />]}</Pie><Tooltip /></PieChart></ResponsiveContainer></div><p className="-mt-28 text-center text-3xl font-semibold">75%</p><p className="mt-1 text-center text-sm text-slate-500">3 of 4 passed</p></div></section><section><h2 className="mb-4 text-lg font-semibold">Recent feedback</h2><div className="grid gap-4 md:grid-cols-3">{[['DSA Round 1', 'Excellent use of time complexity reasoning. Review edge cases for duplicate inputs.', 'Strong performance'], ['Java Programming', 'Clean object-oriented design. Strengthen exception handling in file processing.', 'Good progress'], ['SQL Fundamentals', 'Accurate joins and aggregation. Practice window functions for advanced queries.', 'Next focus']].map(([title, note, label]) => <article key={title} className={panel}><span className="text-xs font-semibold uppercase tracking-wider text-emerald-700">{label}</span><h3 className="mt-2 font-semibold text-slate-900">{title}</h3><p className="mt-3 text-sm leading-6 text-slate-500">{note}</p><button className="mt-4 text-sm font-semibold text-sky-700">Read full feedback →</button></article>)}</div></section></main><Footer /></div></PageTransition>;

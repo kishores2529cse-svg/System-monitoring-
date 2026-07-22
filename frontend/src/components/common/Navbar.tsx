@@ -17,10 +17,10 @@ const candidateNavItems = [
   { label: 'Profile', to: '/profile', icon: UserCircle }
 ];
 
-export const Navbar: React.FC<NavbarProps> = ({ theme = 'light' }) => {
+export const Navbar: React.FC<NavbarProps> = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const { role } = useAuth();
-  const isDark = theme === 'dark';
+  const isDark = true;
   const isAdmin = role === 'admin';
   const navItems = isAdmin
     ? [

@@ -1,8 +1,7 @@
 import React from 'react';
 import Editor from '@monaco-editor/react';
-import { Play, CheckCircle, Check, RotateCcw, Copy, Sparkles } from 'lucide-react';
+import { Check, RotateCcw, Copy, Sparkles } from 'lucide-react';
 import { useExam } from '../../contexts/ExamContext';
-import { GlowingButton } from '../ui/GlowingButton';
 import type { SupportedLanguage } from '../../types';
 
 export const MonacoWrapper: React.FC = () => {
@@ -11,10 +10,6 @@ export const MonacoWrapper: React.FC = () => {
     setSelectedLanguage,
     codeMap,
     setCodeForLang,
-    runCode,
-    submitCode,
-    isRunning,
-    isSubmitting,
     autoSaveStatus
   } = useExam();
 
@@ -88,24 +83,6 @@ export const MonacoWrapper: React.FC = () => {
           >
             <RotateCcw className="h-3.5 w-3.5" />
           </button>
-          <GlowingButton
-            variant="secondary"
-            size="sm"
-            onClick={runCode}
-            disabled={isRunning || isSubmitting}
-            icon={<Play className="w-3.5 h-3.5 text-sky-600" />}
-          >
-            {isRunning ? 'Compiling...' : 'Run Code'}
-          </GlowingButton>
-          <GlowingButton
-            variant="cyan"
-            size="sm"
-            onClick={submitCode}
-            disabled={isRunning || isSubmitting}
-            icon={<CheckCircle className="w-3.5 h-3.5" />}
-          >
-            {isSubmitting ? 'Submitting...' : 'Submit Code'}
-          </GlowingButton>
         </div>
       </div>
 
