@@ -90,7 +90,7 @@ export interface LeaderboardEntry {
 }
 
 export interface CompilerResult {
-  status: 'Accepted' | 'Wrong Answer' | 'Time Limit Exceeded' | 'Memory Limit Exceeded' | 'Compilation Error' | 'Runtime Error';
+  status: 'Accepted' | 'Wrong Answer' | 'Time Limit Exceeded' | 'Memory Limit Exceeded' | 'Compilation Error' | 'Runtime Error' | 'Pending';
   stdout: string;
   stderr: string;
   executionTimeMs: number;

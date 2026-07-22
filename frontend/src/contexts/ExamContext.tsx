@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import type { ProblemData, CompilerResult, SupportedLanguage } from '../types';
 import { api } from '../api/client';
 import { INITIAL_PROBLEMS } from '../services/mockData';
@@ -103,11 +103,18 @@ export const ExamProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const setCodeForLang = (code: string) => {
-    setAutoSaveStatus('Saving...');
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const setCodeForLang = useCallback((code: string) => {
     setCodeMap(prev => ({ ...prev, [selectedLanguage]: code }));
-    setTimeout(() => setAutoSaveStatus('Saved'), 800);
-  };
+
+    // Debounce the save status update to prevent wobble on every keystroke
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => {
+      setAutoSaveStatus('Saving...');
+      setTimeout(() => setAutoSaveStatus('Saved'), 400);
+    }, 600);
+  }, [selectedLanguage]);
 
   const runCode = async () => {
     setIsRunning(true);

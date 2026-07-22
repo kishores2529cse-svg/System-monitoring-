@@ -54,8 +54,15 @@ func Load() *Config {
 		AdminJWTExpiry:   getDurationEnv("ADMIN_JWT_EXPIRY_HOURS", 12),
 		CompilerTimeout:  getDurationEnv("COMPILER_TIMEOUT_SECONDS", 5),
 		MaxCodeSize:      getIntEnv("MAX_CODE_SIZE_KB", 100) * 1024,
-		TempDir:          getEnv("TEMP_DIR", os.TempDir()),
+		TempDir:          validateTempDir(getEnv("TEMP_DIR", os.TempDir())),
 	}
+}
+
+func validateTempDir(dir string) string {
+	if _, err := os.Stat(dir); err != nil {
+		return os.TempDir()
+	}
+	return dir
 }
 
 // loadDotEnv parses a simple .env file into OS environment variables.

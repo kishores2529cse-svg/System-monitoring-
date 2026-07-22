@@ -273,14 +273,14 @@ type Submission struct {
 // RunRequest is the DTO for running code against sample test cases.
 type RunRequest struct {
 	Code      string `json:"code" binding:"required"`
-	Language  string `json:"language" binding:"required,oneof=go"`
+	Language  string `json:"language" binding:"required"`
 	ProblemID uint   `json:"problem_id" binding:"required"`
 }
 
 // SubmitRequest is the DTO for submitting code for evaluation.
 type SubmitRequest struct {
 	Code     string `json:"code" binding:"required"`
-	Language string `json:"language" binding:"required,oneof=go"`
+	Language string `json:"language" binding:"required"`
 }
 
 // CompilerResponse is the DTO returned by the compiler.

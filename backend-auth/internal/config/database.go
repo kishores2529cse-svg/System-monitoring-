@@ -8,6 +8,7 @@ import (
 
 	"backend-auth/internal/models"
 
+	"github.com/glebarez/sqlite"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -40,7 +41,14 @@ func InitDB(cfg *Config) *gorm.DB {
 			Logger: logger.Default.LogMode(logger.Info),
 		})
 		if err != nil {
-			log.Fatalf("Failed to connect to database: %v", err)
+			log.Printf("Warning: Failed to connect to PostgreSQL database (%v).", err)
+			log.Println("Falling back to local SQLite database: sqlite.db")
+			db, err = gorm.Open(sqlite.Open("sqlite.db"), &gorm.Config{
+				Logger: logger.Default.LogMode(logger.Info),
+			})
+			if err != nil {
+				log.Fatalf("Failed to initialize local SQLite database: %v", err)
+			}
 		}
 	}
 
@@ -104,6 +112,7 @@ func SeedInitialData(db *gorm.DB) {
 		hashedUserPassword, err := bcrypt.GenerateFromPassword([]byte("user123"), bcrypt.DefaultCost)
 		if err == nil {
 			user := models.User{
+				Username: "user_codeshield",
 				Email:    "user@codeshield.ai",
 				Password: string(hashedUserPassword),
 				Name:     "Default Candidate",
@@ -111,6 +120,24 @@ func SeedInitialData(db *gorm.DB) {
 			}
 			if err := db.Create(&user).Error; err == nil {
 				log.Println("Seeded initial Candidate User account: user@codeshield.ai")
+			}
+		}
+	}
+
+	// Seed User vijay@shakthi.edu
+	var vijayUser models.User
+	if err := db.Where("email = ?", "vijay@shakthi.edu").First(&vijayUser).Error; err != nil {
+		hashedUserPassword, err := bcrypt.GenerateFromPassword([]byte("password123"), bcrypt.DefaultCost)
+		if err == nil {
+			user := models.User{
+				Username: "vijay_shakthi",
+				Email:    "vijay@shakthi.edu",
+				Password: string(hashedUserPassword),
+				Name:     "Vijay Rathinam",
+				College:  "Sri Shakthi Institute of Engineering and Technology",
+			}
+			if err := db.Create(&user).Error; err == nil {
+				log.Println("Seeded User account: vijay@shakthi.edu")
 			}
 		}
 	}

@@ -16,6 +16,21 @@ export const CandidateLogin: React.FC = () => {
   const { loginCandidate } = useAuth();
   const navigate = useNavigate();
 
+  const handleMockLogin = async (mockEmail: string, mockPass: string) => {
+    setEmail(mockEmail);
+    setPassword(mockPass);
+    setLoading(true);
+    setErrorMessage('');
+    try {
+      await loginCandidate(mockEmail, mockPass);
+      navigate('/dashboard');
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Invalid email or password. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -107,6 +122,28 @@ export const CandidateLogin: React.FC = () => {
               <GlowingButton variant="cyan" size="lg" className="w-full" disabled={loading} icon={<LogIn className="w-4 h-4" />}>
                 {loading ? 'Authenticating...' : 'Sign In to Candidate Portal'}
               </GlowingButton>
+
+              <div className="pt-2 text-center">
+                <span className="text-[10px] uppercase tracking-wider text-slate-500 block mb-2 font-mono">⚡ Quick Demo Login</span>
+                <div className="flex gap-2 justify-center">
+                  <button
+                    type="button"
+                    onClick={() => handleMockLogin('vijay@shakthi.edu', 'password123')}
+                    disabled={loading}
+                    className="px-3 py-1.5 rounded-xl border border-sky-500/20 bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 text-xs font-semibold font-mono transition-all"
+                  >
+                    Vijay (vijay@shakthi.edu)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleMockLogin('user@codeshield.ai', 'user123')}
+                    disabled={loading}
+                    className="px-3 py-1.5 rounded-xl border border-sky-500/20 bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 text-xs font-semibold font-mono transition-all"
+                  >
+                    Demo (user@codeshield.ai)
+                  </button>
+                </div>
+              </div>
             </form>
 
             <div className="space-y-3 pt-2 font-sans">

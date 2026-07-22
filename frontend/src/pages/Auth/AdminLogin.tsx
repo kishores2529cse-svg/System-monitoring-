@@ -17,6 +17,23 @@ export const AdminLogin: React.FC = () => {
   const { loginAdmin } = useAuth();
   const navigate = useNavigate();
 
+  const handleMockLogin = async (mockEmail: string, mockPass: string) => {
+    setAdminId(mockEmail);
+    setPassword(mockPass);
+    setCode2FA('123456');
+    setLoading(true);
+    setErrorMessage('');
+    try {
+      await loginAdmin(mockEmail, mockPass, '123456');
+      navigate('/admin/dashboard');
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Invalid admin credentials or passphrase.');
+      setShow2FA(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleInitialSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
@@ -105,6 +122,28 @@ export const AdminLogin: React.FC = () => {
             >
               Verify Credentials & Proceed to 2FA
             </GlowingButton>
+
+            <div className="pt-2 text-center">
+              <span className="text-[10px] uppercase tracking-wider text-slate-500 block mb-2 font-mono">⚡ Quick Demo Login</span>
+              <div className="flex gap-2 justify-center">
+                <button
+                  type="button"
+                  onClick={() => handleMockLogin('abc@gmail.com', 'xyz')}
+                  disabled={loading}
+                  className="px-3 py-1.5 rounded-xl border border-rose-500/20 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold font-mono transition-all animate-pulse"
+                >
+                  Admin ABC (abc@gmail.com)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleMockLogin('admin@codeshield.ai', 'admin123')}
+                  disabled={loading}
+                  className="px-3 py-1.5 rounded-xl border border-rose-500/20 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold font-mono transition-all"
+                >
+                  Chief Admin (admin@codeshield.ai)
+                </button>
+              </div>
+            </div>
           </form>
         ) : (
           <form onSubmit={handleFinalSubmit} className="space-y-4 font-sans">

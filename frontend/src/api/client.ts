@@ -51,6 +51,86 @@ let registeredUsers = getStore<Array<{ email: string; password?: string; name: s
   { email: 'user@codeshield.ai', password: 'user123', name: 'Default Candidate', college: 'Technology Institute' }
 ]);
 
+const validateCodeSyntax = (code: string, language: string): { isValid: boolean; errorMsg: string } => {
+  const trimmed = (code || '').trim();
+  const langLower = (language || 'go').toLowerCase();
+
+  if (!trimmed) {
+    return { isValid: false, errorMsg: 'Line 1: SyntaxError: Empty solution provided.' };
+  }
+
+  if (langLower === 'go') {
+    if (!trimmed.includes('package') && !trimmed.includes('func')) {
+      return {
+        isValid: false,
+        errorMsg: `main.go:1:1: syntax error: unexpected name "${trimmed.slice(0, 30)}", expected package or func declaration`
+      };
+    }
+  } else if (langLower === 'java') {
+    if (!trimmed.includes('class') && !trimmed.includes('public') && !trimmed.includes('void')) {
+      return {
+        isValid: false,
+        errorMsg: `Main.java:1: error: '<identifier>' expected\n${trimmed.slice(0, 40)}\n^`
+      };
+    }
+  } else if (langLower === 'python' || langLower === 'py') {
+    if (!trimmed.includes('def') && !trimmed.includes('return') && !trimmed.includes('print') && !trimmed.includes('=')) {
+      return {
+        isValid: false,
+        errorMsg: `File "solution.py", line 1\n    ${trimmed.slice(0, 40)}\n    ^\nSyntaxError: invalid syntax`
+      };
+    }
+  } else if (langLower === 'javascript' || langLower === 'js' || langLower === 'typescript' || langLower === 'ts') {
+    if (!trimmed.includes('function') && !trimmed.includes('const') && !trimmed.includes('let') && !trimmed.includes('var') && !trimmed.includes('=>') && !trimmed.includes('return')) {
+      return {
+        isValid: false,
+        errorMsg: `Uncaught SyntaxError: Unexpected token '${trimmed.slice(0, 30)}'`
+      };
+    }
+  }
+
+  return { isValid: true, errorMsg: '' };
+};
+
+// Extract what the code would actually print by parsing print/println/console.log statements.
+// This allows the offline fallback to compare actual output vs expected output instead of
+// blindly marking everything as Accepted.
+const extractPrintOutput = (code: string, language: string): string | null => {
+  const langLower = (language || 'go').toLowerCase();
+  const outputs: string[] = [];
+
+  // Match common print patterns and extract the string arguments
+  const patterns: RegExp[] = [];
+  if (langLower === 'go') {
+    patterns.push(/fmt\.Print(?:ln|f)?\(\s*"([^"]*)"/g);
+  } else if (langLower === 'java') {
+    patterns.push(/System\.out\.print(?:ln)?\(\s*"([^"]*)"/g);
+  } else if (langLower === 'python' || langLower === 'py') {
+    patterns.push(/print\(\s*"([^"]*)"/g);
+    patterns.push(/print\(\s*'([^']*)'/g);
+  } else if (['javascript', 'js', 'typescript', 'ts'].includes(langLower)) {
+    patterns.push(/console\.log\(\s*"([^"]*)"/g);
+    patterns.push(/console\.log\(\s*'([^']*)'/g);
+    patterns.push(/console\.log\(\s*`([^`]*)`/g);
+  } else if (langLower === 'c++' || langLower === 'cpp' || langLower === 'c') {
+    patterns.push(/cout\s*<<\s*"([^"]*)"/g);
+    patterns.push(/printf\(\s*"([^"]*)"/g);
+  } else if (langLower === 'rust') {
+    patterns.push(/println!\(\s*"([^"]*)"/g);
+  } else if (langLower === 'c#' || langLower === 'csharp') {
+    patterns.push(/Console\.Write(?:Line)?\(\s*"([^"]*)"/g);
+  }
+
+  for (const pattern of patterns) {
+    let match;
+    while ((match = pattern.exec(code)) !== null) {
+      outputs.push(match[1]);
+    }
+  }
+
+  return outputs.length > 0 ? outputs.join('\n').trim() : null;
+};
+
 export const api = {
   // Authentication
   auth: {
@@ -274,6 +354,30 @@ export const api = {
   // Compiler Execution & Validation API (Backend Integration)
   compiler: {
     run: async (code: string, language: string, input?: string, problemId?: number): Promise<CompilerResult> => {
+      // Step 1: Pre-validate syntax for errors e.g. "vidttfjnrij"
+      const syntaxCheck = validateCodeSyntax(code, language);
+      if (!syntaxCheck.isValid) {
+        return {
+          status: 'Compilation Error',
+          stdout: '',
+          stderr: syntaxCheck.errorMsg,
+          executionTimeMs: 12,
+          memoryKb: 0,
+          passedTests: 0,
+          totalTests: 1,
+          testDetails: [
+            {
+              testId: 1,
+              passed: false,
+              input: input || 'Sample Input',
+              expectedOutput: 'Valid Output',
+              actualOutput: syntaxCheck.errorMsg,
+              timeMs: 12
+            }
+          ]
+        };
+      }
+
       const token = localStorage.getItem('codeshield_token') || localStorage.getItem('codeshield_admin_token');
       
       try {
@@ -294,62 +398,162 @@ export const api = {
         if (response.ok && resData.success && resData.data) {
           const data = resData.data;
           const isError = !!(data.compilation_error || data.runtime_error);
+          
+          const currentList = getStore<ProblemData[]>('problems', problems);
+          const targetProblem = currentList.find(p => p.id === problemId) || currentList[0];
+          const testCaseSources = targetProblem?.testCases && targetProblem.testCases.length > 0
+            ? targetProblem.testCases
+            : [
+              { input: input || 'nums = [2,7,11,15], target = 9', expectedOutput: '[0,1]' }
+            ];
+
+          if (isError) {
+            return {
+              status: data.compilation_error ? 'Compilation Error' : 'Runtime Error',
+              stdout: data.output || data.compilation_error || data.runtime_error || 'Execution completed with no output.',
+              stderr: data.compilation_error || data.runtime_error || '',
+              executionTimeMs: Math.round((data.execution_time || 0.015) * 1000),
+              memoryKb: 2048,
+              passedTests: 0,
+              totalTests: testCaseSources.length,
+              testDetails: testCaseSources.map((tc, idx) => ({
+                testId: idx + 1,
+                passed: false,
+                input: tc.input,
+                expectedOutput: tc.expectedOutput,
+                actualOutput: data.output || data.compilation_error || data.runtime_error || 'Execution Failed',
+                timeMs: Math.round((data.execution_time || 0.015) * 1000)
+              }))
+            };
+          }
+
+          const actualOutput = (data.output || '').trim();
+          const customCases = testCaseSources.map((tc, idx) => {
+            const passed = actualOutput === tc.expectedOutput.trim();
+            return {
+              testId: idx + 1,
+              passed,
+              input: tc.input,
+              expectedOutput: tc.expectedOutput,
+              actualOutput: actualOutput || 'No output produced',
+              timeMs: Math.round((data.execution_time || 0.015) * 1000)
+            };
+          });
+
+          const passedCount = customCases.filter(c => c.passed).length;
+          const allPassed = passedCount === customCases.length;
+          const verdict = allPassed ? 'Accepted' : 'Wrong Answer';
+
           return {
-            status: isError ? (data.compilation_error ? 'Compilation Error' : 'Runtime Error') : 'Accepted',
-            stdout: data.output || data.compilation_error || data.runtime_error || 'Execution completed with no output.',
-            stderr: data.compilation_error || data.runtime_error || '',
+            status: verdict,
+            stdout: data.output || 'Execution completed with no output.',
+            stderr: allPassed ? '' : `Wrong Answer: Expected "${customCases.find(c => !c.passed)?.expectedOutput}" but got "${actualOutput}"`,
             executionTimeMs: Math.round((data.execution_time || 0.015) * 1000),
             memoryKb: 2048,
-            passedTests: isError ? 0 : 1,
-            totalTests: 1,
-            testDetails: [
-              {
-                testId: 1,
-                passed: !isError,
-                input: input || 'Sample Input Vector',
-                expectedOutput: 'Valid Output',
-                actualOutput: data.output || (isError ? 'Execution Failed' : 'Valid Output'),
-                timeMs: Math.round((data.execution_time || 0.015) * 1000)
-              }
-            ]
+            passedTests: passedCount,
+            totalTests: customCases.length,
+            testDetails: customCases
           };
         }
       } catch (err) {
-        console.warn('Backend compiler offline, running local sandbox evaluator.', err);
+        console.warn('Backend compiler offline, using local evaluator.', err);
       }
 
-      // Offline Fallback Simulator
+      // Offline Fallback — try to extract static output, otherwise require backend
       await new Promise(r => setTimeout(r, 600));
       const currentList = getStore<ProblemData[]>('problems', problems);
       const targetProblem = currentList.find(p => p.id === problemId) || currentList[0];
+      const simulatedOutput = extractPrintOutput(code, language);
+      const hasDynamicOutput = !simulatedOutput && code.length > 20; // code has logic but no static strings
 
-      const customCases = targetProblem?.testCases && targetProblem.testCases.length > 0
-        ? targetProblem.testCases.map((tc, idx) => ({
-          testId: idx + 1,
-          passed: true,
-          input: tc.input,
-          expectedOutput: tc.expectedOutput,
-          actualOutput: tc.expectedOutput,
-          timeMs: 4 + idx * 2
-        }))
+      const testCaseSources = targetProblem?.testCases && targetProblem.testCases.length > 0
+        ? targetProblem.testCases
         : [
-          { testId: 1, passed: true, input: input || 'nums = [2,7,11,15], target = 9', expectedOutput: '[0,1]', actualOutput: '[0,1]', timeMs: 4 },
-          { testId: 2, passed: true, input: 'nums = [3,2,4], target = 6', expectedOutput: '[1,2]', actualOutput: '[1,2]', timeMs: 5 }
+          { input: input || 'nums = [2,7,11,15], target = 9', expectedOutput: '[0,1]' },
+          { input: 'nums = [3,2,4], target = 6', expectedOutput: '[1,2]' }
         ];
 
+      // If the code uses dynamic expressions (function calls, variables), we cannot
+      // determine the output without actually executing it — require the backend compiler.
+      if (hasDynamicOutput) {
+        return {
+          status: 'Pending',
+          stdout: `⚠ Backend compiler is offline. Your code contains dynamic expressions that cannot be evaluated in the browser.\n\nTo run and validate your code, start the backend server:\n  cd backend-auth && go run main.go\n\nYour code has been saved and will be evaluated when you click Run/Submit with the backend running.`,
+          stderr: 'Backend compiler required for execution',
+          executionTimeMs: 0,
+          memoryKb: 0,
+          passedTests: 0,
+          totalTests: testCaseSources.length,
+          testDetails: testCaseSources.map((tc, idx) => ({
+            testId: idx + 1,
+            passed: false,
+            input: tc.input,
+            expectedOutput: tc.expectedOutput,
+            actualOutput: 'Pending — backend compiler required',
+            timeMs: 0
+          }))
+        };
+      }
+
+      // Static output detected (e.g. fmt.Println("hello")) — compare against expected
+      const customCases = testCaseSources.map((tc, idx) => {
+        const actual = simulatedOutput || 'No output produced';
+        const passed = actual.trim() === tc.expectedOutput.trim();
+        return {
+          testId: idx + 1,
+          passed,
+          input: tc.input,
+          expectedOutput: tc.expectedOutput,
+          actualOutput: actual,
+          timeMs: 4 + idx * 2
+        };
+      });
+
+      const passedCount = customCases.filter(c => c.passed).length;
+      const allPassed = passedCount === customCases.length;
+      const verdict = allPassed ? 'Accepted' : 'Wrong Answer';
+
       return {
-        status: 'Accepted',
-        stdout: `[Sandbox] Executed ${language.toUpperCase()} script.\nInput: ${input || customCases[0]?.input || 'sample'}\nResult: Accepted`,
-        stderr: '',
+        status: verdict,
+        stdout: `[Sandbox] Static output: "${simulatedOutput}"\nVerdict: ${verdict}`,
+        stderr: allPassed ? '' : `Wrong Answer: Expected "${customCases.find(c => !c.passed)?.expectedOutput}" but got "${simulatedOutput}"`,
         executionTimeMs: 14,
         memoryKb: 2048,
-        passedTests: customCases.length,
+        passedTests: passedCount,
         totalTests: customCases.length,
         testDetails: customCases
       };
     },
 
     submit: async (code?: string, language?: string, problemId?: number): Promise<CompilerResult> => {
+      // Step 1: Pre-validate syntax for errors e.g. "vidttfjnrij"
+      const syntaxCheck = validateCodeSyntax(code || '', language || 'go');
+      if (!syntaxCheck.isValid) {
+        const currentList = getStore<ProblemData[]>('problems', problems);
+        const targetProblem = currentList.find(p => p.id === problemId) || currentList[0];
+        const cases = targetProblem?.testCases && targetProblem.testCases.length > 0
+          ? targetProblem.testCases
+          : [{ input: 'Sample Case', expectedOutput: 'Output' }];
+
+        return {
+          status: 'Compilation Error',
+          stdout: '',
+          stderr: syntaxCheck.errorMsg,
+          executionTimeMs: 12,
+          memoryKb: 0,
+          passedTests: 0,
+          totalTests: cases.length,
+          testDetails: cases.map((c, idx) => ({
+            testId: idx + 1,
+            passed: false,
+            input: c.input,
+            expectedOutput: c.expectedOutput,
+            actualOutput: 'Compilation Error',
+            timeMs: 12
+          }))
+        };
+      }
+
       const token = localStorage.getItem('codeshield_token') || localStorage.getItem('codeshield_admin_token');
       
       try {
@@ -402,39 +606,69 @@ export const api = {
           };
         }
       } catch (err) {
-        console.warn('Backend compiler offline, submitting in local sandbox evaluator.', err);
+        console.warn('Backend compiler offline, using local evaluator.', err);
       }
 
-      // Offline Fallback Evaluator
+      // Offline Fallback — try to extract static output, otherwise require backend
       await new Promise(r => setTimeout(r, 1000));
       const currentList = getStore<ProblemData[]>('problems', problems);
       const targetProblem = currentList.find(p => p.id === problemId) || currentList[0];
+      const simulatedOutput = extractPrintOutput(code || '', language || 'go');
+      const hasDynamicOutput = !simulatedOutput && (code || '').length > 20;
 
-      const customCases = targetProblem?.testCases && targetProblem.testCases.length > 0
-        ? targetProblem.testCases.map((tc, idx) => ({
-          testId: idx + 1,
-          passed: true,
-          input: tc.input,
-          expectedOutput: tc.expectedOutput,
-          actualOutput: tc.expectedOutput,
-          timeMs: 3 + idx * 2
-        }))
-        : Array.from({ length: 5 }).map((_, i) => ({
-          testId: i + 1,
-          passed: true,
+      const testCaseSources = targetProblem?.testCases && targetProblem.testCases.length > 0
+        ? targetProblem.testCases
+        : Array.from({ length: 2 }).map((_, i) => ({
           input: `Sample Testcase #${i + 1}`,
-          expectedOutput: `Valid Output #${i + 1}`,
-          actualOutput: `Valid Output #${i + 1}`,
-          timeMs: 2 + i
+          expectedOutput: `Valid Output #${i + 1}`
         }));
 
+      if (hasDynamicOutput) {
+        return {
+          status: 'Pending',
+          stdout: `⚠ Backend compiler is offline. Your code uses dynamic expressions that require server-side execution.\n\nStart the backend to evaluate:\n  cd backend-auth && go run main.go\n\nYour code has been saved.`,
+          stderr: 'Backend compiler required for submission',
+          executionTimeMs: 0,
+          memoryKb: 0,
+          passedTests: 0,
+          totalTests: testCaseSources.length,
+          testDetails: testCaseSources.map((tc, idx) => ({
+            testId: idx + 1,
+            passed: false,
+            input: tc.input,
+            expectedOutput: tc.expectedOutput,
+            actualOutput: 'Pending — backend compiler required',
+            timeMs: 0
+          }))
+        };
+      }
+
+      const customCases = testCaseSources.map((tc, idx) => {
+        const actual = simulatedOutput || 'No output produced';
+        const passed = actual.trim() === tc.expectedOutput.trim();
+        return {
+          testId: idx + 1,
+          passed,
+          input: tc.input,
+          expectedOutput: tc.expectedOutput,
+          actualOutput: actual,
+          timeMs: 3 + idx * 2
+        };
+      });
+
+      const passedCount = customCases.filter(c => c.passed).length;
+      const allPassed = passedCount === customCases.length;
+      const verdict = allPassed ? 'Accepted' : 'Wrong Answer';
+
       return {
-        status: 'Accepted',
-        stdout: `All ${customCases.length} test cases PASSED successfully in isolated sandbox! Score: +100 Points`,
-        stderr: '',
+        status: verdict,
+        stdout: allPassed
+          ? `All ${customCases.length} test cases PASSED! Score: +100 Points`
+          : `Wrong Answer: ${passedCount}/${customCases.length} test cases passed.\nYour output: "${simulatedOutput}"\nExpected: "${customCases.find(c => !c.passed)?.expectedOutput}"`,
+        stderr: allPassed ? '' : `Wrong Answer on Case ${customCases.findIndex(c => !c.passed) + 1}`,
         executionTimeMs: 12,
         memoryKb: 1920,
-        passedTests: customCases.length,
+        passedTests: passedCount,
         totalTests: customCases.length,
         testDetails: customCases
       };
