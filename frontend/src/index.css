@@ -1,0 +1,251 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    color-scheme: light;
+    font-family: 'Times New Roman', Times, 'Playfair Display', Georgia, serif;
+  }
+  
+  body {
+    background-color: #FAFCFF;
+    color: #0F172A;
+    font-family: 'Times New Roman', Times, 'Playfair Display', Georgia, serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Times New Roman', Times, 'Playfair Display', Georgia, serif;
+    letter-spacing: -0.01em;
+  }
+}
+
+/* Custom Scrollbars for Light Theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F1F5F9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* Elite Light Glassmorphism Utilities */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04);
+}
+
+.glass-panel-glow {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(14, 165, 233, 0.3);
+  box-shadow: 0 12px 36px -8px rgba(14, 165, 233, 0.15), 0 4px 12px -2px rgba(15, 23, 42, 0.04);
+}
+
+.glass-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.9) 100%);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 2px 10px -2px rgba(15, 23, 42, 0.04);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  border-color: rgba(14, 165, 233, 0.4);
+  box-shadow: 0 12px 32px -8px rgba(14, 165, 233, 0.12), 0 4px 16px -4px rgba(15, 23, 42, 0.06);
+  transform: translateY(-2px);
+}
+
+/* Frosted glass depth layer */
+.glass-deep {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.65) 0%, rgba(241, 245, 249, 0.5) 100%);
+  backdrop-filter: blur(24px) saturate(1.4);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  border: 1px solid rgba(226, 232, 240, 0.5);
+  box-shadow:
+    0 8px 32px -4px rgba(14, 165, 233, 0.08),
+    0 2px 8px -2px rgba(15, 23, 42, 0.03),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+/* Crystal glass — prismatic rainbow edge */
+.glass-crystal {
+  background: linear-gradient(135deg, rgba(255,255,255,0.72) 0%, rgba(248,250,252,0.55) 50%, rgba(238,242,255,0.65) 100%);
+  backdrop-filter: blur(20px) saturate(1.3);
+  -webkit-backdrop-filter: blur(20px) saturate(1.3);
+  border: 1px solid transparent;
+  background-clip: padding-box;
+  box-shadow:
+    0 0 0 1px rgba(14, 165, 233, 0.15),
+    0 8px 40px -8px rgba(99, 102, 241, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  position: relative;
+}
+.glass-crystal::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(56,189,248,0.2), rgba(139,92,246,0.15), rgba(236,72,153,0.1), rgba(52,211,153,0.15));
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+  padding: 1px;
+  pointer-events: none;
+}
+
+/* Shimmer animation for glass edges */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.glass-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255,255,255,0.08) 25%,
+    rgba(255,255,255,0.2) 50%,
+    rgba(255,255,255,0.08) 75%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Depth floating animation for layered objects */
+@keyframes floatDeep {
+  0%, 100% { transform: translateY(0) translateZ(0); }
+  25%      { transform: translateY(-8px) translateZ(4px); }
+  50%      { transform: translateY(-14px) translateZ(8px); }
+  75%      { transform: translateY(-6px) translateZ(3px); }
+}
+
+@keyframes floatMid {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+
+@keyframes floatNear {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  33%      { transform: translateY(-6px) rotate(0.5deg); }
+  66%      { transform: translateY(-12px) rotate(-0.3deg); }
+}
+
+.animate-float-deep { animation: floatDeep 8s ease-in-out infinite; }
+.animate-float-mid  { animation: floatMid 6s ease-in-out infinite; }
+.animate-float-near { animation: floatNear 5s ease-in-out infinite; }
+
+/* Ambient glow pulse */
+@keyframes ambientPulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50%      { opacity: 0.7; transform: scale(1.05); }
+}
+
+.animate-ambient-pulse { animation: ambientPulse 4s ease-in-out infinite; }
+
+/* Cursor tracking glow */
+@keyframes cursorGlow {
+  0%, 100% { opacity: 0.15; }
+  50%      { opacity: 0.35; }
+}
+
+/* Selection styling */
+::selection {
+  background: rgba(14, 165, 233, 0.15);
+  color: #0F172A;
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, #0284C7 0%, #1E1B4B 50%, #4338CA 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-purple {
+  background: linear-gradient(135deg, #4F46E5 0%, #7E22CE 50%, #BE185D 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.border-glow {
+  box-shadow: inset 0 0 15px rgba(14, 165, 233, 0.1), 0 0 15px rgba(14, 165, 233, 0.15);
+}
+
+.font-serif-luxury {
+  font-family: 'Times New Roman', Times, 'Playfair Display', Georgia, serif;
+}
+
+/* Custom keyframes & utilities for premium interactions */
+@keyframes ripple {
+  0% {
+    width: 0px;
+    height: 0px;
+    opacity: 0.6;
+  }
+  100% {
+    width: 250px;
+    height: 250px;
+    opacity: 0;
+  }
+}
+
+@keyframes helmetShine {
+  0% {
+    transform: translate(-80%, -80%) rotate(45deg);
+  }
+  30%, 100% {
+    transform: translate(80%, 80%) rotate(45deg);
+  }
+}
+
+.animate-helmet-shine {
+  animation: helmetShine 8s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
+}
+
+@keyframes scanlineMove {
+  0% {
+    top: 0%;
+  }
+  100% {
+    top: 100%;
+  }
+}
+
+@keyframes floatDust {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.2; }
+  50% { transform: translate(-20px, -20px) scale(1.2); opacity: 0.8; }
+}
+
+@keyframes spin-reverse {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
