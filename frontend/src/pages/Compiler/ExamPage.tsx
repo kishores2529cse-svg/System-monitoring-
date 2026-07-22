@@ -7,7 +7,6 @@ import { useAntiCheating } from '../../hooks/useAntiCheating';
 import { ProblemDescription } from '../../components/compiler/ProblemDescription';
 import { MonacoWrapper } from '../../components/compiler/MonacoWrapper';
 import { ConsoleOutput } from '../../components/compiler/ConsoleOutput';
-import { AICameraWidget } from '../../components/monitoring/AICameraWidget';
 import { SuspiciousTimeline } from '../../components/monitoring/SuspiciousTimeline';
 import { LockScreenOverlay } from '../../components/monitoring/LockScreenOverlay';
 import { SecurityViolationModal } from '../../components/monitoring/SecurityViolationModal';
@@ -104,11 +103,6 @@ export const ExamPage: React.FC = () => {
             <ConsoleOutput />
           </div>
 
-        </div>
-
-        {/* Floating AI Camera Widget (Fixed Bottom Right Overlay) */}
-        <div className="absolute bottom-6 right-6 z-30 hidden md:block">
-          <AICameraWidget isCompact={true} />
         </div>
 
         {/* Floating Timeline Drawer Overlay */}
