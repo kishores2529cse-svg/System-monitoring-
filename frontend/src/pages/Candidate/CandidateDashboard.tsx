@@ -31,7 +31,7 @@ export const CandidateDashboard: React.FC = () => {
 
   return (
     <PageTransition>
-      <div className="min-h-screen bg-slate-50 text-slate-900 selection:bg-sky-500/20 font-sans">
+      <div className="min-h-screen bg-transparent text-slate-900 selection:bg-sky-500/20 font-sans">
         <Navbar />
 
         <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-8 sm:px-6 lg:px-8 space-y-8">
