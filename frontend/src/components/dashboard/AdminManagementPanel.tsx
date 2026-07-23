@@ -1,0 +1,15 @@
+import React, { useEffect, useState } from 'react';
+import { Plus, Users } from 'lucide-react';
+import { api } from '../../api/client';
+import type { ManagedMember } from '../../types';
+
+export const AdminManagementPanel: React.FC = () => {
+  const [members, setMembers] = useState<ManagedMember[]>([]);
+  const [member, setMember] = useState<{ name: string; email: string; role: 'candidate' | 'admin' }>({ name: '', email: '', role: 'candidate' });
+  const refresh = async () => setMembers(await api.admin.getMembers());
+  useEffect(() => { refresh(); }, []);
+  const addMember = async (event: React.FormEvent) => { event.preventDefault(); if (!member.name || !member.email) return; await api.admin.createMember(member); setMember({ name: '', email: '', role: 'candidate' }); refresh(); };
+  const field = 'rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white outline-none focus:border-[#7CFF4D]/60';
+
+  return <section className="rounded-3xl border border-white/10 bg-black/20 p-6 shadow-xl"><div className="flex items-center gap-2"><Users className="h-5 w-5 text-[#7CFF4D]" /><div><h2 className="font-semibold text-white">Member directory</h2><p className="text-xs text-slate-400">Password state is shown for security; passwords themselves are never displayed.</p></div></div><form onSubmit={addMember} className="mt-5 grid gap-3 sm:grid-cols-4"><input className={field} value={member.name} onChange={e => setMember({ ...member, name: e.target.value })} placeholder="Full name" /><input className={field} type="email" value={member.email} onChange={e => setMember({ ...member, email: e.target.value })} placeholder="Email address" /><select className={field} value={member.role} onChange={e => setMember({ ...member, role: e.target.value as 'candidate' | 'admin' })}><option value="candidate">Candidate</option><option value="admin">Administrator</option></select><button className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#7CFF4D]/30 bg-[#173013] px-4 py-2 text-sm font-semibold text-[#dfffd2]"><Plus className="h-4 w-4" />Add member</button></form><div className="mt-5 overflow-x-auto"><table className="min-w-[680px] w-full text-left text-xs"><thead className="text-slate-400"><tr><th className="py-2">Member</th><th>Email</th><th>Status</th><th>Password</th><th>Progress</th><th>Score</th></tr></thead><tbody>{members.map(item => <tr key={item.id} className="border-t border-white/10"><td className="py-3 font-medium text-white">{item.name}</td><td className="text-slate-300">{item.email}</td><td><span className="rounded-full bg-white/10 px-2 py-1 text-[#dfffd2]">{item.status}</span></td><td className="text-slate-300">{item.passwordStatus}</td><td><div className="w-20"><div className="h-1.5 overflow-hidden rounded bg-white/10"><div className="h-full bg-[#7CFF4D]" style={{ width: `${item.progress}%` }} /></div><span className="mt-1 block text-slate-400">{item.progress}%</span></div></td><td className="font-semibold text-[#FFD84D]">{item.score === null ? '—' : `${item.score}%`}</td></tr>)}</tbody></table></div></section>;
+};

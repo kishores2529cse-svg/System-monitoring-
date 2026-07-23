@@ -128,3 +128,26 @@ export interface AdminStats {
   runningExams: number;
   aiAccuracy: number;
 }
+
+export interface ManagedAssessment {
+  id: string;
+  title: string;
+  durationMinutes: number;
+  questionCount: number;
+  totalMarks: number;
+  deadline: string;
+  cameraRequired: boolean;
+  status: 'Draft' | 'Published' | 'Disabled';
+}
+
+export interface ManagedMember {
+  id: string;
+  name: string;
+  email: string;
+  role: 'candidate' | 'admin';
+  joinedAt: string;
+  status: 'Active' | 'Invited' | 'Inactive';
+  passwordStatus: 'Set' | 'Invite pending' | 'Reset required';
+  progress: number;
+  score: number | null;
+}

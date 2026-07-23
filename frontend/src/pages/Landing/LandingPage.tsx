@@ -361,37 +361,6 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════════ BOTTOM CTA ═══════════════════════════════════════════════ */}
-      <section className="py-24 sm:py-32 px-4 sm:px-6 lg:px-8 relative z-10 border-b border-neutral-900/60 bg-[#090909]/20">
-        <div className="max-w-3xl mx-auto text-center space-y-8">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-neutral-900/80 border border-neutral-800 text-xs text-[#7CFF4D] font-sans shadow-lg">
-            <Zap className="w-3.5 h-3.5 text-[#FFD84D] animate-bounce" />
-            <span className="font-semibold tracking-wider text-[9px] uppercase">TRUSTED BY 500+ ENTERPRISES</span>
-          </div>
-          <h2 className="text-4xl sm:text-5xl font-black text-white tracking-tight font-serif-luxury">
-            Ready to secure your
-            <br />
-            <span className="text-[#7CFF4D]">assessments?</span>
-          </h2>
-          <p className="text-lg text-neutral-400 font-sans font-light max-w-xl mx-auto">
-            Deploy AI proctoring in minutes. No hardware setup required.
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
-            <Link to="/register">
-              <button className="px-6 py-3 rounded-2xl bg-gradient-to-r from-[#7CFF4D] to-[#FFD84D] text-black font-mono font-bold tracking-wider text-xs flex items-center gap-2 hover:shadow-[0_0_20px_rgba(124,255,77,0.3)] transition-all cursor-pointer hover:-translate-y-0.5">
-                <span>Get Started Free</span>
-                <span className="font-sans font-bold">→</span>
-              </button>
-            </Link>
-            <Link to="/admin/dashboard">
-              <button className="px-6 py-3 rounded-2xl bg-neutral-900 hover:bg-neutral-800 text-white border border-neutral-800 text-xs font-mono tracking-wider cursor-pointer transition-colors">
-                View Demo
-              </button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
       {/* Premium Dark Footer */}
       <Footer theme="dark" />
     </div>

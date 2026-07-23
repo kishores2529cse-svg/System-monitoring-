@@ -3,8 +3,7 @@ import {
   INITIAL_PROBLEMS,
   INITIAL_MONITORING_EVENTS,
   INITIAL_LEADERBOARD,
-  INITIAL_SYSTEM_LOGS,
-  INITIAL_ADMIN_STATS
+  INITIAL_SYSTEM_LOGS
 } from '../services/mockData';
 import type {
   CandidateCardData,
@@ -13,6 +12,8 @@ import type {
   LeaderboardEntry,
   SystemLog,
   AdminStats,
+  ManagedAssessment,
+  ManagedMember,
   CompilerResult,
   UserProfile
 } from '../types';
@@ -41,7 +42,15 @@ let problems = getStore<ProblemData[]>('problems', INITIAL_PROBLEMS);
 let events = getStore<MonitoringEvent[]>('events', INITIAL_MONITORING_EVENTS);
 let leaderboard = getStore<LeaderboardEntry[]>('leaderboard', INITIAL_LEADERBOARD);
 let logs = getStore<SystemLog[]>('logs', INITIAL_SYSTEM_LOGS);
-let stats = getStore<AdminStats>('admin_stats', INITIAL_ADMIN_STATS);
+const DEFAULT_MANAGED_MEMBERS: ManagedMember[] = [
+  { id: 'MEM-001', name: 'Aarav Mehta', email: 'aarav.mehta@example.edu', role: 'candidate', joinedAt: '23 Jul 2026', status: 'Active', passwordStatus: 'Set', progress: 72, score: 88 },
+  { id: 'MEM-002', name: 'Priya Nair', email: 'priya.nair@example.edu', role: 'candidate', joinedAt: '22 Jul 2026', status: 'Active', passwordStatus: 'Set', progress: 46, score: 76 },
+  { id: 'MEM-003', name: 'Karthik Rao', email: 'karthik.rao@example.edu', role: 'candidate', joinedAt: '23 Jul 2026', status: 'Invited', passwordStatus: 'Invite pending', progress: 0, score: null }
+];
+const storedMembers = getStore<ManagedMember[]>('managed_members', DEFAULT_MANAGED_MEMBERS);
+let managedMembers = storedMembers.length ? storedMembers : DEFAULT_MANAGED_MEMBERS;
+let managedAssessments = getStore<ManagedAssessment[]>('managed_assessments', []);
+let adminEvents = getStore<MonitoringEvent[]>('admin_events', []);
 
 const API_BASE = 'http://localhost:8080/api';
 
@@ -717,13 +726,14 @@ export const api = {
   // Admin Dashboard API
   admin: {
     getDashboard: async (): Promise<AdminStats> => {
-      return stats;
+      const liveCandidates = managedMembers.filter(member => member.role === 'candidate').length;
+      return { totalCandidates: liveCandidates, liveCandidates: 0, lockedUsers: 0, suspiciousEvents: adminEvents.length, averageConfidenceScore: 0, completedExams: 0, runningExams: 0, aiAccuracy: 0 };
     },
     getLiveSessions: async (): Promise<CandidateCardData[]> => {
-      return candidates;
+      return [];
     },
     getLiveEvents: async (): Promise<MonitoringEvent[]> => {
-      return events;
+      return adminEvents;
     },
     getLockedUsers: async (): Promise<CandidateCardData[]> => {
       return candidates.filter(c => c.status === 'Locked');
@@ -760,6 +770,24 @@ export const api = {
       candidates = candidates.map(c => c.id === userId ? { ...c, status: 'Terminated' } : c);
       setStore('candidates', candidates);
       return true;
+    },
+    getAssessments: async (): Promise<ManagedAssessment[]> => managedAssessments,
+    createAssessment: async (assessment: Omit<ManagedAssessment, 'id'>): Promise<ManagedAssessment> => {
+      const created = { ...assessment, id: `ASM-${Date.now()}` };
+      managedAssessments = [created, ...managedAssessments];
+      setStore('managed_assessments', managedAssessments);
+      return created;
+    },
+    toggleAssessment: async (id: string): Promise<void> => {
+      managedAssessments = managedAssessments.map(item => item.id === id ? { ...item, status: item.status === 'Disabled' ? 'Published' : 'Disabled' } : item);
+      setStore('managed_assessments', managedAssessments);
+    },
+    getMembers: async (): Promise<ManagedMember[]> => managedMembers,
+    createMember: async (member: Omit<ManagedMember, 'id' | 'joinedAt' | 'status' | 'passwordStatus' | 'progress' | 'score'>): Promise<ManagedMember> => {
+      const created = { ...member, id: `MEM-${Date.now()}`, joinedAt: new Date().toLocaleDateString(), status: 'Invited' as const, passwordStatus: 'Invite pending' as const, progress: 0, score: null };
+      managedMembers = [created, ...managedMembers];
+      setStore('managed_members', managedMembers);
+      return created;
     }
   },
 

@@ -209,6 +209,32 @@
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
+/* Route-scoped application skin. Public landing and login routes are intentionally excluded. */
+.app-premium {
+  --premium-ink: #fdf8e8;
+  --premium-muted: #b8c4b1;
+  --premium-green: #7CFF4D;
+  --premium-gold: #FFD84D;
+  color: var(--premium-ink);
+  background:
+    radial-gradient(circle at 8% 0%, rgba(124, 255, 77, 0.12), transparent 30%),
+    radial-gradient(circle at 92% 8%, rgba(255, 216, 77, 0.1), transparent 26%),
+    linear-gradient(145deg, #07110a 0%, #10200f 48%, #091109 100%);
+}
+
+.app-premium :is(.bg-slate-50, .bg-white, .bg-white\/90, .bg-white\/85, .bg-white\/80, .bg-white\/95) { background-color: rgba(13, 25, 13, 0.9) !important; }
+.app-premium :is(.bg-slate-100, .bg-slate-200) { background-color: rgba(30, 48, 28, 0.78) !important; }
+.app-premium :is(.border-slate-100, .border-slate-200, .border-slate-300, .border-slate-700) { border-color: rgba(255, 216, 77, 0.14) !important; }
+.app-premium :is(.text-slate-950, .text-slate-900, .text-slate-800, .text-slate-700) { color: #fdf8e8 !important; }
+.app-premium :is(.text-slate-600, .text-slate-500, .text-slate-400) { color: #b8c4b1 !important; }
+.app-premium :is(input, textarea, select) { background-color: rgba(8, 18, 9, 0.78) !important; border-color: rgba(255, 216, 77, 0.2) !important; color: #fdf8e8 !important; }
+.app-premium :is(input, textarea, select):focus { border-color: rgba(124, 255, 77, 0.7) !important; box-shadow: 0 0 0 3px rgba(124, 255, 77, 0.1) !important; }
+.app-premium table thead { background: rgba(255, 216, 77, 0.06) !important; }
+.app-premium table tbody tr { transition: background-color 250ms ease, transform 250ms ease; }
+.app-premium table tbody tr:hover { background: rgba(124, 255, 77, 0.055) !important; }
+.app-premium :is(.bg-sky-50, .bg-emerald-50, .bg-amber-50) { background-color: rgba(124, 255, 77, 0.1) !important; }
+.app-premium :is(.text-sky-700, .text-emerald-700, .text-amber-700) { color: #dfffd2 !important; }
+
 /* Custom keyframes & utilities for premium interactions */
 @keyframes ripple {
   0% {
