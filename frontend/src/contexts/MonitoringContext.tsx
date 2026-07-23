@@ -110,6 +110,9 @@ export const MonitoringProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
   const dismissWarningModal = () => {
     setActiveWarningModal(null);
+    if (!document.fullscreenElement) {
+      requestFullscreen();
+    }
   };
 
   const riskLevel = riskScore <= 30 ? 'Low' : riskScore <= 60 ? 'Medium' : 'High';
@@ -161,10 +164,10 @@ export const MonitoringProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         await document.documentElement.requestFullscreen();
         setIsFullscreen(true);
         
-        // Use the Keyboard Lock API to prevent the Escape key from exiting fullscreen
+        // Use the Keyboard Lock API to prevent system shortcuts (Alt+Tab, Windows Key) and Escape
         if ('keyboard' in navigator && (navigator as any).keyboard && typeof (navigator as any).keyboard.lock === 'function') {
           try {
-            await (navigator as any).keyboard.lock(['Escape']);
+            await (navigator as any).keyboard.lock();
           } catch (lockError) {
             console.warn('Keyboard lock failed or not supported:', lockError);
           }
@@ -180,6 +183,9 @@ export const MonitoringProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     setWarningsCount(0);
     setConfidenceScore(88);
     setLockReason('');
+    if (!document.fullscreenElement) {
+      requestFullscreen();
+    }
   };
 
   return (

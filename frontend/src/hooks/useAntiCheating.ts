@@ -3,7 +3,7 @@ import { useMonitoring } from '../contexts/MonitoringContext';
 import { useExam } from '../contexts/ExamContext';
 
 export function useAntiCheating(enabled: boolean = true) {
-  const { reportViolation, isLocked, setIsFullscreen } = useMonitoring();
+  const { reportViolation, isLocked, setIsFullscreen, unlockExam } = useMonitoring();
   let isSubmittedSuccessfully = false;
   try {
     const exam = useExam();
@@ -47,13 +47,7 @@ export function useAntiCheating(enabled: boolean = true) {
     const handleKeyDown = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
       
-      // Block Escape explicitly
-      if (key === 'escape' || key === 'esc') {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        reportViolation('Escape Key Pressed', 'Medium', -5, 'Attempted to press Escape to exit fullscreen.', false);
-        return;
-      }
+      // Escape is handled in handleKeyDownCapture
 
       const isCtrl = e.ctrlKey || e.metaKey;
       const isShift = e.shiftKey;
@@ -62,6 +56,22 @@ export function useAntiCheating(enabled: boolean = true) {
 
       const isModifierShortcut = isCtrl || isAlt || isShift;
       const forbiddenShortcut = isModifierShortcut && key !== 'shift' && key !== 'control' && key !== 'alt' && key !== 'meta';
+
+      if (isAlt && key === 'tab') {
+        e.preventDefault();
+        if (!e.repeat) {
+          reportViolation('Window Switch Attempt (Alt+Tab)', 'High', -15, 'Attempted to use Alt+Tab to switch windows.', true);
+        }
+        return;
+      }
+
+      if (key === 'meta' || key === 'os') {
+        e.preventDefault();
+        if (!e.repeat) {
+          reportViolation('OS Menu Key Pressed', 'High', -10, 'Attempted to open the operating system menu.', true);
+        }
+        return;
+      }
 
       if (forbiddenShortcut || key === 'f12' || key === 'contextmenu') {
         e.preventDefault();
@@ -102,7 +112,7 @@ export function useAntiCheating(enabled: boolean = true) {
             'High',
             -15,
             'Candidate exited constant fullscreen mode.',
-            false
+            true
           );
         }
       }
@@ -164,7 +174,40 @@ export function useAntiCheating(enabled: boolean = true) {
         e.preventDefault();
         e.stopPropagation();
         e.stopImmediatePropagation();
-        lastEscTime.current = Date.now();
+        
+        // Anti-cheat hack: Reset the browser's internal 2-second "Hold to Exit" timer
+        if ('keyboard' in navigator && (navigator as any).keyboard) {
+          try {
+            (navigator as any).keyboard.unlock();
+            (navigator as any).keyboard.lock().catch(() => {});
+          } catch (err) {
+            // Ignore
+          }
+        }
+
+        if (!e.repeat) {
+          lastEscTime.current = Date.now();
+          reportViolation('Escape Key Pressed', 'Medium', -5, 'Attempted to press Escape to exit fullscreen.', true);
+        } else {
+          // If held for more than 1 second, trigger the 2-minute lockout penalty
+          const timeHeld = Date.now() - lastEscTime.current;
+          if (timeHeld > 1000) {
+            // Update lastEscTime so we don't spam this block
+            lastEscTime.current = Date.now() + 9999999;
+            reportViolation(
+              'Escape Key Long-Press',
+              'Critical',
+              -20,
+              'Candidate held Escape key. 2-minute penalty lock applied.',
+              true
+            );
+            
+            // Auto-unlock after 2 minutes (120,000 ms)
+            setTimeout(() => {
+              unlockExam();
+            }, 120000);
+          }
+        }
       }
     };
 
