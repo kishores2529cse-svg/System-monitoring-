@@ -21,18 +21,12 @@ const upcomingAssessments = [
 
 const difficultyClass: Record<string, string> = { Easy: 'bg-emerald-50 text-emerald-700 border-emerald-200', Medium: 'bg-amber-50 text-amber-700 border-amber-200', Hard: 'bg-rose-50 text-rose-700 border-rose-200' };
 
-<<<<<<< Updated upstream
 export const AssessmentsPage: React.FC = () => {
   const [adminAssessments, setAdminAssessments] = useState<ManagedAssessment[]>([]);
   useEffect(() => { api.admin.getAssessments().then(setAdminAssessments); }, []);
   const displayAssessments = [...activeAssessments, ...adminAssessments.filter(item => item.status === 'Published').map(item => ({ id: item.id, name: item.title, difficulty: 'Medium', duration: `${item.durationMinutes} min`, questions: item.questionCount, marks: item.totalMarks, deadline: new Date(item.deadline).toLocaleString() }))];
   return <PageTransition>
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
-=======
-export const AssessmentsPage: React.FC = () => (
-  <PageTransition>
-    <div className="min-h-screen bg-premium-light text-slate-900 font-sans selection:bg-sky-500/20">
->>>>>>> Stashed changes
       <Navbar />
       <main className="mx-auto w-full max-w-7xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
         <section className="rounded-3xl border border-slate-200 bg-white/80 p-7 shadow-sm backdrop-blur-xl sm:p-8">

@@ -22,11 +22,7 @@ export const SandboxPage: React.FC = () => {
 
   return (
     <PageTransition>
-<<<<<<< Updated upstream
       <div className="min-h-screen w-full overflow-y-auto bg-transparent text-slate-100">
-=======
-      <div className="min-h-screen w-full overflow-y-auto bg-premium-dark text-slate-100">
->>>>>>> Stashed changes
         <header className="border-b border-white/10 bg-slate-950/70 px-4 py-3 backdrop-blur-xl">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
             <div className="flex items-center gap-3">
