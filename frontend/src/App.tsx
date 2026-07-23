@@ -5,6 +5,7 @@ import { MonitoringProvider } from './contexts/MonitoringContext';
 import { ExamProvider } from './contexts/ExamContext';
 import { AppRoutes } from './routes/AppRoutes';
 import { saveReportAsPdf } from './utils/reportPdf';
+import { PremiumWorkspaceBackground } from './components/ui/PremiumWorkspaceBackground';
 
 export const App: React.FC = () => {
   React.useEffect(() => {
@@ -62,8 +63,14 @@ export const App: React.FC = () => {
 
 const ApplicationTheme: React.FC = () => {
   const { pathname } = useLocation();
-  const preserveOriginalDesign = pathname === '/' || pathname === '/login' || pathname === '/admin/login';
-  return <div className={preserveOriginalDesign ? '' : 'app-premium'}><AppRoutes /></div>;
+  const protectedRoutes = ['/', '/login', '/admin/login', '/register'];
+  const preserveOriginalDesign = protectedRoutes.includes(pathname);
+  return (
+    <div className={preserveOriginalDesign ? '' : 'app-premium'}>
+      {!preserveOriginalDesign && <PremiumWorkspaceBackground />}
+      <AppRoutes />
+    </div>
+  );
 };
 
 export default App;

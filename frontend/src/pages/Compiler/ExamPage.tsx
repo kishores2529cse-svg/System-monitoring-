@@ -41,7 +41,7 @@ export const ExamPage: React.FC = () => {
   };
 
   return (
-    <div className="h-screen w-screen bg-[#FAFCFF] text-slate-900 flex flex-col overflow-hidden select-none font-serif-luxury">
+    <div className="h-screen w-screen bg-transparent text-slate-900 flex flex-col overflow-hidden select-none font-serif-luxury">
       <header className="h-20 bg-white/95 backdrop-blur-xl border-b border-slate-200 px-4 flex flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between shrink-0 shadow-2xs">
         <div className="flex items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center rounded-3xl bg-slate-950/5 border border-slate-200 text-slate-900">

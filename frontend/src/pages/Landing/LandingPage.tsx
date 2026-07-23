@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Cpu, Lock, Terminal, BarChart2, ShieldCheck, Eye, Sparkles, Zap, Crosshair, User } from 'lucide-react';
+import { Cpu, Lock, Terminal, BarChart2, ShieldCheck, Eye, Sparkles, Crosshair, User } from 'lucide-react';
 import { Footer } from '../../components/common/Footer';
 import { InteractiveBackground } from '../../components/ui/InteractiveBackground';
 import { RobotSection } from '../../components/ui/RobotSection';
