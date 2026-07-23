@@ -41,7 +41,11 @@ export const ExamPage: React.FC = () => {
   };
 
   return (
+<<<<<<< Updated upstream
     <div className="h-screen w-screen bg-transparent text-slate-900 flex flex-col overflow-hidden select-none font-serif-luxury">
+=======
+    <div className="h-screen w-screen bg-premium-light text-slate-900 flex flex-col overflow-hidden select-none font-serif-luxury">
+>>>>>>> Stashed changes
       <header className="h-20 bg-white/95 backdrop-blur-xl border-b border-slate-200 px-4 flex flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between shrink-0 shadow-2xs">
         <div className="flex items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center rounded-3xl bg-slate-950/5 border border-slate-200 text-slate-900">
@@ -54,11 +58,11 @@ export const ExamPage: React.FC = () => {
         </div>
 
         <div className="flex flex-wrap items-center justify-end gap-2">
-          <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700">{currentProblem ? `Question ${currentProblem.id} of ${problems.length}` : 'Question in progress'}</span>
+          <span className="rounded-full border border-slate-200 bg-premium-light px-3 py-2 text-xs font-semibold text-slate-700">{currentProblem ? `Question ${currentProblem.id} of ${problems.length}` : 'Question in progress'}</span>
           <span className="rounded-full border border-sky-200 bg-sky-50 px-3 py-2 text-xs font-semibold text-sky-700"><Clock3 className="mr-1 inline h-3.5 w-3.5" />{formatTime(secondsRemaining)}</span>
           <span className="rounded-full border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700">Risk {riskScore}%</span>
-          <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700"><Camera className="mr-1 inline h-3.5 w-3.5" />{cameraActive ? 'Webcam On' : 'Webcam Off'}</span>
-          <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700"><Monitor className="mr-1 inline h-3.5 w-3.5" />{isFullscreen ? 'Fullscreen' : 'Windowed'}</span>
+          <span className="rounded-full border border-slate-200 bg-premium-light px-3 py-2 text-xs font-semibold text-slate-700"><Camera className="mr-1 inline h-3.5 w-3.5" />{cameraActive ? 'Webcam On' : 'Webcam Off'}</span>
+          <span className="rounded-full border border-slate-200 bg-premium-light px-3 py-2 text-xs font-semibold text-slate-700"><Monitor className="mr-1 inline h-3.5 w-3.5" />{isFullscreen ? 'Fullscreen' : 'Windowed'}</span>
           <button
             onClick={handleExitAssessment}
             className="inline-flex items-center gap-2 rounded-full border border-rose-300 bg-rose-50 px-4 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-100"
@@ -90,3 +94,4 @@ export const ExamPage: React.FC = () => {
     </div>
   );
 };
+

@@ -9,6 +9,7 @@ import { PremiumWorkspaceBackground } from './components/ui/PremiumWorkspaceBack
 
 export const App: React.FC = () => {
   React.useEffect(() => {
+<<<<<<< Updated upstream
     // Escape blocking is handled by useAntiCheating
   }, []);
 
@@ -22,6 +23,9 @@ export const App: React.FC = () => {
     };
     document.addEventListener('click', exportResults);
     return () => document.removeEventListener('click', exportResults);
+=======
+    // Escape blocking moved to useAntiCheating to integrate with the monitoring system
+>>>>>>> Stashed changes
   }, []);
 
   return (

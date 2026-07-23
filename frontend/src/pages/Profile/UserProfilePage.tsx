@@ -27,7 +27,7 @@ export const UserProfilePage: React.FC = () => {
 
   return (
     <PageTransition>
-      <div className="min-h-screen text-slate-100 flex flex-col selection:bg-sky-500/20 font-serif-luxury">
+      <div className="min-h-screen bg-premium-dark text-slate-100 flex flex-col selection:bg-sky-500/20 font-serif-luxury">
       <Navbar />
 
       <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 space-y-8">
@@ -159,3 +159,4 @@ export const UserProfilePage: React.FC = () => {
     </PageTransition>
   );
 };
+
