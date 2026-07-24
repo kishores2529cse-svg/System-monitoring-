@@ -40,7 +40,7 @@ func Load() *Config {
 	loadDotEnv(".env")
 
 	return &Config{
-		ServerPort:       getEnv("SERVER_PORT", "8080"),
+		ServerPort:       getEnv("SERVER_PORT", getEnv("PORT", "8080")),
 		AppEnv:           getEnv("APP_ENV", "development"),
 		DBHost:           getEnv("DB_HOST", "db.wdtshwffstjzfclwsqox.supabase.co"),
 		DBPort:           getEnv("DB_PORT", "5432"),
