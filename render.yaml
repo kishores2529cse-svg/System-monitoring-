@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: backend-auth
+    env: go
+    rootDir: backend-auth
+    buildCommand: go build -tags netgo -ldflags '-s -w' -o app
+    startCommand: ./app
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: SERVER_PORT
+        value: 8080
