@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Menu, X, Shield, Home, ClipboardList, BookOpen, BarChart3, UserCircle, ShieldCheck } from 'lucide-react';
+import { Menu, X, Shield, Home, ClipboardList, BookOpen, BarChart3, UserCircle, ShieldCheck, Info } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -14,6 +14,7 @@ const candidateNavItems = [
   { label: 'Problems', to: '/problems', icon: BookOpen },
   { label: 'Results', to: '/results', icon: BarChart3 },
   { label: 'Admin', to: '/admin/dashboard', icon: ShieldCheck },
+  { label: 'About', to: '/about', icon: Info },
   { label: 'Profile', to: '/profile', icon: UserCircle }
 ];
 
@@ -26,6 +27,7 @@ export const Navbar: React.FC<NavbarProps> = () => {
     ? [
         { label: 'Admin', to: '/admin/dashboard', icon: ShieldCheck },
         { label: 'Leaderboard', to: '/leaderboard', icon: BarChart3 },
+        { label: 'About', to: '/about', icon: Info },
         { label: 'Profile', to: '/profile', icon: UserCircle }
       ]
     : candidateNavItems;

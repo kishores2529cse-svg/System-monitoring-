@@ -54,6 +54,7 @@ export const Footer: React.FC<{ theme?: 'light' | 'dark' }> = ({ theme = 'light'
             <li><a href="/admin/dashboard" className={`transition-colors ${isDark ? 'hover:text-[#7CFF4D]' : 'hover:text-sky-700'}`}>Admin Command Center</a></li>
             <li><a href="/exam/101" className={`transition-colors ${isDark ? 'hover:text-[#7CFF4D]' : 'hover:text-sky-700'}`}>Go Coding Workspace</a></li>
             <li><a href="/leaderboard" className={`transition-colors ${isDark ? 'hover:text-[#7CFF4D]' : 'hover:text-sky-700'}`}>Global Leaderboard</a></li>
+            <li><a href="/about" className={`transition-colors ${isDark ? 'hover:text-[#7CFF4D]' : 'hover:text-sky-700'}`}>About Us</a></li>
             <li><a href="/admin/logs" className={`transition-colors ${isDark ? 'hover:text-[#7CFF4D]' : 'hover:text-sky-700'}`}>Proctor Audit Logs</a></li>
           </ul>
         </div>

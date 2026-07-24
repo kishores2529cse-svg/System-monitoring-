@@ -39,7 +39,7 @@ export const App: React.FC = () => {
 
 const ApplicationTheme: React.FC = () => {
   const { pathname } = useLocation();
-  const protectedRoutes = ['/', '/login', '/admin/login', '/register'];
+  const protectedRoutes = ['/', '/login', '/admin/login', '/register', '/about'];
   const preserveOriginalDesign = protectedRoutes.includes(pathname);
   return (
     <div className={preserveOriginalDesign ? '' : 'app-premium'}>

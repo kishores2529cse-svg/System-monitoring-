@@ -190,7 +190,7 @@ export const LandingPage: React.FC = () => {
                 damping: 15,
                 delay: 1.0 
               }}
-              className="pt-2"
+              className="pt-2 flex items-center gap-4 flex-wrap"
             >
               <Link to="/login">
                 <button
@@ -218,6 +218,17 @@ export const LandingPage: React.FC = () => {
 
                   <User className="w-4 h-4 text-black group-hover:scale-110 transition-transform duration-300" />
                   <span className="relative z-10">LOGIN</span>
+                  <span className="transform transition-transform duration-300 group-hover:translate-x-1.5 font-sans font-bold">→</span>
+                </button>
+              </Link>
+
+              <Link to="/about">
+                <button
+                  className="group relative px-8 py-4 rounded-2xl bg-transparent text-white font-mono font-bold tracking-wider text-sm flex items-center justify-center gap-3 overflow-hidden border border-white/25 transition-all duration-300 hover:border-[#7CFF4D]/50 hover:bg-[#7CFF4D]/10 hover:shadow-[0_0_25px_rgba(124,255,77,0.15)] hover:-translate-y-1 cursor-pointer active:scale-95 select-none backdrop-blur-sm"
+                  style={{ willChange: 'transform' }}
+                >
+                  <Sparkles className="w-4 h-4 text-[#FFD84D] group-hover:scale-110 transition-transform duration-300" />
+                  <span className="relative z-10">ABOUT US</span>
                   <span className="transform transition-transform duration-300 group-hover:translate-x-1.5 font-sans font-bold">→</span>
                 </button>
               </Link>
