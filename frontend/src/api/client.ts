@@ -52,7 +52,11 @@ let managedMembers = storedMembers.length ? storedMembers : DEFAULT_MANAGED_MEMB
 let managedAssessments = getStore<ManagedAssessment[]>('managed_assessments', []);
 let adminEvents = getStore<MonitoringEvent[]>('admin_events', []);
 
-const API_BASE = 'http://localhost:8080/api';
+const API_BASE = import.meta.env.VITE_API_BASE || (
+  window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:8080/api'
+    : 'https://system-monitoring-1-drf0.onrender.com/api'
+);
 
 // Pre-registered users store for offline fallback
 let registeredUsers = getStore<Array<{ email: string; password?: string; name: string; college?: string; phone?: string }>>('registered_users', [
