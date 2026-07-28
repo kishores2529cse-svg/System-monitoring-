@@ -9,10 +9,10 @@ import { PageTransition } from '../../components/ui/PageTransition';
 
 export const CandidateRegister: React.FC = () => {
   const [formData, setFormData] = useState({
-    name: 'Vijay Rathinam',
+    name: 'Kishore S',
     college: 'Sri Shakthi Institute of Engineering and Technology',
     department: 'Computer Science & Engineering',
-    email: 'vijay@shakthi.edu',
+    email: 'kishore@shakthi.edu',
     phone: '+91 9876543210',
     password: 'password123',
     confirmPassword: 'password123',
@@ -71,7 +71,7 @@ export const CandidateRegister: React.FC = () => {
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Vijay Rathinam"
+                  placeholder="Kishore S"
                   className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:outline-none focus:border-sky-500 shadow-2xs"
                 />
               </div>
@@ -137,7 +137,7 @@ export const CandidateRegister: React.FC = () => {
                 required
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="vijay@shakthi.edu"
+                placeholder="kishore@shakthi.edu"
                 className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-neutral-900 border border-neutral-800/80 text-white text-xs focus:outline-none focus:border-[#7CFF4D] focus:shadow-[0_0_15px_rgba(124,255,77,0.2)] placeholder-neutral-500 shadow-2xs"
               />
             </div>

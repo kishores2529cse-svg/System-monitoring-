@@ -3,8 +3,8 @@ import type { CandidateCardData, ProblemData, MonitoringEvent, LeaderboardEntry,
 export const INITIAL_CANDIDATES: CandidateCardData[] = [
   {
     id: 'USR001',
-    name: 'Vijay Rathinam',
-    email: 'vijay@shakthi.edu',
+    name: 'Kishore S',
+    email: 'kishore@shakthi.edu',
     college: 'Sri Shakthi Institute of Engineering and Technology',
     department: 'Computer Science & Engineering',
     problem: 'Two Sum',
@@ -307,7 +307,7 @@ export const INITIAL_MONITORING_EVENTS: MonitoringEvent[] = [
   {
     id: 'EVT-1001',
     candidateId: 'USR001',
-    candidateName: 'Vijay Rathinam',
+    candidateName: 'Kishore S',
     timestamp: '12:10:23',
     event: 'Tab Switch Detected',
     severity: 'Medium',
@@ -318,7 +318,7 @@ export const INITIAL_MONITORING_EVENTS: MonitoringEvent[] = [
   {
     id: 'EVT-1002',
     candidateId: 'USR001',
-    candidateName: 'Vijay Rathinam',
+    candidateName: 'Kishore S',
     timestamp: '12:15:40',
     event: 'Right Click Attempted',
     severity: 'Low',
@@ -362,7 +362,7 @@ export const INITIAL_MONITORING_EVENTS: MonitoringEvent[] = [
   {
     id: 'EVT-1006',
     candidateId: 'USR001',
-    candidateName: 'Vijay Rathinam',
+    candidateName: 'Kishore S',
     timestamp: '12:30:00',
     event: 'Face Mesh Alignment Re-verified',
     severity: 'Low',
@@ -376,7 +376,7 @@ export const INITIAL_LEADERBOARD: LeaderboardEntry[] = [
   {
     rank: 1,
     id: 'USR001',
-    name: 'Vijay Rathinam',
+    name: 'Kishore S',
     college: 'Sri Shakthi Institute of Engineering and Technology',
     score: 980,
     solved: 5,

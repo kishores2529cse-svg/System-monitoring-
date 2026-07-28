@@ -10,8 +10,8 @@ import { PageTransition } from '../../components/ui/PageTransition';
 export const UserProfilePage: React.FC = () => {
   const { user, updateProfile } = useAuth();
   const [formData, setFormData] = useState({
-    name: user?.name || 'Vijay Rathinam',
-    email: user?.email || 'vijay@shakthi.edu',
+    name: user?.name || 'Kishore S',
+    email: user?.email || 'kishore@shakthi.edu',
     college: user?.college || 'Sri Shakthi Institute of Engineering and Technology',
     department: user?.department || 'Computer Science & Engineering',
     phone: user?.phone || '+91 9876543210'
@@ -43,7 +43,7 @@ export const UserProfilePage: React.FC = () => {
             <div className="inline-flex items-center gap-2 rounded-full border border-sky-400/20 bg-sky-400/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.25em] text-sky-300">
               <Sparkles className="w-3 h-3" /> Profile overview
             </div>
-            <h1 className="text-3xl font-bold text-white tracking-tight">{user?.name || 'Vijay Rathinam'}</h1>
+            <h1 className="text-3xl font-bold text-white tracking-tight">{user?.name || 'Kishore S'}</h1>
             <p className="text-xs text-slate-400 font-sans">{user?.college} • {user?.department}</p>
             <span className="inline-block px-2.5 py-0.5 rounded bg-sky-500/10 text-sky-300 text-xs font-mono border border-sky-400/20 font-bold uppercase mt-1">
               Role: {user?.role || 'candidate'}

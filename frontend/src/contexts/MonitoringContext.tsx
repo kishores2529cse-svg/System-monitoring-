@@ -123,7 +123,7 @@ export const MonitoringProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
     const newEvt = await api.monitor.reportEvent({
       candidateId: 'USR001',
-      candidateName: 'Vijay Rathinam',
+      candidateName: 'Kishore S',
       timestamp,
       event: eventTitle,
       severity,

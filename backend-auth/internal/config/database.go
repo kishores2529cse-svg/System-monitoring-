@@ -124,20 +124,20 @@ func SeedInitialData(db *gorm.DB) {
 		}
 	}
 
-	// Seed User vijay@shakthi.edu
-	var vijayUser models.User
-	if err := db.Where("email = ?", "vijay@shakthi.edu").First(&vijayUser).Error; err != nil {
+	// Seed User kishore@shakthi.edu
+	var kishoreUser models.User
+	if err := db.Where("email = ?", "kishore@shakthi.edu").First(&kishoreUser).Error; err != nil {
 		hashedUserPassword, err := bcrypt.GenerateFromPassword([]byte("password123"), bcrypt.DefaultCost)
 		if err == nil {
 			user := models.User{
-				Username: "vijay_shakthi",
-				Email:    "vijay@shakthi.edu",
+				Username: "kishore_shakthi",
+				Email:    "kishore@shakthi.edu",
 				Password: string(hashedUserPassword),
-				Name:     "Vijay Rathinam",
+				Name:     "Kishore S",
 				College:  "Sri Shakthi Institute of Engineering and Technology",
 			}
 			if err := db.Create(&user).Error; err == nil {
-				log.Println("Seeded User account: vijay@shakthi.edu")
+				log.Println("Seeded User account: kishore@shakthi.edu")
 			}
 		}
 	}

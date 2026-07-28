@@ -128,11 +128,11 @@ export const CandidateLogin: React.FC = () => {
                 <div className="flex gap-2 justify-center">
                   <button
                     type="button"
-                    onClick={() => handleMockLogin('vijay@shakthi.edu', 'password123')}
+                    onClick={() => handleMockLogin('kishore@shakthi.edu', 'password123')}
                     disabled={loading}
                     className="px-3 py-1.5 rounded-xl border border-sky-500/20 bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 text-xs font-semibold font-mono transition-all"
                   >
-                    Vijay (vijay@shakthi.edu)
+                    Kishore S (kishore@shakthi.edu)
                   </button>
                   <button
                     type="button"

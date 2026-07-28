@@ -60,7 +60,7 @@ const API_BASE = import.meta.env.VITE_API_BASE || (
 
 // Pre-registered users store for offline fallback
 let registeredUsers = getStore<Array<{ email: string; password?: string; name: string; college?: string; phone?: string }>>('registered_users', [
-  { email: 'vijay@shakthi.edu', password: 'password123', name: 'Vijay Rathinam', college: 'Sri Shakthi Institute of Engineering and Technology' },
+  { email: 'kishore@shakthi.edu', password: 'password123', name: 'Kishore S', college: 'Sri Shakthi Institute of Engineering and Technology' },
   { email: 'user@codeshield.ai', password: 'user123', name: 'Default Candidate', college: 'Technology Institute' }
 ]);
 
