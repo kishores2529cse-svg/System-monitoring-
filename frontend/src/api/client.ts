@@ -144,6 +144,30 @@ const extractPrintOutput = (code: string, language: string): string | null => {
   return outputs.length > 0 ? outputs.join('\n').trim() : null;
 };
 
+// Centralized Admin-Controlled Exam Timer API interface & default
+export interface CentralTimerState {
+  id: number;
+  duration_minutes: number;
+  duration_seconds?: number;
+  exam_password?: string;
+  status: 'NOT_STARTED' | 'RUNNING' | 'PAUSED' | 'ENDED';
+  total_duration_seconds: number;
+  accumulated_seconds: number;
+  start_time: string | null;
+  remaining_seconds?: number;
+}
+
+const DEFAULT_TIMER: CentralTimerState = {
+  id: 1,
+  duration_minutes: 60,
+  duration_seconds: 0,
+  exam_password: 'exam123',
+  status: 'NOT_STARTED',
+  total_duration_seconds: 3600,
+  accumulated_seconds: 0,
+  start_time: null
+};
+
 export const api = {
   // Authentication
   auth: {
@@ -825,17 +849,8 @@ export const api = {
     }
   },
 
-  // Centralized Admin-Controlled Exam Timer API
   timer: {
-    getStatus: async (): Promise<{
-      id: number;
-      duration_minutes: number;
-      status: 'NOT_STARTED' | 'RUNNING' | 'PAUSED' | 'ENDED';
-      remaining_seconds: number;
-      total_duration_seconds: number;
-      accumulated_seconds: number;
-      start_time: string | null;
-    }> => {
+    getStatus: async (): Promise<CentralTimerState & { remaining_seconds: number }> => {
       const token = localStorage.getItem('codeshield_token') || localStorage.getItem('codeshield_admin_token');
       try {
         const response = await fetch(`${API_BASE}/timer/status`, {
@@ -850,21 +865,7 @@ export const api = {
       }
 
       // Offline store fallback logic
-      let timer = getStore<{
-        id: number;
-        duration_minutes: number;
-        status: 'NOT_STARTED' | 'RUNNING' | 'PAUSED' | 'ENDED';
-        total_duration_seconds: number;
-        accumulated_seconds: number;
-        start_time: string | null;
-      }>('central_timer', {
-        id: 1,
-        duration_minutes: 60,
-        status: 'NOT_STARTED',
-        total_duration_seconds: 3600,
-        accumulated_seconds: 0,
-        start_time: null
-      });
+      let timer = getStore<CentralTimerState>('central_timer', DEFAULT_TIMER);
 
       let remaining = timer.total_duration_seconds - timer.accumulated_seconds;
       if (timer.status === 'RUNNING' && timer.start_time) {
@@ -905,16 +906,7 @@ export const api = {
       } catch (e) {}
 
       // Offline fallback
-      const timer = getStore('central_timer', {
-        id: 1,
-        duration_minutes: 60,
-        duration_seconds: 0,
-        exam_password: 'exam123',
-        status: 'NOT_STARTED',
-        total_duration_seconds: 3600,
-        accumulated_seconds: 0,
-        start_time: null
-      });
+      const timer = getStore<CentralTimerState>('central_timer', DEFAULT_TIMER);
 
       timer.duration_minutes = minutes;
       timer.duration_seconds = seconds;
@@ -942,15 +934,7 @@ export const api = {
         }
       } catch (e) {}
 
-      const timer = getStore('central_timer', {
-        id: 1,
-        duration_minutes: 60,
-        duration_seconds: 0,
-        status: 'NOT_STARTED',
-        total_duration_seconds: 3600,
-        accumulated_seconds: 0,
-        start_time: null
-      });
+      const timer = getStore<CentralTimerState>('central_timer', DEFAULT_TIMER);
 
       timer.status = 'RUNNING';
       timer.start_time = new Date().toISOString();
@@ -972,15 +956,7 @@ export const api = {
         }
       } catch (e) {}
 
-      const timer = getStore('central_timer', {
-        id: 1,
-        duration_minutes: 60,
-        duration_seconds: 0,
-        status: 'NOT_STARTED',
-        total_duration_seconds: 3600,
-        accumulated_seconds: 0,
-        start_time: null
-      });
+      const timer = getStore<CentralTimerState>('central_timer', DEFAULT_TIMER);
 
       if (timer.status === 'RUNNING' && timer.start_time) {
         const elapsed = Math.floor((Date.now() - new Date(timer.start_time).getTime()) / 1000);
@@ -1005,15 +981,7 @@ export const api = {
         }
       } catch (e) {}
 
-      const timer = getStore('central_timer', {
-        id: 1,
-        duration_minutes: 60,
-        duration_seconds: 0,
-        status: 'NOT_STARTED',
-        total_duration_seconds: 3600,
-        accumulated_seconds: 0,
-        start_time: null
-      });
+      const timer = getStore<CentralTimerState>('central_timer', DEFAULT_TIMER);
 
       timer.status = 'RUNNING';
       timer.start_time = new Date().toISOString();
@@ -1038,20 +1006,13 @@ export const api = {
         }
       } catch (e) {}
 
-      const timer = getStore('central_timer', {
-        id: 1,
-        duration_minutes: 60,
-        duration_seconds: 0,
-        status: 'NOT_STARTED',
-        total_duration_seconds: 3600,
-        accumulated_seconds: 0,
-        start_time: null
-      });
+      const timer = getStore<CentralTimerState>('central_timer', DEFAULT_TIMER);
 
       const addSecs = minutes * 60 + seconds;
       timer.total_duration_seconds += addSecs;
-      timer.duration_minutes += minutes + Math.floor((timer.duration_seconds + seconds) / 60);
-      timer.duration_seconds = (timer.duration_seconds + seconds) % 60;
+      const currentSecs = timer.duration_seconds || 0;
+      timer.duration_minutes += minutes + Math.floor((currentSecs + seconds) / 60);
+      timer.duration_seconds = (currentSecs + seconds) % 60;
       if (timer.status === 'ENDED') {
         timer.status = 'PAUSED';
       }
@@ -1072,14 +1033,7 @@ export const api = {
         }
       } catch (e) {}
 
-      const timer = getStore('central_timer', {
-        id: 1,
-        duration_minutes: 60,
-        status: 'NOT_STARTED',
-        total_duration_seconds: 3600,
-        accumulated_seconds: 0,
-        start_time: null
-      });
+      const timer = getStore<CentralTimerState>('central_timer', DEFAULT_TIMER);
 
       timer.status = 'ENDED';
       timer.start_time = null;
