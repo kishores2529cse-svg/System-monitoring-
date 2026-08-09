@@ -17,6 +17,7 @@ func Setup(
 	problemCtrl *controllers.ProblemController,
 	compilerCtrl *controllers.CompilerController,
 	leaderboardCtrl *controllers.LeaderboardController,
+	timerCtrl *controllers.TimerController,
 	authMiddleware *middleware.AuthMiddleware,
 	cfg *config.Config,
 ) *gin.Engine {
@@ -55,7 +56,18 @@ func Setup(
 	adminProtected.Use(authMiddleware.RequireAdmin())
 	{
 		adminProtected.POST("/problems", problemCtrl.CreateProblem)
+		adminProtected.GET("/timer", timerCtrl.GetTimerStatus)
+		adminProtected.POST("/timer/config", timerCtrl.ConfigTimer)
+		adminProtected.POST("/timer/start", timerCtrl.StartTimer)
+		adminProtected.POST("/timer/pause", timerCtrl.PauseTimer)
+		adminProtected.POST("/timer/resume", timerCtrl.ResumeTimer)
+		adminProtected.POST("/timer/extend", timerCtrl.ExtendTimer)
+		adminProtected.POST("/timer/end", timerCtrl.EndTimer)
 	}
+
+	// ======== Public/Student Read-only Timer Status & Exam Gate ========
+	api.GET("/timer/status", timerCtrl.GetTimerStatus)
+	api.POST("/exam/verify-password", timerCtrl.VerifyExamPassword)
 
 	// ======== Protected User Routes ========
 	user := api.Group("/user")

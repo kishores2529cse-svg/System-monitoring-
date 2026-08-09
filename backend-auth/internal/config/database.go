@@ -61,6 +61,7 @@ func InitDB(cfg *Config) *gorm.DB {
 		&models.TestCase{},
 		&models.Submission{},
 		&models.Leaderboard{},
+		&models.ExamTimer{},
 	); err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)
 	}
@@ -171,6 +172,22 @@ func SeedInitialData(db *gorm.DB) {
 		}
 		if err := db.Create(&prob).Error; err == nil {
 			log.Println("Seeded initial Problem: Two Sum")
+		}
+	}
+
+	// Seed Initial Central ExamTimer if none exists
+	var timerCount int64
+	db.Model(&models.ExamTimer{}).Count(&timerCount)
+	if timerCount == 0 {
+		timer := models.ExamTimer{
+			ID:                 1,
+			DurationMinutes:    60,
+			Status:             models.TimerStatusNotStarted,
+			AccumulatedSeconds: 0,
+			TotalDurationSecs:  3600,
+		}
+		if err := db.Create(&timer).Error; err == nil {
+			log.Println("Seeded initial Central ExamTimer (ID: 1, 60m)")
 		}
 	}
 }

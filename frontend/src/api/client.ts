@@ -332,6 +332,24 @@ export const api = {
       candidates = candidates.map(c => c.id === candidateId ? { ...c, status: 'Locked' } : c);
       setStore('candidates', candidates);
       return { success: true };
+    },
+    verifyPassword: async (password: string): Promise<boolean> => {
+      try {
+        const response = await fetch(`${API_BASE}/exam/verify-password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password })
+        });
+        const resData = await response.json();
+        if (response.ok && resData.success) {
+          return true;
+        }
+      } catch (e) {}
+
+      // Offline fallback verification against stored exam password
+      const timer = getStore<{ exam_password?: string }>('central_timer', { exam_password: 'exam123' });
+      const storedPwd = timer.exam_password || 'exam123';
+      return password.trim() === storedPwd.trim();
     }
   },
 
@@ -804,6 +822,269 @@ export const api = {
   logs: {
     get: async (): Promise<SystemLog[]> => {
       return logs;
+    }
+  },
+
+  // Centralized Admin-Controlled Exam Timer API
+  timer: {
+    getStatus: async (): Promise<{
+      id: number;
+      duration_minutes: number;
+      status: 'NOT_STARTED' | 'RUNNING' | 'PAUSED' | 'ENDED';
+      remaining_seconds: number;
+      total_duration_seconds: number;
+      accumulated_seconds: number;
+      start_time: string | null;
+    }> => {
+      const token = localStorage.getItem('codeshield_token') || localStorage.getItem('codeshield_admin_token');
+      try {
+        const response = await fetch(`${API_BASE}/timer/status`, {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        const resData = await response.json();
+        if (response.ok && resData.success && resData.data) {
+          return resData.data;
+        }
+      } catch (e) {
+        // Fallback for offline mode
+      }
+
+      // Offline store fallback logic
+      let timer = getStore<{
+        id: number;
+        duration_minutes: number;
+        status: 'NOT_STARTED' | 'RUNNING' | 'PAUSED' | 'ENDED';
+        total_duration_seconds: number;
+        accumulated_seconds: number;
+        start_time: string | null;
+      }>('central_timer', {
+        id: 1,
+        duration_minutes: 60,
+        status: 'NOT_STARTED',
+        total_duration_seconds: 3600,
+        accumulated_seconds: 0,
+        start_time: null
+      });
+
+      let remaining = timer.total_duration_seconds - timer.accumulated_seconds;
+      if (timer.status === 'RUNNING' && timer.start_time) {
+        const elapsed = Math.floor((Date.now() - new Date(timer.start_time).getTime()) / 1000);
+        remaining = timer.total_duration_seconds - (timer.accumulated_seconds + elapsed);
+      } else if (timer.status === 'ENDED') {
+        remaining = 0;
+      }
+
+      if (remaining <= 0 && timer.status === 'RUNNING') {
+        timer.status = 'ENDED';
+        timer.start_time = null;
+        remaining = 0;
+        setStore('central_timer', timer);
+      }
+
+      return {
+        ...timer,
+        remaining_seconds: Math.max(0, remaining)
+      };
+    },
+
+    config: async (minutes: number, seconds: number = 0, examPassword?: string): Promise<any> => {
+      const adminToken = localStorage.getItem('codeshield_admin_token') || localStorage.getItem('codeshield_token');
+      try {
+        const response = await fetch(`${API_BASE}/admin/timer/config`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(adminToken ? { 'Authorization': `Bearer ${adminToken}` } : {})
+          },
+          body: JSON.stringify({ minutes, seconds, exam_password: examPassword })
+        });
+        const resData = await response.json();
+        if (response.ok && resData.success) {
+          return resData.data;
+        }
+      } catch (e) {}
+
+      // Offline fallback
+      const timer = getStore('central_timer', {
+        id: 1,
+        duration_minutes: 60,
+        duration_seconds: 0,
+        exam_password: 'exam123',
+        status: 'NOT_STARTED',
+        total_duration_seconds: 3600,
+        accumulated_seconds: 0,
+        start_time: null
+      });
+
+      timer.duration_minutes = minutes;
+      timer.duration_seconds = seconds;
+      timer.total_duration_seconds = minutes * 60 + seconds;
+      if (examPassword && examPassword.trim()) {
+        timer.exam_password = examPassword.trim();
+      }
+      if (timer.status === 'NOT_STARTED') {
+        timer.accumulated_seconds = 0;
+      }
+      setStore('central_timer', timer);
+      return { ...timer, remaining_seconds: timer.total_duration_seconds };
+    },
+
+    start: async (): Promise<any> => {
+      const adminToken = localStorage.getItem('codeshield_admin_token') || localStorage.getItem('codeshield_token');
+      try {
+        const response = await fetch(`${API_BASE}/admin/timer/start`, {
+          method: 'POST',
+          headers: adminToken ? { 'Authorization': `Bearer ${adminToken}` } : {}
+        });
+        const resData = await response.json();
+        if (response.ok && resData.success) {
+          return resData.data;
+        }
+      } catch (e) {}
+
+      const timer = getStore('central_timer', {
+        id: 1,
+        duration_minutes: 60,
+        duration_seconds: 0,
+        status: 'NOT_STARTED',
+        total_duration_seconds: 3600,
+        accumulated_seconds: 0,
+        start_time: null
+      });
+
+      timer.status = 'RUNNING';
+      timer.start_time = new Date().toISOString();
+      timer.accumulated_seconds = 0;
+      setStore('central_timer', timer);
+      return { ...timer, remaining_seconds: timer.total_duration_seconds };
+    },
+
+    pause: async (): Promise<any> => {
+      const adminToken = localStorage.getItem('codeshield_admin_token') || localStorage.getItem('codeshield_token');
+      try {
+        const response = await fetch(`${API_BASE}/admin/timer/pause`, {
+          method: 'POST',
+          headers: adminToken ? { 'Authorization': `Bearer ${adminToken}` } : {}
+        });
+        const resData = await response.json();
+        if (response.ok && resData.success) {
+          return resData.data;
+        }
+      } catch (e) {}
+
+      const timer = getStore('central_timer', {
+        id: 1,
+        duration_minutes: 60,
+        duration_seconds: 0,
+        status: 'NOT_STARTED',
+        total_duration_seconds: 3600,
+        accumulated_seconds: 0,
+        start_time: null
+      });
+
+      if (timer.status === 'RUNNING' && timer.start_time) {
+        const elapsed = Math.floor((Date.now() - new Date(timer.start_time).getTime()) / 1000);
+        timer.accumulated_seconds += elapsed;
+        timer.status = 'PAUSED';
+        timer.start_time = null;
+        setStore('central_timer', timer);
+      }
+      return timer;
+    },
+
+    resume: async (): Promise<any> => {
+      const adminToken = localStorage.getItem('codeshield_admin_token') || localStorage.getItem('codeshield_token');
+      try {
+        const response = await fetch(`${API_BASE}/admin/timer/resume`, {
+          method: 'POST',
+          headers: adminToken ? { 'Authorization': `Bearer ${adminToken}` } : {}
+        });
+        const resData = await response.json();
+        if (response.ok && resData.success) {
+          return resData.data;
+        }
+      } catch (e) {}
+
+      const timer = getStore('central_timer', {
+        id: 1,
+        duration_minutes: 60,
+        duration_seconds: 0,
+        status: 'NOT_STARTED',
+        total_duration_seconds: 3600,
+        accumulated_seconds: 0,
+        start_time: null
+      });
+
+      timer.status = 'RUNNING';
+      timer.start_time = new Date().toISOString();
+      setStore('central_timer', timer);
+      return timer;
+    },
+
+    extend: async (minutes: number, seconds: number = 0): Promise<any> => {
+      const adminToken = localStorage.getItem('codeshield_admin_token') || localStorage.getItem('codeshield_token');
+      try {
+        const response = await fetch(`${API_BASE}/admin/timer/extend`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(adminToken ? { 'Authorization': `Bearer ${adminToken}` } : {})
+          },
+          body: JSON.stringify({ minutes, seconds })
+        });
+        const resData = await response.json();
+        if (response.ok && resData.success) {
+          return resData.data;
+        }
+      } catch (e) {}
+
+      const timer = getStore('central_timer', {
+        id: 1,
+        duration_minutes: 60,
+        duration_seconds: 0,
+        status: 'NOT_STARTED',
+        total_duration_seconds: 3600,
+        accumulated_seconds: 0,
+        start_time: null
+      });
+
+      const addSecs = minutes * 60 + seconds;
+      timer.total_duration_seconds += addSecs;
+      timer.duration_minutes += minutes + Math.floor((timer.duration_seconds + seconds) / 60);
+      timer.duration_seconds = (timer.duration_seconds + seconds) % 60;
+      if (timer.status === 'ENDED') {
+        timer.status = 'PAUSED';
+      }
+      setStore('central_timer', timer);
+      return timer;
+    },
+
+    end: async (): Promise<any> => {
+      const adminToken = localStorage.getItem('codeshield_admin_token') || localStorage.getItem('codeshield_token');
+      try {
+        const response = await fetch(`${API_BASE}/admin/timer/end`, {
+          method: 'POST',
+          headers: adminToken ? { 'Authorization': `Bearer ${adminToken}` } : {}
+        });
+        const resData = await response.json();
+        if (response.ok && resData.success) {
+          return resData.data;
+        }
+      } catch (e) {}
+
+      const timer = getStore('central_timer', {
+        id: 1,
+        duration_minutes: 60,
+        status: 'NOT_STARTED',
+        total_duration_seconds: 3600,
+        accumulated_seconds: 0,
+        start_time: null
+      });
+
+      timer.status = 'ENDED';
+      timer.start_time = null;
+      setStore('central_timer', timer);
+      return { ...timer, remaining_seconds: 0 };
     }
   }
 };

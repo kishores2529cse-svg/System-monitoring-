@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { ArrowLeft, Code2, Sparkles, Play, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Code2, Play, CheckCircle, Clock3, PauseCircle } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { ProblemDescription } from '../../components/compiler/ProblemDescription';
 import { MonacoWrapper } from '../../components/compiler/MonacoWrapper';
@@ -8,12 +8,22 @@ import { PageTransition } from '../../components/ui/PageTransition';
 import { useAntiCheating } from '../../hooks/useAntiCheating';
 import { useExam } from '../../contexts/ExamContext';
 import { GlowingButton } from '../../components/ui/GlowingButton';
+import { formatTime } from '../../utils/cn';
 
 export const SandboxPage: React.FC = () => {
   useAntiCheating(true);
   const [searchParams] = useSearchParams();
   const isAssessment = searchParams.has('assessment');
-  const { runCode, submitCode, isRunning, isSubmitting, setCurrentProblemId } = useExam();
+  const {
+    runCode,
+    submitCode,
+    isRunning,
+    isSubmitting,
+    setCurrentProblemId,
+    secondsRemaining,
+    timerStatus,
+    isExamExpired
+  } = useExam();
 
   useEffect(() => {
     const problemId = Number(searchParams.get('problem'));
@@ -22,7 +32,7 @@ export const SandboxPage: React.FC = () => {
 
   return (
     <PageTransition>
-      <div className="min-h-screen w-full overflow-y-auto bg-transparent text-slate-100">
+      <div className="min-h-screen w-full overflow-y-auto bg-transparent text-slate-100 relative">
         <header className="border-b border-white/10 bg-slate-950/70 px-4 py-3 backdrop-blur-xl">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
             <div className="flex items-center gap-3">
@@ -48,9 +58,22 @@ export const SandboxPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-300 md:flex">
-              <Sparkles className="h-4 w-4 text-cyan-300" />
-              Auto-save is live
+            {/* Synchronized Portal Timer Readout */}
+            <div className="flex items-center gap-2">
+              {timerStatus === 'PAUSED' ? (
+                <span className="rounded-full border border-amber-300/40 bg-amber-500/20 px-3 py-1.5 text-xs font-semibold text-amber-300 animate-pulse flex items-center">
+                  <PauseCircle className="mr-1.5 inline h-4 w-4" /> Paused by Admin
+                </span>
+              ) : (
+                <span className={`rounded-full border px-3.5 py-1.5 text-xs font-semibold font-mono flex items-center ${
+                  isExamExpired
+                    ? 'border-rose-400/40 bg-rose-500/20 text-rose-300'
+                    : 'border-sky-400/30 bg-sky-500/15 text-sky-200'
+                }`}>
+                  <Clock3 className="mr-1.5 inline h-4 w-4 text-sky-400" />
+                  {isExamExpired ? '00:00 (Expired)' : formatTime(secondsRemaining)}
+                </span>
+              )}
             </div>
           </div>
         </header>
@@ -72,10 +95,22 @@ export const SandboxPage: React.FC = () => {
           </div>
           <div className="sticky bottom-4 z-10 flex justify-end pt-2">
             <div className="flex items-center gap-2 rounded-2xl border border-white/10 bg-slate-950/90 p-2 shadow-xl backdrop-blur-xl">
-              <GlowingButton variant="secondary" size="md" onClick={runCode} disabled={isRunning || isSubmitting} icon={<Play className="h-4 w-4 text-sky-600" />}>
+              <GlowingButton
+                variant="secondary"
+                size="md"
+                onClick={runCode}
+                disabled={isRunning || isSubmitting}
+                icon={<Play className="h-4 w-4 text-sky-600" />}
+              >
                 {isRunning ? 'Compiling...' : 'Run Code'}
               </GlowingButton>
-              <GlowingButton variant="cyan" size="md" onClick={submitCode} disabled={isRunning || isSubmitting} icon={<CheckCircle className="h-4 w-4" />}>
+              <GlowingButton
+                variant="cyan"
+                size="md"
+                onClick={submitCode}
+                disabled={isRunning || isSubmitting}
+                icon={<CheckCircle className="h-4 w-4" />}
+              >
                 {isSubmitting ? 'Submitting...' : 'Submit Code'}
               </GlowingButton>
             </div>
@@ -85,4 +120,3 @@ export const SandboxPage: React.FC = () => {
     </PageTransition>
   );
 };
-

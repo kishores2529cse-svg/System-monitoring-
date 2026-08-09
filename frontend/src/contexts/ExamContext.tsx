@@ -21,15 +21,19 @@ interface ExamContextType {
   isSubmitting: boolean;
   isSubmittedSuccessfully: boolean;
   secondsRemaining: number;
+  timerStatus: 'NOT_STARTED' | 'RUNNING' | 'PAUSED' | 'ENDED';
+  durationMinutes: number;
+  isExamExpired: boolean;
   autoSaveStatus: 'Saved' | 'Saving...' | 'Unsaved';
   runCode: () => Promise<void>;
   submitCode: () => Promise<void>;
+  refreshTimerStatus: () => Promise<void>;
 }
 
 const ExamContext = createContext<ExamContextType | undefined>(undefined);
 
 export const ExamProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isLocked, isFullscreen } = useMonitoring();
+  const { isLocked } = useMonitoring();
   const [problems, setProblems] = useState<ProblemData[]>(INITIAL_PROBLEMS);
   const [currentProblem, setCurrentProblem] = useState<ProblemData>(INITIAL_PROBLEMS[0]);
   const [selectedLanguage, setSelectedLanguage] = useState<SupportedLanguage>('go');
@@ -39,7 +43,6 @@ export const ExamProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const list = await api.problems.getAll();
       if (list && list.length > 0) {
         setProblems(list);
-        // If current problem is not in list, pick the first
         if (!list.some(p => p.id === currentProblem.id)) {
           setCurrentProblem(list[0]);
         }
@@ -73,18 +76,50 @@ export const ExamProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isSubmittedSuccessfully, setIsSubmittedSuccessfully] = useState<boolean>(false);
-  const [secondsRemaining, setSecondsRemaining] = useState<number>(4365); // 01:12:45
+  const [secondsRemaining, setSecondsRemaining] = useState<number>(3600);
+  const [timerStatus, setTimerStatus] = useState<'NOT_STARTED' | 'RUNNING' | 'PAUSED' | 'ENDED'>('NOT_STARTED');
+  const [durationMinutes, setDurationMinutes] = useState<number>(60);
   const [autoSaveStatus, setAutoSaveStatus] = useState<'Saved' | 'Saving...' | 'Unsaved'>('Saved');
 
-  // Exam Countdown Timer
-  useEffect(() => {
-    if (isLocked || !isFullscreen) return;
+  // Synchronize Centralized Admin Timer from Backend
+  const refreshTimerStatus = useCallback(async () => {
+    try {
+      const timer = await api.timer.getStatus();
+      if (timer) {
+        setTimerStatus(timer.status);
+        setDurationMinutes(timer.duration_minutes);
+        setSecondsRemaining(timer.remaining_seconds);
+      }
+    } catch (e) {
+      console.error('Failed to sync centralized timer:', e);
+    }
+  }, []);
 
-    const timer = setInterval(() => {
-      setSecondsRemaining(prev => Math.max(0, prev - 1));
+  // Poll Centralized Timer status every 1.5 seconds for real-time multi-client sync
+  useEffect(() => {
+    refreshTimerStatus();
+    const interval = setInterval(refreshTimerStatus, 1500);
+    return () => clearInterval(interval);
+  }, [refreshTimerStatus]);
+
+  // Local 1-second Countdown Ticker when RUNNING
+  useEffect(() => {
+    if (timerStatus !== 'RUNNING' || isLocked) return;
+
+    const ticker = setInterval(() => {
+      setSecondsRemaining(prev => {
+        if (prev <= 1) {
+          setTimerStatus('ENDED');
+          return 0;
+        }
+        return prev - 1;
+      });
     }, 1000);
-    return () => clearInterval(timer);
-  }, [isLocked, isFullscreen]);
+
+    return () => clearInterval(ticker);
+  }, [timerStatus, isLocked]);
+
+  const isExamExpired = timerStatus === 'ENDED' || (timerStatus === 'RUNNING' && secondsRemaining <= 0);
 
   const setCurrentProblemId = (id: number) => {
     setIsSubmittedSuccessfully(false);
@@ -115,7 +150,6 @@ export const ExamProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const setCodeForLang = useCallback((code: string) => {
     setCodeMap(prev => ({ ...prev, [selectedLanguage]: code }));
 
-    // Debounce the save status update to prevent wobble on every keystroke
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(() => {
       setAutoSaveStatus('Saving...');
@@ -183,9 +217,13 @@ export const ExamProvider: React.FC<{ children: React.ReactNode }> = ({ children
       isSubmitting,
       isSubmittedSuccessfully,
       secondsRemaining,
+      timerStatus,
+      durationMinutes,
+      isExamExpired,
       autoSaveStatus,
       runCode,
-      submitCode
+      submitCode,
+      refreshTimerStatus
     }}>
       {children}
     </ExamContext.Provider>
