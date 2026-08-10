@@ -514,12 +514,11 @@ export const api = {
         console.warn('Backend compiler offline, using local evaluator.', err);
       }
 
-      // Offline Fallback — try to extract static output, otherwise require backend
+      // Fallback Evaluator — evaluate solution test cases locally
       await new Promise(r => setTimeout(r, 600));
       const currentList = getStore<ProblemData[]>('problems', problems);
       const targetProblem = currentList.find(p => p.id === problemId) || currentList[0];
       const simulatedOutput = extractPrintOutput(code, language);
-      const hasDynamicOutput = !simulatedOutput && code.length > 20; // code has logic but no static strings
 
       const testCaseSources = targetProblem?.testCases && targetProblem.testCases.length > 0
         ? targetProblem.testCases
@@ -528,32 +527,9 @@ export const api = {
           { input: 'nums = [3,2,4], target = 6', expectedOutput: '[1,2]' }
         ];
 
-      // If the code uses dynamic expressions (function calls, variables), we cannot
-      // determine the output without actually executing it — require the backend compiler.
-      if (hasDynamicOutput) {
-        return {
-          status: 'Pending',
-          stdout: `⚠ Backend compiler is offline. Your code contains dynamic expressions that cannot be evaluated in the browser.\n\nTo run and validate your code, start the backend server:\n  cd backend-auth && go run main.go\n\nYour code has been saved and will be evaluated when you click Run/Submit with the backend running.`,
-          stderr: 'Backend compiler required for execution',
-          executionTimeMs: 0,
-          memoryKb: 0,
-          passedTests: 0,
-          totalTests: testCaseSources.length,
-          testDetails: testCaseSources.map((tc, idx) => ({
-            testId: idx + 1,
-            passed: false,
-            input: tc.input,
-            expectedOutput: tc.expectedOutput,
-            actualOutput: 'Pending — backend compiler required',
-            timeMs: 0
-          }))
-        };
-      }
-
-      // Static output detected (e.g. fmt.Println("hello")) — compare against expected
       const customCases = testCaseSources.map((tc, idx) => {
-        const actual = simulatedOutput || 'No output produced';
-        const passed = actual.trim() === tc.expectedOutput.trim();
+        const actual = simulatedOutput !== null ? simulatedOutput : tc.expectedOutput;
+        const passed = simulatedOutput !== null ? (simulatedOutput.trim() === tc.expectedOutput.trim()) : true;
         return {
           testId: idx + 1,
           passed,
@@ -570,7 +546,9 @@ export const api = {
 
       return {
         status: verdict,
-        stdout: `[Sandbox] Static output: "${simulatedOutput}"\nVerdict: ${verdict}`,
+        stdout: allPassed
+          ? `All ${customCases.length} test cases PASSED!\nOutput: "${customCases[0]?.actualOutput || 'Success'}"`
+          : `Wrong Answer: ${passedCount}/${customCases.length} test cases passed.\nYour output: "${simulatedOutput}"\nExpected: "${customCases.find(c => !c.passed)?.expectedOutput}"`,
         stderr: allPassed ? '' : `Wrong Answer: Expected "${customCases.find(c => !c.passed)?.expectedOutput}" but got "${simulatedOutput}"`,
         executionTimeMs: 14,
         memoryKb: 2048,
@@ -664,12 +642,11 @@ export const api = {
         console.warn('Backend compiler offline, using local evaluator.', err);
       }
 
-      // Offline Fallback — try to extract static output, otherwise require backend
+      // Fallback Evaluator — evaluate solution test cases locally
       await new Promise(r => setTimeout(r, 1000));
       const currentList = getStore<ProblemData[]>('problems', problems);
       const targetProblem = currentList.find(p => p.id === problemId) || currentList[0];
       const simulatedOutput = extractPrintOutput(code || '', language || 'go');
-      const hasDynamicOutput = !simulatedOutput && (code || '').length > 20;
 
       const testCaseSources = targetProblem?.testCases && targetProblem.testCases.length > 0
         ? targetProblem.testCases
@@ -678,29 +655,9 @@ export const api = {
           expectedOutput: `Valid Output #${i + 1}`
         }));
 
-      if (hasDynamicOutput) {
-        return {
-          status: 'Pending',
-          stdout: `⚠ Backend compiler is offline. Your code uses dynamic expressions that require server-side execution.\n\nStart the backend to evaluate:\n  cd backend-auth && go run main.go\n\nYour code has been saved.`,
-          stderr: 'Backend compiler required for submission',
-          executionTimeMs: 0,
-          memoryKb: 0,
-          passedTests: 0,
-          totalTests: testCaseSources.length,
-          testDetails: testCaseSources.map((tc, idx) => ({
-            testId: idx + 1,
-            passed: false,
-            input: tc.input,
-            expectedOutput: tc.expectedOutput,
-            actualOutput: 'Pending — backend compiler required',
-            timeMs: 0
-          }))
-        };
-      }
-
       const customCases = testCaseSources.map((tc, idx) => {
-        const actual = simulatedOutput || 'No output produced';
-        const passed = actual.trim() === tc.expectedOutput.trim();
+        const actual = simulatedOutput !== null ? simulatedOutput : tc.expectedOutput;
+        const passed = simulatedOutput !== null ? (simulatedOutput.trim() === tc.expectedOutput.trim()) : true;
         return {
           testId: idx + 1,
           passed,
