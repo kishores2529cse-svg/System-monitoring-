@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter, useLocation } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
 import { AuthProvider } from './contexts/AuthContext';
 import { MonitoringProvider } from './contexts/MonitoringContext';
 import { ExamProvider } from './contexts/ExamContext';
@@ -30,6 +31,7 @@ export const App: React.FC = () => {
         <MonitoringProvider>
           <ExamProvider>
             <ApplicationTheme />
+            <Analytics />
           </ExamProvider>
         </MonitoringProvider>
       </AuthProvider>
