@@ -121,7 +121,7 @@ export const LandingPage: React.FC = () => {
                 variants={letterContainer}
                 initial="hidden"
                 animate="show"
-                className="text-6xl sm:text-7xl lg:text-[5.5rem] font-black tracking-tight leading-[0.95] text-white flex flex-wrap"
+                className="text-5xl sm:text-6xl md:text-7xl lg:text-[4.25rem] xl:text-[5.2rem] font-black tracking-tight leading-[0.95] text-white flex flex-nowrap whitespace-nowrap"
               >
                 {headingWord1.split("").map((char, index) => (
                   <motion.span 
@@ -140,7 +140,7 @@ export const LandingPage: React.FC = () => {
                 variants={letterContainer}
                 initial="hidden"
                 animate="show"
-                className="text-6xl sm:text-7xl lg:text-[5.5rem] font-black tracking-tight leading-[0.95] text-[#7CFF4D] flex flex-wrap"
+                className="text-5xl sm:text-6xl md:text-7xl lg:text-[4.25rem] xl:text-[5.2rem] font-black tracking-tight leading-[0.95] text-[#7CFF4D] flex flex-nowrap whitespace-nowrap"
               >
                 {headingWord2.split("").map((char, index) => (
                   <motion.span 
