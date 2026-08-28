@@ -1,19 +1,23 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ArrowLeft, Code2, Play, CheckCircle, Clock3, PauseCircle } from 'lucide-react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { ProblemDescription } from '../../components/compiler/ProblemDescription';
 import { MonacoWrapper } from '../../components/compiler/MonacoWrapper';
 import { ConsoleOutput } from '../../components/compiler/ConsoleOutput';
 import { PageTransition } from '../../components/ui/PageTransition';
 import { useAntiCheating } from '../../hooks/useAntiCheating';
 import { useExam } from '../../contexts/ExamContext';
+import { useMonitoring } from '../../contexts/MonitoringContext';
+import { AICameraWidget } from '../../components/monitoring/AICameraWidget';
 import { GlowingButton } from '../../components/ui/GlowingButton';
 import { formatTime } from '../../utils/cn';
 
 export const SandboxPage: React.FC = () => {
   useAntiCheating(true);
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isAssessment = searchParams.has('assessment');
+  const { reportViolation } = useMonitoring();
   const {
     runCode,
     submitCode,
@@ -25,6 +29,36 @@ export const SandboxPage: React.FC = () => {
     isExamExpired
   } = useExam();
 
+  const [countdown, setCountdown] = useState<number | null>(null);
+  const [detectedClass, setDetectedClass] = useState<string>('');
+
+  const triggerObjectMalpractice = async (detectedClass: string = 'unauthorized object') => {
+    const type = 'Forbidden Object Detected';
+    const details = `Candidate was detected holding an unauthorized object (${detectedClass}) in front of the camera.`;
+    
+    // Log the malpractice event
+    await reportViolation(type, 'Critical', -40, details, true);
+    
+    // Immediately redirect to the dashboard
+    navigate('/dashboard');
+  };
+
+  // Handle countdown ticks and auto-redirection on timeout (SandboxPage)
+  useEffect(() => {
+    if (countdown === null) return;
+
+    if (countdown === 0) {
+      triggerObjectMalpractice(detectedClass);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setCountdown(prev => (prev !== null ? prev - 1 : null));
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [countdown, detectedClass]);
+
   useEffect(() => {
     const problemId = Number(searchParams.get('problem'));
     if (problemId) setCurrentProblemId(problemId);
@@ -33,6 +67,14 @@ export const SandboxPage: React.FC = () => {
   return (
     <PageTransition>
       <div className="min-h-screen w-full overflow-y-auto bg-transparent text-slate-100 relative">
+        {countdown !== null && (
+          <div className="bg-rose-600 text-white font-sans font-extrabold text-center py-3.5 px-4 text-xs animate-pulse flex items-center justify-center gap-2 border-b border-rose-500 shadow-lg relative z-50">
+            <span>⚠️</span>
+            <span>
+              MALPRACTICE WARNING: FORBIDDEN OBJECT ({detectedClass.toUpperCase()}) DETECTED! REDIRECTING TO DASHBOARD IN {countdown} SECONDS
+            </span>
+          </div>
+        )}
         <header className="border-b border-white/10 bg-slate-950/70 px-4 py-3 backdrop-blur-xl">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
             <div className="flex items-center gap-3">
@@ -116,6 +158,18 @@ export const SandboxPage: React.FC = () => {
             </div>
           </div>
         </main>
+        
+        {/* Floating Proctoring Camera Widget at Top-Right (occupies ~15% screen space) */}
+        <div className="fixed top-24 right-4 z-40 shadow-2xl">
+          <AICameraWidget
+            onInfractionChange={(infractions) => {
+              if (infractions.mobile && countdown === null) {
+                setDetectedClass('mobile phone');
+                setCountdown(3);
+              }
+            }}
+          />
+        </div>
       </div>
     </PageTransition>
   );

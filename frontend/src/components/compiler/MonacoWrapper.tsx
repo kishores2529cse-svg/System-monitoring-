@@ -4,7 +4,7 @@ import { Check, RotateCcw, Copy, Sparkles } from 'lucide-react';
 import { useExam } from '../../contexts/ExamContext';
 import type { SupportedLanguage } from '../../types';
 
-export const MonacoWrapper: React.FC = () => {
+export const MonacoWrapper: React.FC = React.memo(() => {
   const {
     selectedLanguage,
     setSelectedLanguage,
@@ -111,4 +111,4 @@ export const MonacoWrapper: React.FC = () => {
       </div>
     </div>
   );
-};
+});

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import type { MonitoringEvent, SeverityLevel } from '../types';
 import { api } from '../api/client';
 import { INITIAL_MONITORING_EVENTS } from '../services/mockData';
@@ -44,6 +44,16 @@ export const MonitoringProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [voiceDetected] = useState<boolean>(false);
   const [events, setEvents] = useState<MonitoringEvent[]>(INITIAL_MONITORING_EVENTS);
   const [activeWarningModal, setActiveWarningModal] = useState<{ open: boolean; title: string; message: string; severity: SeverityLevel } | null>(null);
+
+  const telemetryRef = useRef({ confidenceScore, cameraActive, isFullscreen });
+  useEffect(() => {
+    telemetryRef.current = { confidenceScore, cameraActive, isFullscreen };
+  }, [confidenceScore, cameraActive, isFullscreen]);
+
+  const warningsCountRef = useRef(warningsCount);
+  useEffect(() => {
+    warningsCountRef.current = warningsCount;
+  }, [warningsCount]);
 
   // Sync fullscreen state
   useEffect(() => {
@@ -95,18 +105,18 @@ export const MonitoringProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     },
   });
 
-  // Sync heartbeat telemetry
+  // Sync heartbeat telemetry with stable 5s interval (reading cached telemetryRef)
   useEffect(() => {
     const timer = setInterval(() => {
       api.monitor.sendHeartbeat({
         candidateId: 'USR001',
-        confidence: confidenceScore,
-        camera: cameraActive,
-        fullscreen: isFullscreen
+        confidence: telemetryRef.current.confidenceScore,
+        camera: telemetryRef.current.cameraActive,
+        fullscreen: telemetryRef.current.isFullscreen
       });
     }, 5000);
     return () => clearInterval(timer);
-  }, [confidenceScore, cameraActive, isFullscreen]);
+  }, []);
 
   const dismissWarningModal = () => {
     setActiveWarningModal(null);
@@ -138,7 +148,8 @@ export const MonitoringProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     setRiskScore(prev => Math.min(100, prev + Math.min(18, Math.abs(impact))));
 
     if (severity === 'High' || severity === 'Critical') {
-      const nextWarnings = warningsCount + 1;
+      const nextWarnings = warningsCountRef.current + 1;
+      warningsCountRef.current = nextWarnings;
       setWarningsCount(nextWarnings);
 
       if (nextWarnings >= 3 || severity === 'Critical') {
@@ -153,7 +164,7 @@ export const MonitoringProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         });
       }
     }
-  }, [warningsCount]);
+  }, []);
 
   const toggleCamera = () => setCameraActive(prev => !prev);
   const toggleMic = () => setMicActive(prev => !prev);

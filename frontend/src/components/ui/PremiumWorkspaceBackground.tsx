@@ -78,20 +78,38 @@ export const PremiumWorkspaceBackground: React.FC = () => {
 
     const updateScroll = () => { scrollY = window.scrollY; };
 
+    let lastStyleUpdate = 0;
+    let isHidden = document.hidden;
+
+    const handleVisibilityChange = () => {
+      isHidden = document.hidden;
+      if (!isHidden && !reducedMotion) {
+        window.cancelAnimationFrame(frame);
+        frame = window.requestAnimationFrame(draw);
+      }
+    };
+
     const draw = (time: number) => {
+      if (isHidden) return;
+
       pointer.x += (pointer.targetX - pointer.x) * 0.055;
       pointer.y += (pointer.targetY - pointer.y) * 0.055;
-      const nx = pointer.x / width - 0.5;
-      const ny = pointer.y / height - 0.5;
-      layer.style.setProperty('--pointer-x', `${nx * 18}px`);
-      layer.style.setProperty('--pointer-y', `${ny * 18}px`);
-      layer.style.setProperty('--pointer-x-slow', `${nx * -12}px`);
-      layer.style.setProperty('--pointer-y-slow', `${ny * -12}px`);
-      layer.style.setProperty('--pointer-x-fast', `${nx * 28}px`);
-      layer.style.setProperty('--pointer-y-fast', `${ny * 28}px`);
-      layer.style.setProperty('--cursor-left', `${pointer.x}px`);
-      layer.style.setProperty('--cursor-top', `${pointer.y}px`);
-      layer.style.setProperty('--scroll-shift', `${Math.min(scrollY * 0.025, 42)}px`);
+
+      // Throttle DOM CSS custom property writes to ~30fps max to avoid layout recalculation thrashing
+      if (time - lastStyleUpdate > 32) {
+        lastStyleUpdate = time;
+        const nx = pointer.x / width - 0.5;
+        const ny = pointer.y / height - 0.5;
+        layer.style.setProperty('--pointer-x', `${nx * 18}px`);
+        layer.style.setProperty('--pointer-y', `${ny * 18}px`);
+        layer.style.setProperty('--pointer-x-slow', `${nx * -12}px`);
+        layer.style.setProperty('--pointer-y-slow', `${ny * -12}px`);
+        layer.style.setProperty('--pointer-x-fast', `${nx * 28}px`);
+        layer.style.setProperty('--pointer-y-fast', `${ny * 28}px`);
+        layer.style.setProperty('--cursor-left', `${pointer.x}px`);
+        layer.style.setProperty('--cursor-top', `${pointer.y}px`);
+        layer.style.setProperty('--scroll-shift', `${Math.min(scrollY * 0.025, 42)}px`);
+      }
 
       context.clearRect(0, 0, width, height);
       const spotlight = context.createRadialGradient(pointer.x, pointer.y, 0, pointer.x, pointer.y, Math.min(width, height) * 0.43);
@@ -179,12 +197,14 @@ export const PremiumWorkspaceBackground: React.FC = () => {
     window.addEventListener('resize', resize, { passive: true });
     window.addEventListener('pointermove', movePointer, { passive: true });
     window.addEventListener('scroll', updateScroll, { passive: true });
+    document.addEventListener('visibilitychange', handleVisibilityChange);
     frame = window.requestAnimationFrame(draw);
 
     return () => {
       window.removeEventListener('resize', resize);
       window.removeEventListener('pointermove', movePointer);
       window.removeEventListener('scroll', updateScroll);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.cancelAnimationFrame(frame);
     };
   }, []);

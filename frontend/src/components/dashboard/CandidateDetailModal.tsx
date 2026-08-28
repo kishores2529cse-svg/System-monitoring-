@@ -169,20 +169,48 @@ export const CandidateDetailModal: React.FC<CandidateDetailModalProps> = ({
                 {candidateEvents.length === 0 ? (
                   <p className="text-xs text-slate-500 py-6 text-center">No proctor violations logged for this candidate.</p>
                 ) : (
-                  candidateEvents.map(e => (
-                    <div key={e.id} className="p-3 rounded-xl bg-white border border-slate-200 flex items-center justify-between text-xs shadow-2xs">
-                      <div>
-                        <div className="font-semibold text-slate-900 font-serif-luxury text-sm">{e.event}</div>
-                        <p className="text-slate-600 text-[11px] mt-0.5">{e.details}</p>
+                  candidateEvents.map(e => {
+                    const isUnauthObj = e.event.includes('UNAUTHORIZED OBJECT DETECTED') || e.event.includes('Mobile Phone');
+                    const isFocusShift = e.event.includes('Focus Shift') || e.event.includes('Turned Around');
+
+                    return (
+                      <div
+                        key={e.id}
+                        className={`p-3.5 rounded-xl border flex items-center justify-between text-xs shadow-2xs transition-all ${
+                          isUnauthObj
+                            ? 'bg-rose-50/90 border-rose-400 text-rose-950 ring-1 ring-rose-400/30'
+                            : isFocusShift
+                            ? 'bg-amber-50/90 border-amber-300 text-amber-950'
+                            : 'bg-white border-slate-200'
+                        }`}
+                      >
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className={`font-bold font-serif-luxury text-sm ${isUnauthObj ? 'text-rose-700 font-mono font-black' : 'text-slate-900'}`}>
+                              {e.event}
+                            </span>
+                            {isUnauthObj && (
+                              <span className="px-2 py-0.5 rounded bg-rose-600 text-white text-[9px] font-mono font-bold tracking-wider uppercase animate-pulse">
+                                YOLOv8-N Malpractice Flag
+                              </span>
+                            )}
+                            {isFocusShift && (
+                              <span className="px-2 py-0.5 rounded bg-amber-500 text-slate-950 text-[9px] font-mono font-bold tracking-wider uppercase">
+                                MediaPipe Face Landmark Flag
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-slate-600 text-[11px] leading-relaxed">{e.details}</p>
+                        </div>
+                        <div className="text-right shrink-0 ml-3">
+                          <span className={`px-2 py-0.5 rounded text-[10px] border font-bold ${getSeverityBadge(e.severity)}`}>
+                            {e.severity}
+                          </span>
+                          <div className="font-mono text-[10px] text-slate-500 mt-1">{e.timestamp}</div>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <span className={`px-2 py-0.5 rounded text-[10px] border ${getSeverityBadge(e.severity)}`}>
-                          {e.severity}
-                        </span>
-                        <div className="font-mono text-[10px] text-slate-500 mt-1">{e.timestamp}</div>
-                      </div>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
             </div>

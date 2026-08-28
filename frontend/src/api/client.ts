@@ -58,6 +58,12 @@ const API_BASE = import.meta.env.VITE_API_BASE || (
     : 'https://system-monitoring-1-drf0.onrender.com/api'
 );
 
+const ANTICHEATING_API_BASE = import.meta.env.VITE_ANTICHEATING_API_BASE || (
+  window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:8081/api'
+    : 'https://system-monitoring-1-drf0.onrender.com/api'
+);
+
 // Pre-registered users store for offline fallback
 let registeredUsers = getStore<Array<{ email: string; password?: string; name: string; college?: string; phone?: string }>>('registered_users', [
   { email: 'kishore@shakthi.edu', password: 'password123', name: 'Kishore S', college: 'Sri Shakthi Institute of Engineering and Technology' },
@@ -702,26 +708,101 @@ export const api = {
       events = [newEvt, ...events];
       setStore('events', events);
 
-      // Adjust candidate confidence score & warnings
+      // Adjust candidate confidence score & warnings and tag malpractice flags
+      const isUnauthObj = event.event.includes('UNAUTHORIZED OBJECT DETECTED') || event.event.includes('Mobile Phone');
+      const isFocusShift = event.event.includes('Focus Shift') || event.event.includes('Turned Around');
+
       candidates = candidates.map(c => {
-        if (c.id === event.candidateId) {
+        if (c.id === event.candidateId || c.name === event.candidateName) {
           const newScore = Math.max(0, Math.min(100, c.confidenceScore + event.confidenceImpact));
           const newWarnings = event.severity === 'High' || event.severity === 'Critical' ? c.warnings + 1 : c.warnings;
           const isLocked = newWarnings >= 3 || event.severity === 'Critical' || c.status === 'Locked';
+          
           return {
             ...c,
             confidenceScore: newScore,
             warnings: newWarnings,
-            status: isLocked ? 'Locked' : (newWarnings > 0 ? 'Warning' : 'Active')
+            status: isLocked ? 'Locked' : (newWarnings > 0 ? 'Warning' : 'Active'),
+            unauthorizedObjectDetected: isUnauthObj || c.unauthorizedObjectDetected,
+            unauthorizedObjectName: isUnauthObj ? (event.details?.match(/object:\s*([a-zA-Z\s]+)/i)?.[1] || 'cell phone') : c.unauthorizedObjectName,
+            focusShiftDetected: isFocusShift || c.focusShiftDetected,
+            malpracticeAlert: isUnauthObj ? 'UNAUTHORIZED OBJECT DETECTED!!!' : (isFocusShift ? (c.malpracticeAlert || 'FOCUS SHIFT DETECTED') : c.malpracticeAlert),
+            recentViolation: event.event
           };
         }
         return c;
       });
       setStore('candidates', candidates);
 
+      // Real backend integration with Anticheating microservice
+      const token = localStorage.getItem('codeshield_token');
+      if (token) {
+        try {
+          const cleanUserId = event.candidateId.replace('USR-', '').replace('USR', '');
+          let eventType = 'PROCTOR_EVENT';
+          if (event.event === 'Mobile Phone Detected') {
+            eventType = 'MOBILE_PHONE_DETECTED';
+          } else if (event.event === 'Candidate Turned Around') {
+            eventType = 'HEAD_TURNED_AWAY';
+          } else {
+            eventType = event.event.toUpperCase().replace(/\s+/g, '_');
+          }
+
+          await fetch(`${ANTICHEATING_API_BASE}/monitor/event`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              user_id: cleanUserId || '1',
+              event_type: eventType,
+              details: event.details || '',
+              timestamp: new Date()
+            })
+          });
+        } catch (e) {
+          console.warn('Anticheating backend offline. Saving malpractice event in browser offline store.');
+        }
+      }
+
       return newEvt;
     },
     getHistory: async (candidateId?: string): Promise<MonitoringEvent[]> => {
+      const token = localStorage.getItem('codeshield_admin_token') || localStorage.getItem('codeshield_token');
+      if (token) {
+        try {
+          const url = candidateId
+            ? `${ANTICHEATING_API_BASE}/monitor/history?userId=${candidateId.replace('USR-', '').replace('USR', '')}`
+            : `${ANTICHEATING_API_BASE}/monitor/history`;
+          
+          const response = await fetch(url, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (response.ok) {
+            const resData = await response.json();
+            if (resData.success && Array.isArray(resData.data)) {
+              const backendEvents: MonitoringEvent[] = resData.data.map((item: any) => ({
+                id: `EVT-${item.id || Math.floor(1000 + Math.random() * 9000)}`,
+                candidateId: item.user_id ? `USR-${item.user_id}` : 'USR001',
+                candidateName: item.username || 'Candidate',
+                timestamp: new Date(item.timestamp).toLocaleTimeString('en-US', { hour12: false }),
+                event: item.event_type === 'MOBILE_PHONE_DETECTED' ? 'Mobile Phone Detected' : (item.event_type === 'HEAD_TURNED_AWAY' ? 'Candidate Turned Around' : item.event_type),
+                severity: (item.event_type === 'MOBILE_PHONE_DETECTED' || item.event_type === 'HEAD_TURNED_AWAY') ? 'Critical' : 'Medium',
+                confidenceImpact: -30,
+                status: 'Flagged',
+                details: item.details || 'Malpractice violation registered on server'
+              }));
+              
+              const merged = [...backendEvents, ...events];
+              const unique = merged.filter((v, i, a) => a.findIndex(t => t.timestamp === v.timestamp && t.event === v.event) === i);
+              return candidateId ? unique.filter(e => e.candidateId === candidateId) : unique;
+            }
+          }
+        } catch (e) {
+          console.warn('Anticheating backend offline. Using offline browser store for history.');
+        }
+      }
       return candidateId ? events.filter(e => e.candidateId === candidateId) : events;
     }
   },
@@ -733,7 +814,20 @@ export const api = {
       return { totalCandidates: liveCandidates, liveCandidates: 0, lockedUsers: 0, suspiciousEvents: adminEvents.length, averageConfidenceScore: 0, completedExams: 0, runningExams: 0, aiAccuracy: 0 };
     },
     getLiveSessions: async (): Promise<CandidateCardData[]> => {
-      return [];
+      const storedEvents = getStore<MonitoringEvent[]>('events', events);
+      return candidates.map(c => {
+        const candidateEvts = storedEvents.filter(e => e.candidateId === c.id || e.candidateName === c.name);
+        const hasUnauthObj = candidateEvts.some(e => e.event.includes('UNAUTHORIZED OBJECT DETECTED') || e.event.includes('Mobile Phone'));
+        const hasFocusShift = candidateEvts.some(e => e.event.includes('Focus Shift') || e.event.includes('Turned Around'));
+        const latestEvt = candidateEvts[0];
+        return {
+          ...c,
+          unauthorizedObjectDetected: hasUnauthObj || c.unauthorizedObjectDetected,
+          focusShiftDetected: hasFocusShift || c.focusShiftDetected,
+          malpracticeAlert: hasUnauthObj ? 'UNAUTHORIZED OBJECT DETECTED!!!' : (hasFocusShift ? (c.malpracticeAlert || 'FOCUS SHIFT DETECTED') : c.malpracticeAlert),
+          recentViolation: latestEvt ? latestEvt.event : c.recentViolation
+        };
+      });
     },
     getLiveEvents: async (): Promise<MonitoringEvent[]> => {
       return adminEvents;

@@ -38,6 +38,11 @@ export interface CandidateCardData {
   avatarUrl?: string;
   startedAt: string;
   codeSnippet?: string;
+  unauthorizedObjectDetected?: boolean;
+  unauthorizedObjectName?: string;
+  focusShiftDetected?: boolean;
+  malpracticeAlert?: string;
+  recentViolation?: string;
 }
 
 export interface ProblemExample {

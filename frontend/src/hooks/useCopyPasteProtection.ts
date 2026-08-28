@@ -24,8 +24,9 @@ export const useCopyPasteProtection = ({
   const isAllowedTarget = (target: EventTarget | null): boolean => {
     if (!target) return false;
     const element = target as HTMLElement;
+    if (typeof element.matches !== 'function') return false;
     return allowedSelectorsRef.current.some(selector =>
-      element.matches(selector) || element.closest(selector)
+      element.matches(selector) || (typeof element.closest === 'function' && element.closest(selector))
     );
   };
 

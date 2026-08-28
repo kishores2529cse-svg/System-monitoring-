@@ -1,11 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Code2, Trophy, Flame, Sparkles, Zap } from 'lucide-react';
+import { ArrowLeft, Code2, Trophy, Sparkles } from 'lucide-react';
 
 import kishoreImg from '../../assets/kishore.jpg';
-import viswanathImg from '../../assets/viswanath.jpg';
-import vijayImg from '../../assets/vijay.jpg';
 
 /* ─── SVG Rotating Dashed Ring ─── */
 const RotatingDashedRing: React.FC<{
@@ -170,13 +168,13 @@ const ProfileCard: React.FC<{
         stiffness: 80,
         damping: 15,
       }}
-      className="flex flex-col items-center group"
+      className="flex flex-col items-center group max-w-md mx-auto"
     >
       {/* Avatar container with rotating dashed rings */}
-      <div className="relative w-56 h-56 sm:w-64 sm:h-64 mb-8 flex items-center justify-center">
+      <div className="relative w-64 h-64 sm:w-72 sm:h-72 mb-8 flex items-center justify-center">
         {/* Outer ring — slow, dashed */}
         <RotatingDashedRing
-          size={256}
+          size={270}
           strokeColor={accentColor}
           strokeColor2={accentColor2}
           dashArray="18 12 6 12"
@@ -185,7 +183,7 @@ const ProfileCard: React.FC<{
         />
         {/* Middle ring — medium, offset dash */}
         <RotatingDashedRing
-          size={232}
+          size={244}
           strokeColor={accentColor2}
           strokeColor2={accentColor}
           dashArray="8 14"
@@ -195,7 +193,7 @@ const ProfileCard: React.FC<{
         />
         {/* Inner ring — fast, fine dash */}
         <RotatingDashedRing
-          size={210}
+          size={218}
           strokeColor={accentColor}
           strokeColor2="rgba(255,216,77,0.7)"
           dashArray="4 10 8 10"
@@ -207,13 +205,13 @@ const ProfileCard: React.FC<{
         <motion.div
           className="absolute rounded-full"
           style={{
-            width: 180,
-            height: 180,
+            width: 190,
+            height: 190,
             top: '50%',
             left: '50%',
-            marginLeft: -90,
-            marginTop: -90,
-            background: `radial-gradient(circle, ${accentColor}22 0%, transparent 70%)`,
+            marginLeft: -95,
+            marginTop: -95,
+            background: `radial-gradient(circle, ${accentColor}25 0%, transparent 70%)`,
           }}
           animate={{
             scale: [1, 1.15, 1],
@@ -230,12 +228,12 @@ const ProfileCard: React.FC<{
         <div
           className="absolute rounded-full overflow-hidden border-2 shadow-2xl transition-transform duration-500 group-hover:scale-105"
           style={{
-            width: 180,
-            height: 180,
+            width: 190,
+            height: 190,
             top: '50%',
             left: '50%',
-            marginLeft: -90,
-            marginTop: -90,
+            marginLeft: -95,
+            marginTop: -95,
             borderColor: accentColor,
             boxShadow: `0 0 30px ${accentColor}33, 0 0 60px ${accentColor}11`,
           }}
@@ -250,7 +248,7 @@ const ProfileCard: React.FC<{
 
       {/* Name */}
       <motion.h3
-        className="text-2xl sm:text-3xl font-black tracking-tight text-white font-serif-luxury mb-2 text-center"
+        className="text-3xl sm:text-4xl font-black tracking-tight text-white font-serif-luxury mb-2 text-center"
         style={{ textShadow: `0 0 20px ${accentColor}33` }}
       >
         {name}
@@ -271,13 +269,13 @@ const ProfileCard: React.FC<{
       </motion.div>
 
       {/* Bio */}
-      <p className="text-neutral-300 text-sm leading-relaxed font-sans font-light text-center max-w-xs px-2">
+      <p className="text-neutral-300 text-sm sm:text-base leading-relaxed font-sans font-light text-center max-w-md px-2">
         {bio}
       </p>
 
       {/* SIET Hackathon badge */}
       <motion.div
-        className="mt-5 flex items-center gap-2 px-4 py-2 rounded-xl border backdrop-blur-md"
+        className="mt-6 flex items-center gap-2 px-5 py-2.5 rounded-xl border backdrop-blur-md"
         style={{
           borderColor: 'rgba(255,216,77,0.3)',
           backgroundColor: 'rgba(255,216,77,0.06)',
@@ -288,7 +286,7 @@ const ProfileCard: React.FC<{
         }}
       >
         <Trophy className="w-4 h-4 text-[#FFD84D]" />
-        <span className="text-[11px] font-mono font-bold text-[#FFD84D] tracking-wider">
+        <span className="text-xs font-mono font-bold text-[#FFD84D] tracking-wider">
           SIET HACKATHON FINALIST
         </span>
       </motion.div>
@@ -298,35 +296,15 @@ const ProfileCard: React.FC<{
 
 /* ═══════════════════════════════════════════════ ABOUT PAGE ═══════════════════════════════════════════════ */
 export const AboutPage: React.FC = () => {
-  const teamMembers = [
-    {
-      name: 'KISHORE S',
-      image: kishoreImg,
-      bio: 'Java Full Stack Developer | 100+ LeetCode Problems Solved | DSA & Competitive Programming Enthusiast | Building AI-Powered Web Applications & Scalable Solutions | Cloud Computing | 2nd Year CSE Student.',
-      badge: 'Full Stack Dev',
-      accentColor: '#7CFF4D',
-      accentColor2: '#00E5FF',
-      icon: <Code2 className="w-3.5 h-3.5" />,
-    },
-    {
-      name: 'VISWANATH N',
-      image: viswanathImg,
-      bio: 'Competitive Programmer || Java || Full Stack Developer. I am one among many who believes that being a manual coder matters as being a vibe coder. Let\'s dare climb the steep hill together and enjoy the glorious view from the peak.',
-      badge: 'Competitive Coder',
-      accentColor: '#FF4D4D',
-      accentColor2: '#FF8C1A',
-      icon: <Flame className="w-3.5 h-3.5" />,
-    },
-    {
-      name: 'VIJAY RATHINAM',
-      image: vijayImg,
-      bio: '2nd Year CSE Student | DSA Enthusiast | Passionate about algorithms, problem solving, and building efficient systems with clean, scalable code.',
-      badge: 'DSA Enthusiast',
-      accentColor: '#A855F7',
-      accentColor2: '#EC4899',
-      icon: <Zap className="w-3.5 h-3.5" />,
-    },
-  ];
+  const member = {
+    name: 'KISHORE S',
+    image: kishoreImg,
+    bio: 'Java Full Stack Developer | 100+ LeetCode Problems Solved | DSA & Competitive Programming Enthusiast | Building AI-Powered Web Applications & Scalable Solutions | Cloud Computing | 2nd Year CSE Student.',
+    badge: 'Full Stack Dev',
+    accentColor: '#7CFF4D',
+    accentColor2: '#00E5FF',
+    icon: <Code2 className="w-3.5 h-3.5" />,
+  };
 
   return (
     <div className="min-h-screen relative overflow-hidden font-serif-luxury selection:bg-[#7CFF4D]/20 selection:text-white">
@@ -419,7 +397,7 @@ export const AboutPage: React.FC = () => {
           >
             <Sparkles className="w-3.5 h-3.5 text-[#FFD84D] animate-pulse" />
             <span className="font-semibold font-sans tracking-[0.2em] uppercase text-[10px]">
-              THE MINDS BEHIND CODESHIELD
+              THE MIND BEHIND CODESHIELD
             </span>
           </motion.div>
 
@@ -429,9 +407,9 @@ export const AboutPage: React.FC = () => {
             transition={{ duration: 0.7, delay: 0.1 }}
             className="text-5xl sm:text-7xl lg:text-8xl font-black tracking-tight text-white leading-[0.95] mb-4"
           >
-            MEET OUR{' '}
+            MEET THE{' '}
             <span className="bg-gradient-to-r from-[#22c55e] via-[#7CFF4D] to-[#FFD84D] bg-clip-text text-transparent">
-              TEAM
+              CREATOR
             </span>
           </motion.h1>
 
@@ -451,48 +429,38 @@ export const AboutPage: React.FC = () => {
             transition={{ duration: 0.6, delay: 0.4 }}
             className="text-neutral-400 max-w-2xl mx-auto text-base sm:text-lg font-sans font-light leading-relaxed"
           >
-            Three passionate developers united by a shared vision — building
-            the future of secure, AI-powered examination systems.
+            Passionate full stack developer and competitive programmer building
+            the future of secure, AI-powered examination and anti-malpractice monitoring systems.
           </motion.p>
         </div>
 
-        {/* ═══ Profile Cards Grid ═══ */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-8 py-16 sm:py-24">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 lg:gap-16">
-            {teamMembers.map((member, idx) => (
-              <ProfileCard
-                key={member.name}
-                {...member}
-                delay={0.3 + idx * 0.2}
-              />
-            ))}
-          </div>
+        {/* ═══ Profile Card (Centered) ═══ */}
+        <div className="max-w-4xl mx-auto px-4 sm:px-8 py-12 sm:py-16 flex justify-center">
+          <ProfileCard
+            {...member}
+            delay={0.3}
+          />
         </div>
 
         {/* ═══ Bottom CTA ═══ */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 1.2 }}
+          transition={{ duration: 0.7, delay: 0.8 }}
           className="text-center pb-20 px-4"
         >
           <div className="inline-flex items-center gap-4 p-6 rounded-3xl border border-white/10 bg-black/30 backdrop-blur-xl">
-            <div className="flex -space-x-3">
-              {teamMembers.map((m) => (
-                <img
-                  key={m.name}
-                  src={m.image}
-                  alt={m.name}
-                  className="w-10 h-10 rounded-full border-2 border-[#050505] object-cover object-top"
-                />
-              ))}
-            </div>
+            <img
+              src={member.image}
+              alt={member.name}
+              className="w-11 h-11 rounded-full border-2 border-[#7CFF4D] object-cover object-top shadow-lg shadow-[#7CFF4D]/20"
+            />
             <div className="text-left">
               <p className="text-white text-sm font-bold font-serif-luxury">
-                Built with 🔥 by Team CodeShield
+                Built with 🔥 by Kishore S
               </p>
               <p className="text-neutral-500 text-xs font-sans">
-                SIET Hackathon Finalists — Among 152 Teams
+                SIET Hackathon Finalist — CodeShield Creator
               </p>
             </div>
           </div>
@@ -503,3 +471,4 @@ export const AboutPage: React.FC = () => {
 };
 
 export default AboutPage;
+

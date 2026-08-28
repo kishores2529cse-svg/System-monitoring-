@@ -33,7 +33,7 @@ export const LiveCandidateCard: React.FC<LiveCandidateCardProps> = ({
     }`}>
       
       {/* Header Info */}
-      <div className="flex items-start justify-between gap-3 mb-3">
+      <div className="flex items-start justify-between gap-3 mb-2">
         <div className="flex items-center gap-3">
           <div className="relative w-11 h-11 rounded-xl overflow-hidden border border-slate-200 shrink-0 shadow-2xs">
             <img
@@ -65,6 +65,33 @@ export const LiveCandidateCard: React.FC<LiveCandidateCardProps> = ({
           {candidate.status}
         </span>
       </div>
+
+      {/* Prominent Malpractice Alert Banner */}
+      {(candidate.unauthorizedObjectDetected || candidate.malpracticeAlert?.includes('UNAUTHORIZED OBJECT')) ? (
+        <div className="my-2 p-2 rounded-xl bg-gradient-to-r from-rose-600 via-red-600 to-rose-700 text-white flex items-center justify-between gap-2 shadow-md animate-pulse border border-rose-400">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <AlertTriangle className="w-4 h-4 text-white shrink-0 animate-bounce" />
+            <span className="font-mono font-black text-[11px] tracking-tight truncate">
+              UNAUTHORIZED OBJECT DETECTED!!!
+            </span>
+          </div>
+          <span className="text-[9px] bg-black/40 px-1.5 py-0.5 rounded font-mono font-bold uppercase shrink-0">
+            YOLOv8-N
+          </span>
+        </div>
+      ) : candidate.focusShiftDetected ? (
+        <div className="my-2 p-2 rounded-xl bg-amber-500/90 text-slate-950 flex items-center justify-between gap-2 shadow-sm border border-amber-400">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <AlertTriangle className="w-4 h-4 text-slate-950 shrink-0" />
+            <span className="font-mono font-bold text-[11px] tracking-tight truncate">
+              FOCUS SHIFT DETECTED
+            </span>
+          </div>
+          <span className="text-[9px] bg-black/20 px-1.5 py-0.5 rounded font-mono font-bold uppercase shrink-0">
+            MediaPipe
+          </span>
+        </div>
+      ) : null}
 
       {/* Sensor AI Indicators Grid */}
       <div className="grid grid-cols-2 gap-2 my-3 p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[11px]">

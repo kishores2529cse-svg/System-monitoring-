@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { User, Sparkles, ShieldCheck, TrendingUp, Activity, Bookmark } from 'lucide-react';
+import { User, Sparkles, ShieldCheck, TrendingUp, Activity, Bookmark, AlertTriangle, ShieldAlert } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { api } from '../../api/client';
+import type { MonitoringEvent } from '../../types';
 import { Navbar } from '../../components/common/Navbar';
 import { Footer } from '../../components/common/Footer';
 import { PageTransition } from '../../components/ui/PageTransition';
@@ -28,6 +30,19 @@ const recentActivity = [
 
 export const CandidateDashboard: React.FC = () => {
   const { user } = useAuth();
+  const [historyEvents, setHistoryEvents] = useState<MonitoringEvent[]>([]);
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const evts = await api.monitor.getHistory('USR001');
+        setHistoryEvents(evts);
+      } catch (e) {
+        console.warn('Failed to load candidate proctor history:', e);
+      }
+    };
+    fetchHistory();
+  }, []);
 
   return (
     <PageTransition>
@@ -195,6 +210,72 @@ export const CandidateDashboard: React.FC = () => {
                   </div>
                 </div>
               </div>
+            </section>
+            {/* Proctor Security Audit & History Section */}
+            <section className="rounded-3xl border border-white/15 bg-black/60 p-6 shadow-xl backdrop-blur-xl space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.26em] font-semibold text-rose-400">Security & Integrity Audit</p>
+                  <h2 className="mt-1 text-2xl font-bold text-white flex items-center gap-2">
+                    <ShieldAlert className="w-6 h-6 text-rose-500" />
+                    Proctor Violation History & Audit Cards
+                  </h2>
+                </div>
+                <span className="text-xs font-mono px-3 py-1 rounded-full bg-slate-900 border border-slate-700 text-cyan-300 font-bold self-start sm:self-auto">
+                  YOLOv8-N & MediaPipe Monitored
+                </span>
+              </div>
+
+              {historyEvents.length === 0 ? (
+                <div className="p-6 rounded-2xl bg-emerald-950/20 border border-emerald-500/30 flex items-center gap-3 text-emerald-300">
+                  <ShieldCheck className="w-6 h-6 text-emerald-400 shrink-0" />
+                  <div>
+                    <p className="text-sm font-bold">100% Clean Proctor Audit</p>
+                    <p className="text-xs text-emerald-400/80">No unauthorized objects or focus shift violations recorded in your examination history.</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {historyEvents.map((evt) => {
+                    const isUnauthObj = evt.event.includes('UNAUTHORIZED OBJECT DETECTED') || evt.event.includes('Mobile Phone');
+                    const isFocusShift = evt.event.includes('Focus Shift') || evt.event.includes('Turned Around');
+
+                    return (
+                      <div
+                        key={evt.id}
+                        className={`rounded-2xl p-4 border transition-all ${
+                          isUnauthObj
+                            ? 'bg-gradient-to-br from-rose-950/80 to-red-950/60 border-rose-500/60 shadow-lg shadow-rose-950/50'
+                            : isFocusShift
+                            ? 'bg-gradient-to-br from-amber-950/80 to-orange-950/60 border-amber-500/50'
+                            : 'bg-white/5 border-white/10'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <div className="flex items-center gap-2">
+                            <AlertTriangle className={`w-4 h-4 shrink-0 ${isUnauthObj ? 'text-rose-400 animate-bounce' : 'text-amber-400'}`} />
+                            <span className={`text-xs font-bold font-mono ${isUnauthObj ? 'text-rose-200 font-black' : 'text-white'}`}>
+                              {evt.event}
+                            </span>
+                          </div>
+                          <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded uppercase ${
+                            isUnauthObj ? 'bg-rose-600 text-white' : 'bg-amber-500 text-black'
+                          }`}>
+                            {isUnauthObj ? 'YOLOv8-N' : 'MediaPipe'}
+                          </span>
+                        </div>
+
+                        <p className="text-xs text-slate-300 leading-relaxed font-sans">{evt.details}</p>
+                        
+                        <div className="mt-3 pt-2 border-t border-white/10 flex items-center justify-between text-[11px] font-mono text-slate-400">
+                          <span>Status: {evt.status}</span>
+                          <span>{evt.timestamp}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </section>
           </main>
 

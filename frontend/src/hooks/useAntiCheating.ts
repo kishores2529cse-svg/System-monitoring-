@@ -81,7 +81,7 @@ export function useAntiCheating(enabled: boolean = true) {
 
     const handleSelectStart = (e: Event) => {
       const target = e.target as HTMLElement;
-      if (!target.closest('.monaco-editor') && !target.closest('textarea') && !target.closest('input')) {
+      if (target && typeof target.closest === 'function' && !target.closest('.monaco-editor') && !target.closest('textarea') && !target.closest('input')) {
         e.preventDefault();
         reportViolation('Text Selection Attempt', 'Medium', -6, 'Attempted to select text outside the secure exam editor.', false);
       }
@@ -120,8 +120,7 @@ export function useAntiCheating(enabled: boolean = true) {
 
     const handleScroll = (e: Event) => {
       const target = e.target as HTMLElement;
-      if (!target.closest('.monaco-editor')) {
-        e.preventDefault();
+      if (target && typeof target.closest === 'function' && !target.closest('.monaco-editor')) {
         reportViolation('Scroll Attempt Outside Editor', 'Low', -4, 'Attempted to scroll outside the secure exam viewport.');
       }
     };
@@ -163,7 +162,7 @@ export function useAntiCheating(enabled: boolean = true) {
 
     const handleFocusAttempt = (e: FocusEvent) => {
       const target = e.target as HTMLElement;
-      if (!target.closest('.monaco-editor') && !target.closest('textarea') && !target.closest('input')) {
+      if (target && typeof target.closest === 'function' && !target.closest('.monaco-editor') && !target.closest('textarea') && !target.closest('input')) {
         reportViolation('Unauthorized Focus Shift', 'Low', -3, 'Attempted to move focus outside the secure exam editor.');
       }
     };

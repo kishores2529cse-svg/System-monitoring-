@@ -14,13 +14,60 @@ import { ExamPasswordGateModal } from '../../components/monitoring/ExamPasswordG
 import { GlowingButton } from '../../components/ui/GlowingButton';
 import { formatTime } from '../../utils/cn';
 
+import { AICameraWidget } from '../../components/monitoring/AICameraWidget';
+
 export const ExamPage: React.FC = () => {
   const navigate = useNavigate();
   const { problems, currentProblem, secondsRemaining, timerStatus, isExamExpired, runCode, submitCode, isRunning, isSubmitting } = useExam();
-  const { riskScore, requestFullscreen, cameraActive, isFullscreen } = useMonitoring();
+  const { riskScore, requestFullscreen, cameraActive, isFullscreen, reportViolation } = useMonitoring();
   const [isExamUnlocked, setIsExamUnlocked] = useState<boolean>(false);
+  const [infractions, setInfractions] = useState<{ mobile: boolean; turnedAround: boolean; unauthorizedObject?: boolean; objectName?: string; focusShift?: boolean }>({ mobile: false, turnedAround: false });
+  const [countdown, setCountdown] = useState<number | null>(null);
 
   useAntiCheating(true);
+
+  // Monitor infractions and start countdown
+  useEffect(() => {
+    if (infractions.mobile || infractions.unauthorizedObject) {
+      if (countdown === null) {
+        setCountdown(3); // 3 seconds warning for unauthorized object
+      }
+    } else if (infractions.turnedAround || infractions.focusShift) {
+      if (countdown === null) {
+        setCountdown(6); // 6 seconds warning for focus shift
+      }
+    } else {
+      setCountdown(null);
+    }
+  }, [infractions, countdown]);
+
+  // Handle countdown ticks and auto-redirection on timeout
+  useEffect(() => {
+    if (countdown === null) return;
+
+    if (countdown === 0) {
+      const isObject = infractions.mobile || infractions.unauthorizedObject;
+      const type = isObject ? 'UNAUTHORIZED OBJECT DETECTED!!!' : 'Focus Shift Detected (MediaPipe Face Landmark)';
+      const desc = isObject
+        ? `Candidate was detected using an unauthorized object (${infractions.objectName || 'cell phone'}) during proctored exam via YOLOv8-Nano.`
+        : 'Candidate shifted gaze/focus away from the exam viewport via MediaPipe Face Landmark analysis.';
+      
+      const triggerRedirect = async () => {
+        await reportViolation(type, 'Critical', -35, desc, true);
+        setIsExamUnlocked(false);
+        navigate('/dashboard');
+      };
+
+      triggerRedirect();
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setCountdown(prev => (prev !== null ? prev - 1 : null));
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [countdown, infractions, navigate, reportViolation]);
 
   useEffect(() => {
     if (isExamUnlocked) {
@@ -97,6 +144,16 @@ export const ExamPage: React.FC = () => {
         </div>
       </header>
 
+      {countdown !== null && (
+        <div className="bg-rose-600 text-white font-bold py-2 px-4 text-center text-xs tracking-wider animate-pulse flex items-center justify-center gap-2 shrink-0 border-b border-rose-700 z-50">
+          <span className="text-lg">⚠️</span>
+          <span>
+            MALPRACTICE WARNING: {infractions.mobile ? 'MOBILE PHONE' : 'LOOK AWAY'} DETECTED! 
+            REDIRECTING TO DASHBOARD IN <span className="font-mono text-sm underline px-1">{countdown}</span> SECONDS.
+          </span>
+        </div>
+      )}
+
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-3 p-3 overflow-hidden relative">
         <div className="lg:col-span-5 h-full overflow-hidden">
           <ProblemDescription />
@@ -144,6 +201,11 @@ export const ExamPage: React.FC = () => {
           <LockScreenOverlay />
           <FullscreenOverlay />
           <SecurityViolationModal />
+          <div className="fixed top-24 right-4 z-40 shadow-2xl">
+            <AICameraWidget
+              onInfractionChange={setInfractions}
+            />
+          </div>
         </>
       )}
     </div>
