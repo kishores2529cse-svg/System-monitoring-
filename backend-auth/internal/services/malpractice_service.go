@@ -32,15 +32,39 @@ func (s *MalpracticeService) LogViolation(req *models.LogMalpracticeRequest) (*m
 		}
 	}
 
+	candidateName := req.CandidateName
+	candidateEmail := req.CandidateEmail
+
+	// Auto-lookup candidate name & email from user repository if missing
+	if candidateName == "" || candidateEmail == "" {
+		if user, err := s.userRepo.GetByID(req.UserID); err == nil && user != nil {
+			if candidateName == "" {
+				candidateName = user.Name
+				if candidateName == "" {
+					candidateName = user.Username
+				}
+			}
+			if candidateEmail == "" {
+				candidateEmail = user.Email
+			}
+		}
+	}
+
+	if candidateName == "" {
+		candidateName = "Candidate"
+	}
+
 	logEntry := &models.MalpracticeLog{
-		UserID:       req.UserID,
-		EventType:    req.EventType,
-		Details:      req.Details,
-		Severity:     severity,
-		DetectedItem: req.DetectedItem,
-		Confidence:   req.Confidence,
-		Timestamp:    time.Now(),
-		CreatedAt:    time.Now(),
+		UserID:         req.UserID,
+		CandidateName:  candidateName,
+		CandidateEmail: candidateEmail,
+		EventType:      req.EventType,
+		Details:        req.Details,
+		Severity:       severity,
+		DetectedItem:   req.DetectedItem,
+		Confidence:     req.Confidence,
+		Timestamp:      time.Now(),
+		CreatedAt:      time.Now(),
 	}
 
 	if err := s.repo.Create(logEntry); err != nil {

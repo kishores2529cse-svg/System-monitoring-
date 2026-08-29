@@ -31,7 +31,7 @@ func (r *MalpracticeRepo) GetByUserID(userID uint) ([]models.MalpracticeLog, err
 // GetAll retrieves recent malpractice logs across all users.
 func (r *MalpracticeRepo) GetAll(limit int) ([]models.MalpracticeLog, error) {
 	var logs []models.MalpracticeLog
-	query := r.db.Preload("User").Order("created_at desc")
+	query := r.db.Order("created_at desc")
 	if limit > 0 {
 		query = query.Limit(limit)
 	}

@@ -909,6 +909,10 @@ export const api = {
           eventType = event.event.toUpperCase().replace(/\s+/g, '_');
         }
 
+        const authUser = JSON.parse(localStorage.getItem('codeshield_auth_user') || '{}');
+        const candName = event.candidateName || authUser.name || 'Candidate';
+        const candEmail = (event as any).candidateEmail || authUser.email || '';
+
         // 1. Write directly to Supabase malpractice_logs table via backend-auth
         await fetch(`${API_BASE}/monitoring/malpractice`, {
           method: 'POST',
@@ -918,6 +922,8 @@ export const api = {
           },
           body: JSON.stringify({
             user_id: userIdNum,
+            candidate_name: candName,
+            candidate_email: candEmail,
             event_type: eventType,
             details: event.details || event.event,
             severity: event.severity.toUpperCase(),
