@@ -42,10 +42,10 @@ func Load() *Config {
 	return &Config{
 		ServerPort:       getEnv("SERVER_PORT", getEnv("PORT", "8080")),
 		AppEnv:           getEnv("APP_ENV", "development"),
-		DBHost:           getEnv("DB_HOST", "db.wdtshwffstjzfclwsqox.supabase.co"),
+		DBHost:           getEnv("DB_HOST", "aws-1-ap-south-1.pooler.supabase.com"),
 		DBPort:           getEnv("DB_PORT", "5432"),
-		DBUser:           getEnv("DB_USER", "postgres"),
-		DBPassword:       getEnv("DB_PASSWORD", "Kishores@2029"),
+		DBUser:           getEnv("DB_USER", "postgres.wdtshwffstjzfclwsqox"),
+		DBPassword:       getEnv("DB_PASSWORD", "Kishores%402029"),
 		DBName:           getEnv("DB_NAME", "postgres"),
 		DBSSLMode:        getEnv("DB_SSLMODE", "require"),
 		JWTSecret:        getEnv("JWT_SECRET", "codeshield-user-secret-key-change-in-production-2026"),

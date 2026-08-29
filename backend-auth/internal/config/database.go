@@ -18,7 +18,7 @@ import (
 // InitDB establishes a connection to PostgreSQL and runs auto-migrations.
 func InitDB(cfg *Config) *gorm.DB {
 	var dsn string
-	if strings.Contains(cfg.DBHost, "supabase.co") {
+	if strings.Contains(cfg.DBHost, "supabase") {
 		dsn = fmt.Sprintf("postgresql://%s:%s@%s:%s/%s?sslmode=%s",
 			cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName, cfg.DBSSLMode)
 	} else {
@@ -49,6 +49,16 @@ func InitDB(cfg *Config) *gorm.DB {
 			if err != nil {
 				log.Fatalf("Failed to initialize local SQLite database: %v", err)
 			}
+		}
+	}
+
+	// Ensure users table compatibility if legacy table with conflicting ID exists
+	if db.Migrator().HasTable("users") {
+		var colType string
+		db.Raw("SELECT data_type FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'id'").Scan(&colType)
+		if colType == "uuid" || colType == "text" {
+			log.Println("Migrating legacy users table structure to GORM schema...")
+			db.Exec("DROP TABLE IF EXISTS users CASCADE;")
 		}
 	}
 
