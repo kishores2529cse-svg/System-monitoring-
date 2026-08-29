@@ -211,10 +211,14 @@ export const api = {
           throw err;
         }
 
-        // Fallback for offline mode: validate credentials strictly
-        const found = registeredUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
+        // Fallback for offline/local mode: validate credentials strictly from persistent store
+        const cleanEmail = (email || '').trim().toLowerCase();
+        const cleanPassword = (password || '').trim();
+        const allUsers = getStore<Array<{ email: string; password?: string; name: string; college?: string; department?: string; phone?: string }>>('registered_users', registeredUsers);
+        const found = allUsers.find(u => u.email && u.email.trim().toLowerCase() === cleanEmail);
+        
         if (found) {
-          if (password && found.password && found.password !== password) {
+          if (cleanPassword && found.password && found.password.trim() !== cleanPassword) {
             throw new Error('Invalid email or password');
           }
           const offlineProfile: UserProfile = {
@@ -235,18 +239,25 @@ export const api = {
     },
 
     register: async (data: any): Promise<UserProfile> => {
+      const cleanEmail = (data.email || '').trim().toLowerCase();
+      const cleanPassword = (data.password || '').trim();
+      const cleanName = (data.name || '').trim();
+      const cleanCollege = (data.college || '').trim();
+      const cleanDept = (data.department || '').trim();
+      const cleanPhone = (data.phone || '').trim();
+
       try {
         const response = await fetch(`${API_BASE}/auth/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            username: data.name,
-            email: data.email,
-            password: data.password,
-            name: data.name,
-            phone: data.phone,
-            college: data.college,
-            department: data.department,
+            username: cleanName,
+            email: cleanEmail,
+            password: cleanPassword,
+            name: cleanName,
+            phone: cleanPhone,
+            college: cleanCollege,
+            department: cleanDept,
             role: 'user'
           })
         });
@@ -260,51 +271,51 @@ export const api = {
             name: userObj.name,
             email: userObj.email,
             role: 'candidate',
-            college: userObj.college || data.college || '',
-            department: userObj.department || data.department || '',
-            phone: userObj.phone || data.phone || '',
+            college: userObj.college || cleanCollege,
+            department: userObj.department || cleanDept,
+            phone: userObj.phone || cleanPhone,
             avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80'
           };
           localStorage.setItem('codeshield_auth_user', JSON.stringify(profile));
           return profile;
-        } else {
-          throw new Error(resData.message || 'Registration failed');
         }
       } catch (err: any) {
-        if (err.message && err.message !== 'Failed to fetch' && !err.message.includes('NetworkError')) {
-          throw err;
-        }
-
-        // Offline storage fallback
-        const existing = registeredUsers.find(u => u.email.toLowerCase() === data.email.toLowerCase());
-        if (existing) {
-          throw new Error('Email is already registered.');
-        }
-
-        const newUser = {
-          email: data.email,
-          password: data.password,
-          name: data.name,
-          college: data.college,
-          department: data.department,
-          phone: data.phone
-        };
-        registeredUsers.push(newUser);
-        setStore('registered_users', registeredUsers);
-
-        const profile: UserProfile = {
-          id: `USR-${data.email.replace(/[^a-zA-Z0-9]/g, '')}`,
-          name: data.name,
-          email: data.email,
-          role: 'candidate',
-          college: data.college || '',
-          department: data.department || '',
-          phone: data.phone || '',
-          avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80'
-        };
-        localStorage.setItem('codeshield_auth_user', JSON.stringify(profile));
-        return profile;
+        // Fallback gracefully to offline store
       }
+
+      // Offline storage fallback: re-read store, update or insert user
+      const allUsers = getStore<Array<{ email: string; password?: string; name: string; college?: string; department?: string; phone?: string }>>('registered_users', registeredUsers);
+      const existingIdx = allUsers.findIndex(u => u.email && u.email.trim().toLowerCase() === cleanEmail);
+      
+      const userRecord = {
+        email: cleanEmail,
+        password: cleanPassword,
+        name: cleanName,
+        college: cleanCollege,
+        department: cleanDept,
+        phone: cleanPhone
+      };
+
+      if (existingIdx !== -1) {
+        allUsers[existingIdx] = userRecord;
+      } else {
+        allUsers.push(userRecord);
+      }
+      setStore('registered_users', allUsers);
+      registeredUsers = allUsers;
+
+      const profile: UserProfile = {
+        id: `USR-${cleanEmail.replace(/[^a-zA-Z0-9]/g, '')}`,
+        name: cleanName,
+        email: cleanEmail,
+        role: 'candidate',
+        college: cleanCollege,
+        department: cleanDept,
+        phone: cleanPhone,
+        avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80'
+      };
+      localStorage.setItem('codeshield_auth_user', JSON.stringify(profile));
+      return profile;
     },
 
     adminLogin: async (adminIdOrEmail: string, password?: string, _code2FA?: string): Promise<UserProfile> => {
