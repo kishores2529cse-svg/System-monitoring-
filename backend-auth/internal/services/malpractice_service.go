@@ -37,7 +37,7 @@ func (s *MalpracticeService) LogViolation(req *models.LogMalpracticeRequest) (*m
 
 	// Auto-lookup candidate name & email from user repository if missing
 	if candidateName == "" || candidateEmail == "" {
-		if user, err := s.userRepo.GetByID(req.UserID); err == nil && user != nil {
+		if user, err := s.userRepo.FindByID(req.UserID); err == nil && user != nil {
 			if candidateName == "" {
 				candidateName = user.Name
 				if candidateName == "" {

@@ -25,7 +25,7 @@ func NewMalpracticeController(service *services.MalpracticeService) *Malpractice
 func (ctrl *MalpracticeController) LogMalpractice(c *gin.Context) {
 	var req models.LogMalpracticeRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ValidationErrorResponse(c, err)
+		utils.BadRequest(c, "Invalid malpractice payload: "+err.Error())
 		return
 	}
 
@@ -43,7 +43,7 @@ func (ctrl *MalpracticeController) LogMalpractice(c *gin.Context) {
 
 	logEntry, err := ctrl.service.LogViolation(&req)
 	if err != nil {
-		utils.InternalErrorResponse(c, "Failed to record malpractice event: "+err.Error())
+		utils.InternalError(c, "Failed to record malpractice event: "+err.Error())
 		return
 	}
 
@@ -55,13 +55,13 @@ func (ctrl *MalpracticeController) GetUserMalpractices(c *gin.Context) {
 	userIDStr := c.Param("userId")
 	userID, err := strconv.ParseUint(userIDStr, 10, 32)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid user ID")
+		utils.BadRequest(c, "Invalid user ID")
 		return
 	}
 
 	logs, err := ctrl.service.GetUserViolations(uint(userID))
 	if err != nil {
-		utils.InternalErrorResponse(c, "Failed to fetch malpractice logs")
+		utils.InternalError(c, "Failed to fetch malpractice logs")
 		return
 	}
 
@@ -75,7 +75,7 @@ func (ctrl *MalpracticeController) GetAllMalpractices(c *gin.Context) {
 
 	logs, err := ctrl.service.GetAllViolations(limit)
 	if err != nil {
-		utils.InternalErrorResponse(c, "Failed to fetch all malpractice logs")
+		utils.InternalError(c, "Failed to fetch all malpractice logs")
 		return
 	}
 
