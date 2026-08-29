@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Shield, Key, Lock, ShieldAlert, ArrowRight, Sparkles, AlertCircle } from 'lucide-react';
+import { Shield, Key, Lock, ShieldAlert, ArrowRight, Sparkles, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 import { GlowingButton } from '../../components/ui/GlowingButton';
@@ -10,6 +10,7 @@ import { PageTransition } from '../../components/ui/PageTransition';
 export const AdminLogin: React.FC = () => {
   const [adminId, setAdminId] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [code2FA, setCode2FA] = useState('');
   const [show2FA, setShow2FA] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -104,13 +105,22 @@ export const AdminLogin: React.FC = () => {
               <div className="relative">
                 <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••"
-                  className="w-full pl-10 pr-4 py-3 rounded-2xl bg-slate-900 border border-slate-700 text-white text-sm transition-all duration-300 focus:outline-none focus:border-rose-400 focus:shadow-[0_0_0_3px_rgba(244,63,94,0.12)] placeholder:text-slate-500 font-mono"
+                  className="w-full pl-10 pr-11 py-3 rounded-2xl bg-slate-900 border border-slate-700 text-white text-sm transition-all duration-300 focus:outline-none focus:border-rose-400 focus:shadow-[0_0_0_3px_rgba(244,63,94,0.12)] placeholder:text-slate-500 font-mono"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-200 transition-colors focus:outline-none cursor-pointer"
+                  title={showPassword ? 'Hide passphrase' : 'Show passphrase'}
+                  aria-label={showPassword ? 'Hide passphrase' : 'Show passphrase'}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
             </div>
 

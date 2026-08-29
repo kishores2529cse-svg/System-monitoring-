@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Lock, KeyRound, ShieldAlert, ArrowRight, LogOut } from 'lucide-react';
+import { Lock, KeyRound, ShieldAlert, ArrowRight, LogOut, Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../api/client';
 
@@ -11,6 +11,7 @@ interface ExamPasswordGateModalProps {
 export const ExamPasswordGateModal: React.FC<ExamPasswordGateModalProps> = ({ isOpen, onSuccess }) => {
   const navigate = useNavigate();
   const [password, setPassword] = useState<string>('');
+  const [showPassword, setShowPassword] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -62,17 +63,28 @@ export const ExamPasswordGateModal: React.FC<ExamPasswordGateModalProps> = ({ is
               <KeyRound className="h-3.5 w-3.5 text-[#7CFF4D]" />
               Exam Access Passcode
             </label>
-            <input
-              type="password"
-              autoFocus
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                if (error) setError('');
-              }}
-              placeholder="Enter exam password..."
-              className="w-full rounded-xl border border-white/15 bg-black/50 px-4 py-3 text-sm font-mono text-white placeholder-slate-500 outline-none focus:border-[#7CFF4D] transition"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                autoFocus
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (error) setError('');
+                }}
+                placeholder="Enter exam password..."
+                className="w-full rounded-xl border border-white/15 bg-black/50 pl-4 pr-11 py-3 text-sm font-mono text-white placeholder-slate-500 outline-none focus:border-[#7CFF4D] transition"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-200 transition-colors focus:outline-none cursor-pointer"
+                title={showPassword ? 'Hide passcode' : 'Show passcode'}
+                aria-label={showPassword ? 'Hide passcode' : 'Show passcode'}
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
           </div>
 
           {error && (

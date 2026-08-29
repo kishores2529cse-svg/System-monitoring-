@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, LogIn, Shield, Sparkles, AlertCircle, Laptop, GraduationCap, PenTool, Mouse, BookOpen, Quote, Cpu, Cloud, Globe, Brain, Layers, ShieldCheck } from 'lucide-react';
+import { Mail, Lock, LogIn, Shield, Sparkles, AlertCircle, Laptop, GraduationCap, PenTool, Mouse, BookOpen, Quote, Cpu, Cloud, Globe, Brain, Layers, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 import { PageTransition } from '../../components/ui/PageTransition';
@@ -9,6 +9,7 @@ import { SplashCursor } from '../../components/ui/SplashCursor';
 export const CandidateLogin: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -351,13 +352,22 @@ export const CandidateLogin: React.FC = () => {
                     <div className="relative">
                       <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
                       <input
-                        type="password"
+                        type={showPassword ? 'text' : 'password'}
                         required
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="••••••••••••"
-                        className="w-full pl-10 pr-4 py-3 rounded-2xl bg-black/70 border border-white/15 text-white text-sm transition-all duration-300 focus:outline-none focus:border-[#7CFF4D] focus:ring-1 focus:ring-[#7CFF4D] placeholder:text-slate-500 font-mono"
+                        className="w-full pl-10 pr-11 py-3 rounded-2xl bg-black/70 border border-white/15 text-white text-sm transition-all duration-300 focus:outline-none focus:border-[#7CFF4D] focus:ring-1 focus:ring-[#7CFF4D] placeholder:text-slate-500 font-mono"
                       />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-200 transition-colors focus:outline-none cursor-pointer"
+                        title={showPassword ? 'Hide password' : 'Show password'}
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
                     </div>
                   </div>
 
