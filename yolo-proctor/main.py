@@ -16,12 +16,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-import os
 # Load lightweight YOLOv8-Nano model
 model_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "yolov8n.pt")
 print(f"Loading YOLOv8-Nano model from {model_path}...")
 model = YOLO(model_path if os.path.exists(model_path) else "yolov8n.pt")
 print("YOLOv8-Nano model loaded successfully.")
+
+@app.get("/")
+@app.get("/health")
+def health_check():
+    return {"status": "ok", "service": "YOLO Proctoring AI", "version": "v8n"}
 
 @app.websocket("/ws/proctor")
 async def websocket_endpoint(websocket: WebSocket):
@@ -87,4 +91,6 @@ async def websocket_endpoint(websocket: WebSocket):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8082)
+    import os
+    port = int(os.environ.get("PORT", 8082))
+    uvicorn.run(app, host="0.0.0.0", port=port)

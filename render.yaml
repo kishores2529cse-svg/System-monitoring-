@@ -1,12 +1,10 @@
 services:
   - type: web
-    name: backend-auth
-    env: go
-    rootDir: backend-auth
-    buildCommand: go build -tags netgo -ldflags '-s -w' -o app
-    startCommand: ./app
+    name: yolo-proctor
+    env: python
+    rootDir: yolo-proctor
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
-      - key: APP_ENV
-        value: production
-      - key: SERVER_PORT
-        value: 8080
+      - key: PYTHON_VERSION
+        value: 3.11.9

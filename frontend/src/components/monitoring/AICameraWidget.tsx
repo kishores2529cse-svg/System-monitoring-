@@ -138,7 +138,12 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = ({
 
     const connectWS = () => {
       if (isCleanedUp) return;
-      const ws = new WebSocket('ws://localhost:8082/ws/proctor');
+      const wsUrl = import.meta.env.VITE_YOLO_WS_URL || (
+        window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+          ? 'ws://localhost:8082/ws/proctor'
+          : 'wss://system-monitoring-yolo.onrender.com/ws/proctor'
+      );
+      const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
 
       ws.onopen = () => {
