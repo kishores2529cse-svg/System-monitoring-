@@ -6,8 +6,6 @@ interface UseCopyPasteProtectionOptions {
   onViolation?: (action: string) => void;
 }
 
-type EventHandler = (e: Event) => void | false;
-
 export const useCopyPasteProtection = ({
   enabled = true,
   allowedSelectors = [],
@@ -160,19 +158,19 @@ export const useCopyPasteProtection = ({
   useEffect(() => {
     if (!enabled) return;
 
-    const handlers: Array<{ event: string; handler: EventHandler; capture: boolean }> = [
-      { event: 'keydown', handler: handleKeyDown as EventHandler, capture: true },
-      { event: 'keyup', handler: handleKeyUp as EventHandler, capture: true },
-      { event: 'contextmenu', handler: handleContextMenu as EventHandler, capture: true },
-      { event: 'copy', handler: handleCopy as EventHandler, capture: true },
-      { event: 'paste', handler: handlePaste as EventHandler, capture: true },
-      { event: 'cut', handler: handleCut as EventHandler, capture: true },
-      { event: 'dragstart', handler: handleDragStart as EventHandler, capture: true },
-      { event: 'drop', handler: handleDrop as EventHandler, capture: true },
-      { event: 'selectstart', handler: handleSelectStart, capture: true },
-      { event: 'beforecopy', handler: handleBeforeCopy, capture: true },
-      { event: 'beforepaste', handler: handleBeforePaste, capture: true },
-      { event: 'beforecut', handler: handleBeforeCut, capture: true },
+    const handlers: Array<{ event: string; handler: EventListener; capture: boolean }> = [
+      { event: 'keydown', handler: handleKeyDown as unknown as EventListener, capture: true },
+      { event: 'keyup', handler: handleKeyUp as unknown as EventListener, capture: true },
+      { event: 'contextmenu', handler: handleContextMenu as unknown as EventListener, capture: true },
+      { event: 'copy', handler: handleCopy as unknown as EventListener, capture: true },
+      { event: 'paste', handler: handlePaste as unknown as EventListener, capture: true },
+      { event: 'cut', handler: handleCut as unknown as EventListener, capture: true },
+      { event: 'dragstart', handler: handleDragStart as unknown as EventListener, capture: true },
+      { event: 'drop', handler: handleDrop as unknown as EventListener, capture: true },
+      { event: 'selectstart', handler: handleSelectStart as unknown as EventListener, capture: true },
+      { event: 'beforecopy', handler: handleBeforeCopy as unknown as EventListener, capture: true },
+      { event: 'beforepaste', handler: handleBeforePaste as unknown as EventListener, capture: true },
+      { event: 'beforecut', handler: handleBeforeCut as unknown as EventListener, capture: true },
     ];
 
     handlers.forEach(({ event, handler, capture }) => {
