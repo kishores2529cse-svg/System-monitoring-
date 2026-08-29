@@ -16,21 +16,6 @@ export const CandidateLogin: React.FC = () => {
   const { loginCandidate } = useAuth();
   const navigate = useNavigate();
 
-  const handleMockLogin = async (mockEmail: string, mockPass: string) => {
-    setEmail(mockEmail);
-    setPassword(mockPass);
-    setLoading(true);
-    setErrorMessage('');
-    try {
-      await loginCandidate(mockEmail, mockPass);
-      navigate('/dashboard');
-    } catch (err: any) {
-      setErrorMessage(err.message || 'Invalid email or password. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -413,31 +398,6 @@ export const CandidateLogin: React.FC = () => {
                       {loading ? 'Authenticating...' : 'Sign In to Candidate Portal'}
                     </button>
                   </motion.div>
-
-                  {/* Quick Demo Login Options */}
-                  <div className="pt-2 text-center">
-                    <span className="text-[10px] uppercase tracking-wider text-slate-400 block mb-2 font-mono font-semibold">
-                      ⚡ QUICK DEMO LOGIN
-                    </span>
-                    <div className="flex flex-wrap gap-2 justify-center">
-                      <button
-                        type="button"
-                        onClick={() => handleMockLogin('kishore@shakthi.edu', 'password123')}
-                        disabled={loading}
-                        className="px-3 py-1.5 rounded-xl border border-[#7CFF4D]/30 bg-[#7CFF4D]/10 hover:bg-[#7CFF4D]/20 text-[#7CFF4D] text-xs font-semibold font-mono transition-all"
-                      >
-                        Kishore S (kishore@shakthi.edu)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleMockLogin('user@codeshield.ai', 'user123')}
-                        disabled={loading}
-                        className="px-3 py-1.5 rounded-xl border border-[#7CFF4D]/30 bg-[#7CFF4D]/10 hover:bg-[#7CFF4D]/20 text-[#7CFF4D] text-xs font-semibold font-mono transition-all"
-                      >
-                        Demo (user@codeshield.ai)
-                      </button>
-                    </div>
-                  </div>
                 </form>
 
                 {/* Google Institutional Workspace Button */}

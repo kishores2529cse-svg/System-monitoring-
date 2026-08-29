@@ -11,28 +11,30 @@ import (
 
 // User represents a registered user or admin.
 type User struct {
-	ID        uint           `gorm:"primaryKey" json:"id"`
-	Username  string         `gorm:"uniqueIndex;size:50" json:"username"`
-	Email     string         `gorm:"uniqueIndex;size:255;not null" json:"email" binding:"required,email"`
-	Password  string         `gorm:"not null" json:"-"`
-	Name      string         `gorm:"size:255;not null" json:"name" binding:"required"`
-	Role      string         `gorm:"size:20;default:user;not null" json:"role"` // "admin" or "user"
-	Phone     string         `gorm:"size:20" json:"phone"`
-	College   string         `gorm:"size:255" json:"college"`
-	CreatedAt time.Time      `json:"created_at"`
-	UpdatedAt time.Time      `json:"updated_at"`
-	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
+	ID         uint           `gorm:"primaryKey" json:"id"`
+	Username   string         `gorm:"uniqueIndex;size:50" json:"username"`
+	Email      string         `gorm:"uniqueIndex;size:255;not null" json:"email" binding:"required,email"`
+	Password   string         `gorm:"not null" json:"-"`
+	Name       string         `gorm:"size:255;not null" json:"name" binding:"required"`
+	Role       string         `gorm:"size:20;default:user;not null" json:"role"` // "admin" or "user"
+	Phone      string         `gorm:"size:20" json:"phone"`
+	College    string         `gorm:"size:255" json:"college"`
+	Department string         `gorm:"size:255" json:"department"`
+	CreatedAt  time.Time      `json:"created_at"`
+	UpdatedAt  time.Time      `json:"updated_at"`
+	DeletedAt  gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
 // RegisterRequest is the DTO for user registration.
 type RegisterRequest struct {
-	Username string `json:"username"`
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required,min=6"`
-	Name     string `json:"name" binding:"required"`
-	Role     string `json:"role"` // "admin" or "user" (default: "user")
-	Phone    string `json:"phone"`
-	College  string `json:"college"`
+	Username   string `json:"username"`
+	Email      string `json:"email" binding:"required,email"`
+	Password   string `json:"password" binding:"required,min=6"`
+	Name       string `json:"name" binding:"required"`
+	Role       string `json:"role"` // "admin" or "user" (default: "user")
+	Phone      string `json:"phone"`
+	College    string `json:"college"`
+	Department string `json:"department"`
 }
 
 // LoginRequest is the DTO for user login.
@@ -43,34 +45,37 @@ type LoginRequest struct {
 
 // UpdateProfileRequest is the DTO for updating user profile.
 type UpdateProfileRequest struct {
-	Name    string `json:"name" binding:"omitempty"`
-	Phone   string `json:"phone" binding:"omitempty"`
-	College string `json:"college" binding:"omitempty"`
+	Name       string `json:"name" binding:"omitempty"`
+	Phone      string `json:"phone" binding:"omitempty"`
+	College    string `json:"college" binding:"omitempty"`
+	Department string `json:"department" binding:"omitempty"`
 }
 
 // UserResponse is the DTO returned to the client for user data.
 type UserResponse struct {
-	ID        uint      `json:"id"`
-	Username  string    `json:"username"`
-	Email     string    `json:"email"`
-	Name      string    `json:"name"`
-	Role      string    `json:"role"`
-	Phone     string    `json:"phone"`
-	College   string    `json:"college"`
-	CreatedAt time.Time `json:"created_at"`
+	ID         uint      `json:"id"`
+	Username   string    `json:"username"`
+	Email      string    `json:"email"`
+	Name       string    `json:"name"`
+	Role       string    `json:"role"`
+	Phone      string    `json:"phone"`
+	College    string    `json:"college"`
+	Department string    `json:"department"`
+	CreatedAt  time.Time `json:"created_at"`
 }
 
 // ToUserResponse converts a User model to a UserResponse DTO.
 func (u *User) ToUserResponse() UserResponse {
 	return UserResponse{
-		ID:        u.ID,
-		Username:  u.Username,
-		Email:     u.Email,
-		Name:      u.Name,
-		Role:      u.Role,
-		Phone:     u.Phone,
-		College:   u.College,
-		CreatedAt: u.CreatedAt,
+		ID:         u.ID,
+		Username:   u.Username,
+		Email:      u.Email,
+		Name:       u.Name,
+		Role:       u.Role,
+		Phone:      u.Phone,
+		College:    u.College,
+		Department: u.Department,
+		CreatedAt:  u.CreatedAt,
 	}
 }
 

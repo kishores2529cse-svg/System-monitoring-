@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Award, ShieldCheck, Check, Sparkles, UserCheck, Shield } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Award, ShieldCheck, Check, Sparkles, UserCheck, Shield, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Navbar } from '../../components/common/Navbar';
 import { Footer } from '../../components/common/Footer';
@@ -10,19 +10,47 @@ import { PageTransition } from '../../components/ui/PageTransition';
 export const UserProfilePage: React.FC = () => {
   const { user, updateProfile } = useAuth();
   const [formData, setFormData] = useState({
-    name: user?.name || 'Kishore S',
-    email: user?.email || 'kishore@shakthi.edu',
-    college: user?.college || 'Sri Shakthi Institute of Engineering and Technology',
-    department: user?.department || 'Computer Science & Engineering',
-    phone: user?.phone || '+91 9876543210'
+    name: user?.name || '',
+    email: user?.email || '',
+    college: user?.college || '',
+    department: user?.department || '',
+    phone: user?.phone || ''
   });
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
-  const handleSave = (e: React.FormEvent) => {
+  // Synchronize form whenever authenticated user profile updates
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user.name || '',
+        email: user.email || '',
+        college: user.college || '',
+        department: user.department || '',
+        phone: user.phone || ''
+      });
+    }
+  }, [user]);
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    updateProfile(formData);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+    setSaving(true);
+    setErrorMessage('');
+    try {
+      await updateProfile({
+        name: formData.name.trim(),
+        college: formData.college.trim(),
+        department: formData.department.trim(),
+        phone: formData.phone.trim()
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Failed to update profile');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -43,8 +71,12 @@ export const UserProfilePage: React.FC = () => {
               <div className="inline-flex items-center gap-2 rounded-full border border-sky-400/30 bg-sky-400/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.25em] text-sky-300">
                 <Sparkles className="w-3 h-3" /> Candidate Profile
               </div>
-              <h1 className="text-3xl font-extrabold text-white tracking-tight">{user?.name || 'Kishore S'}</h1>
-              <p className="text-xs text-slate-300">{user?.college} • {user?.department}</p>
+              <h1 className="text-3xl font-extrabold text-white tracking-tight">
+                {user?.name || 'Verified Candidate'}
+              </h1>
+              <p className="text-xs text-slate-300">
+                {user?.college ? `${user.college}${user?.department ? ` • ${user.department}` : ''}` : user?.email || 'Institutional Candidate'}
+              </p>
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 text-xs font-mono border border-emerald-500/30 font-bold uppercase mt-1">
                 <UserCheck className="w-3 h-3" /> Role: {user?.role || 'candidate'}
               </span>
@@ -67,11 +99,19 @@ export const UserProfilePage: React.FC = () => {
                 )}
               </div>
 
+              {errorMessage && (
+                <div className="flex items-center gap-2 rounded-xl border border-rose-500/40 bg-rose-500/20 p-3 text-xs font-semibold text-rose-300">
+                  <AlertCircle className="h-4 w-4 shrink-0 text-rose-400" />
+                  <span>{errorMessage}</span>
+                </div>
+              )}
+
               <form onSubmit={handleSave} className="space-y-4 text-xs">
                 <div className="space-y-1.5">
                   <label className="text-slate-200 font-semibold">Full Legal Name</label>
                   <input
                     type="text"
+                    required
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     className="w-full p-3 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs font-mono focus:outline-none focus:border-sky-400 transition"
@@ -101,12 +141,12 @@ export const UserProfilePage: React.FC = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-slate-200 font-semibold">Institutional Email Address</label>
+                    <label className="text-slate-200 font-semibold">Institutional Email Address (Read-only)</label>
                     <input
                       type="email"
+                      disabled
                       value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full p-3 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs font-mono focus:outline-none focus:border-sky-400 transition"
+                      className="w-full p-3 rounded-xl bg-slate-950/50 border border-slate-800 text-slate-400 text-xs font-mono cursor-not-allowed"
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -121,8 +161,8 @@ export const UserProfilePage: React.FC = () => {
                 </div>
 
                 <div className="pt-2">
-                  <GlowingButton variant="cyan" size="md">
-                    Save Profile Changes
+                  <GlowingButton variant="cyan" size="md" disabled={saving}>
+                    {saving ? 'Saving Changes...' : 'Save Profile Changes'}
                   </GlowingButton>
                 </div>
               </form>

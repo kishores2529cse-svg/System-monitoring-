@@ -178,7 +178,7 @@ export const api = {
   // Authentication
   auth: {
     login: async (email: string, password?: string): Promise<UserProfile> => {
-      // 1. Try real Go Backend PostgreSQL Auth API
+      // 1. Try real Go Backend Database Auth API
       try {
         const response = await fetch(`${API_BASE}/auth/login`, {
           method: 'POST',
@@ -187,23 +187,26 @@ export const api = {
         });
         const resData = await response.json();
         if (response.ok && resData.success && resData.data) {
-          const userObj = resData.data.user;
+          const userObj = resData.data.user || resData.data;
           const token = resData.data.token;
           if (token) localStorage.setItem('codeshield_token', token);
-          return {
+          const profile: UserProfile = {
             id: `USR-${userObj.id}`,
             name: userObj.name || userObj.username || email.split('@')[0],
             email: userObj.email,
-            role: 'candidate',
-            college: userObj.college || 'Engineering Institute',
-            phone: userObj.phone,
-            avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
+            role: userObj.role === 'admin' ? 'admin' : 'candidate',
+            college: userObj.college || '',
+            department: userObj.department || '',
+            phone: userObj.phone || '',
+            avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80'
           };
+          localStorage.setItem('codeshield_auth_user', JSON.stringify(profile));
+          return profile;
         } else {
           throw new Error(resData.message || 'Invalid email or password');
         }
       } catch (err: any) {
-        // If server explicitly returned invalid credentials error, throw it!
+        // If server explicitly returned invalid credentials or validation error, throw it!
         if (err.message && err.message !== 'Failed to fetch' && !err.message.includes('NetworkError')) {
           throw err;
         }
@@ -214,17 +217,20 @@ export const api = {
           if (password && found.password && found.password !== password) {
             throw new Error('Invalid email or password');
           }
-          return {
-            id: 'USR001',
+          const offlineProfile: UserProfile = {
+            id: `USR-${found.email.replace(/[^a-zA-Z0-9]/g, '')}`,
             name: found.name,
             email: found.email,
             role: 'candidate',
-            college: found.college || 'Engineering Institute',
-            phone: found.phone || '+91 9876543210',
-            avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
+            college: found.college || '',
+            department: (found as any).department || '',
+            phone: found.phone || '',
+            avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80'
           };
+          localStorage.setItem('codeshield_auth_user', JSON.stringify(offlineProfile));
+          return offlineProfile;
         }
-        throw new Error('Invalid email or password. User not found in database.');
+        throw new Error('Invalid email or password. User not found.');
       }
     },
 
@@ -240,49 +246,69 @@ export const api = {
             name: data.name,
             phone: data.phone,
             college: data.college,
+            department: data.department,
             role: 'user'
           })
         });
         const resData = await response.json();
         if (response.ok && resData.success && resData.data) {
-          const userObj = resData.data.user;
-          return {
+          const userObj = resData.data.user || resData.data;
+          const token = resData.data.token;
+          if (token) localStorage.setItem('codeshield_token', token);
+          const profile: UserProfile = {
             id: `USR-${userObj.id}`,
             name: userObj.name,
             email: userObj.email,
             role: 'candidate',
-            college: userObj.college,
-            department: data.department,
-            phone: userObj.phone
+            college: userObj.college || data.college || '',
+            department: userObj.department || data.department || '',
+            phone: userObj.phone || data.phone || '',
+            avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80'
           };
+          localStorage.setItem('codeshield_auth_user', JSON.stringify(profile));
+          return profile;
+        } else {
+          throw new Error(resData.message || 'Registration failed');
         }
-      } catch (e) {
-        console.warn('Backend server offline during register, saving locally.');
+      } catch (err: any) {
+        if (err.message && err.message !== 'Failed to fetch' && !err.message.includes('NetworkError')) {
+          throw err;
+        }
+
+        // Offline storage fallback
+        const existing = registeredUsers.find(u => u.email.toLowerCase() === data.email.toLowerCase());
+        if (existing) {
+          throw new Error('Email is already registered.');
+        }
+
+        const newUser = {
+          email: data.email,
+          password: data.password,
+          name: data.name,
+          college: data.college,
+          department: data.department,
+          phone: data.phone
+        };
+        registeredUsers.push(newUser);
+        setStore('registered_users', registeredUsers);
+
+        const profile: UserProfile = {
+          id: `USR-${data.email.replace(/[^a-zA-Z0-9]/g, '')}`,
+          name: data.name,
+          email: data.email,
+          role: 'candidate',
+          college: data.college || '',
+          department: data.department || '',
+          phone: data.phone || '',
+          avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80'
+        };
+        localStorage.setItem('codeshield_auth_user', JSON.stringify(profile));
+        return profile;
       }
-
-      const newUser = {
-        email: data.email,
-        password: data.password,
-        name: data.name,
-        college: data.college,
-        phone: data.phone
-      };
-      registeredUsers.push(newUser);
-      setStore('registered_users', registeredUsers);
-
-      return {
-        id: `USR${Math.floor(100 + Math.random() * 900)}`,
-        name: data.name,
-        email: data.email,
-        role: 'candidate',
-        college: data.college,
-        department: data.department,
-        phone: data.phone
-      };
     },
 
     adminLogin: async (adminIdOrEmail: string, password?: string, _code2FA?: string): Promise<UserProfile> => {
-      // 1. Try real Go Backend PostgreSQL Admin Auth API
+      // 1. Try real Go Backend Admin Auth API
       try {
         const response = await fetch(`${API_BASE}/admin/login`, {
           method: 'POST',
@@ -291,7 +317,7 @@ export const api = {
         });
         const resData = await response.json();
         if (response.ok && resData.success && resData.data) {
-          const adminObj = resData.data.admin;
+          const adminObj = resData.data.admin || resData.data;
           const token = resData.data.token;
           if (token) localStorage.setItem('codeshield_admin_token', token);
           return {
@@ -339,7 +365,128 @@ export const api = {
     logout: async (): Promise<boolean> => {
       localStorage.removeItem('codeshield_token');
       localStorage.removeItem('codeshield_admin_token');
+      localStorage.removeItem('codeshield_auth_user');
       return true;
+    }
+  },
+
+  // User & Profile Endpoints
+  user: {
+    getProfile: async (): Promise<UserProfile> => {
+      const token = localStorage.getItem('codeshield_token');
+      if (!token) {
+        const saved = localStorage.getItem('codeshield_auth_user');
+        if (saved) return JSON.parse(saved);
+        throw new Error('User not authenticated');
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/user/profile`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        const resData = await response.json();
+        if (response.ok && resData.success && resData.data) {
+          const u = resData.data;
+          const profile: UserProfile = {
+            id: `USR-${u.id}`,
+            name: u.name,
+            email: u.email,
+            role: u.role === 'admin' ? 'admin' : 'candidate',
+            college: u.college || '',
+            department: u.department || '',
+            phone: u.phone || '',
+            avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80'
+          };
+          localStorage.setItem('codeshield_auth_user', JSON.stringify(profile));
+          return profile;
+        } else {
+          // Token expired or invalid
+          if (response.status === 401) {
+            localStorage.removeItem('codeshield_token');
+            localStorage.removeItem('codeshield_auth_user');
+          }
+          throw new Error(resData.message || 'Failed to fetch profile');
+        }
+      } catch (err: any) {
+        if (err.message && err.message !== 'Failed to fetch' && !err.message.includes('NetworkError')) {
+          throw err;
+        }
+        const saved = localStorage.getItem('codeshield_auth_user');
+        if (saved) return JSON.parse(saved);
+        throw err;
+      }
+    },
+
+    updateProfile: async (data: { name?: string; college?: string; department?: string; phone?: string }): Promise<UserProfile> => {
+      const token = localStorage.getItem('codeshield_token');
+      if (token) {
+        try {
+          const response = await fetch(`${API_BASE}/user/profile`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(data)
+          });
+          const resData = await response.json();
+          if (response.ok && resData.success && resData.data) {
+            const u = resData.data;
+            const updated: UserProfile = {
+              id: `USR-${u.id}`,
+              name: u.name,
+              email: u.email,
+              role: u.role === 'admin' ? 'admin' : 'candidate',
+              college: u.college || '',
+              department: u.department || '',
+              phone: u.phone || '',
+              avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80'
+            };
+            localStorage.setItem('codeshield_auth_user', JSON.stringify(updated));
+            return updated;
+          } else {
+            throw new Error(resData.message || 'Failed to update profile');
+          }
+        } catch (err: any) {
+          if (err.message && err.message !== 'Failed to fetch' && !err.message.includes('NetworkError')) {
+            throw err;
+          }
+        }
+      }
+
+      // Offline store update
+      const saved = localStorage.getItem('codeshield_auth_user');
+      const current: UserProfile = saved ? JSON.parse(saved) : { id: 'USR001', name: '', email: '', role: 'candidate' };
+      const updated: UserProfile = {
+        ...current,
+        ...data,
+        name: data.name !== undefined ? data.name : current.name,
+        college: data.college !== undefined ? data.college : current.college,
+        department: data.department !== undefined ? data.department : current.department,
+        phone: data.phone !== undefined ? data.phone : current.phone,
+      };
+      localStorage.setItem('codeshield_auth_user', JSON.stringify(updated));
+
+      // Also update in registeredUsers array
+      if (current.email) {
+        const idx = registeredUsers.findIndex(u => u.email.toLowerCase() === current.email.toLowerCase());
+        if (idx !== -1) {
+          registeredUsers[idx] = {
+            ...registeredUsers[idx],
+            name: updated.name,
+            college: updated.college,
+            department: updated.department,
+            phone: updated.phone
+          } as any;
+          setStore('registered_users', registeredUsers);
+        }
+      }
+
+      return updated;
     }
   },
 

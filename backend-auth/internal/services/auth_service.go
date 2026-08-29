@@ -38,18 +38,18 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-// Register creates a new user account with a hashed password.
-func (s *AuthService) Register(req models.RegisterRequest) (*models.User, error) {
+// Register creates a new user account with a hashed password and returns the user and an authenticated token.
+func (s *AuthService) Register(req models.RegisterRequest) (*models.User, string, error) {
 	// Check if email already exists
 	existing, _ := s.userRepo.FindByEmail(req.Email)
 	if existing != nil && existing.ID != 0 {
-		return nil, errors.New("email already registered")
+		return nil, "", errors.New("email already registered")
 	}
 
 	// Hash password using bcrypt
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return nil, errors.New("failed to hash password")
+		return nil, "", errors.New("failed to hash password")
 	}
 
 	role := req.Role
@@ -62,20 +62,22 @@ func (s *AuthService) Register(req models.RegisterRequest) (*models.User, error)
 	}
 
 	user := &models.User{
-		Username: username,
-		Email:    req.Email,
-		Password: string(hashedPassword),
-		Name:     req.Name,
-		Role:     role,
-		Phone:    req.Phone,
-		College:  req.College,
+		Username:   username,
+		Email:      req.Email,
+		Password:   string(hashedPassword),
+		Name:       req.Name,
+		Role:       role,
+		Phone:      req.Phone,
+		College:    req.College,
+		Department: req.Department,
 	}
 
 	if err := s.userRepo.Create(user); err != nil {
-		return nil, errors.New("failed to create user")
+		return nil, "", errors.New("failed to create user")
 	}
 
-	return user, nil
+	token, _ := s.generateToken(user.ID, user.Email, role, s.cfg.JWTSecret, s.cfg.JWTExpiry)
+	return user, token, nil
 }
 
 // AuthenticateUser validates credentials and returns a JWT token.

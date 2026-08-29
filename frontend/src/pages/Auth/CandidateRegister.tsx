@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Shield, User, Building, BookOpen, Mail, Phone, Lock, Sparkles } from 'lucide-react';
+import { Shield, User, Building, BookOpen, Mail, Phone, Lock, Sparkles, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 import { GlowingButton } from '../../components/ui/GlowingButton';
@@ -9,31 +9,58 @@ import { PageTransition } from '../../components/ui/PageTransition';
 
 export const CandidateRegister: React.FC = () => {
   const [formData, setFormData] = useState({
-    name: 'Kishore S',
-    college: 'Sri Shakthi Institute of Engineering and Technology',
-    department: 'Computer Science & Engineering',
-    email: 'kishore@shakthi.edu',
-    phone: '+91 9876543210',
-    password: 'password123',
-    confirmPassword: 'password123',
-    termsAccepted: true
+    name: '',
+    college: '',
+    department: '',
+    email: '',
+    phone: '',
+    password: '',
+    confirmPassword: '',
+    termsAccepted: false
   });
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const { registerCandidate } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match');
+    setErrorMessage('');
+
+    if (!formData.name.trim()) {
+      setErrorMessage('Full name is required');
       return;
     }
+    if (!formData.email.trim()) {
+      setErrorMessage('Official email address is required');
+      return;
+    }
+    if (formData.password.length < 6) {
+      setErrorMessage('Password must be at least 6 characters long');
+      return;
+    }
+    if (formData.password !== formData.confirmPassword) {
+      setErrorMessage('Passwords do not match');
+      return;
+    }
+    if (!formData.termsAccepted) {
+      setErrorMessage('Please accept the Terms of Assessment to proceed');
+      return;
+    }
+
     setLoading(true);
     try {
-      await registerCandidate(formData);
+      await registerCandidate({
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        password: formData.password,
+        college: formData.college.trim(),
+        department: formData.department.trim(),
+        phone: formData.phone.trim()
+      });
       navigate('/dashboard');
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -57,6 +84,13 @@ export const CandidateRegister: React.FC = () => {
               <h2 className="text-3xl font-bold text-white tracking-tight">Candidate Registration</h2>
               <p className="text-sm text-slate-400">Create your institutional profile for proctored coding assessments.</p>
             </div>
+
+            {errorMessage && (
+              <div className="flex items-center gap-2 rounded-2xl border border-rose-500/40 bg-rose-500/20 p-3 text-xs font-semibold text-rose-300 font-sans">
+                <AlertCircle className="h-4 w-4 shrink-0 text-rose-400" />
+                <span>{errorMessage}</span>
+              </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-4 text-sm font-sans">
           

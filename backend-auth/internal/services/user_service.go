@@ -51,6 +51,9 @@ func (s *UserService) UpdateProfile(userID uint, req models.UpdateProfileRequest
 	if req.College != "" {
 		user.College = req.College
 	}
+	if req.Department != "" {
+		user.Department = req.Department
+	}
 
 	if err := s.userRepo.Update(user); err != nil {
 		return nil, errors.New("failed to update profile")

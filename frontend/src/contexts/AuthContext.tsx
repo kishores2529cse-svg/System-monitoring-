@@ -10,27 +10,39 @@ interface AuthContextType {
   registerCandidate: (data: any) => Promise<void>;
   loginAdmin: (adminId: string, pass: string, code2FA?: string) => Promise<void>;
   logout: () => Promise<void>;
-  updateProfile: (data: Partial<UserProfile>) => void;
+  updateProfile: (data: Partial<UserProfile>) => Promise<UserProfile>;
+  refreshProfile: () => Promise<UserProfile | null>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserProfile | null>(() => {
-    const saved = localStorage.getItem('codeshield_auth_user');
-    return saved ? JSON.parse(saved) : null;
+    try {
+      const saved = localStorage.getItem('codeshield_auth_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
   });
 
   const role = user?.role || null;
   const isAuthenticated = !!user;
 
+  // Rehydrate profile on mount if token is present
   useEffect(() => {
-    if (user) {
-      localStorage.setItem('codeshield_auth_user', JSON.stringify(user));
-    } else {
-      localStorage.removeItem('codeshield_auth_user');
+    const token = localStorage.getItem('codeshield_token');
+    if (token) {
+      api.user
+        .getProfile()
+        .then((profile) => {
+          setUser(profile);
+        })
+        .catch(() => {
+          // If token expired, getProfile handled localStorage cleanup
+        });
     }
-  }, [user]);
+  }, []);
 
   const loginCandidate = async (email: string, pass: string) => {
     const res = await api.auth.login(email, pass);
@@ -52,14 +64,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
   };
 
-  const updateProfile = (data: Partial<UserProfile>) => {
-    if (user) {
-      setUser({ ...user, ...data });
+  const updateProfile = async (data: Partial<UserProfile>): Promise<UserProfile> => {
+    const updated = await api.user.updateProfile(data as any);
+    setUser(updated);
+    return updated;
+  };
+
+  const refreshProfile = async (): Promise<UserProfile | null> => {
+    try {
+      const profile = await api.user.getProfile();
+      setUser(profile);
+      return profile;
+    } catch {
+      return null;
     }
   };
 
   return (
-    <AuthContext.Provider value={{ user, role, isAuthenticated, loginCandidate, registerCandidate, loginAdmin, logout, updateProfile }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        role,
+        isAuthenticated,
+        loginCandidate,
+        registerCandidate,
+        loginAdmin,
+        logout,
+        updateProfile,
+        refreshProfile
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -70,3 +104,4 @@ export const useAuth = () => {
   if (!context) throw new Error('useAuth must be used within an AuthProvider');
   return context;
 };
+

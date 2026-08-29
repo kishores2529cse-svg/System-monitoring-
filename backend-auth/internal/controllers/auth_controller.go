@@ -22,8 +22,8 @@ func NewAuthController(authService *services.AuthService) *AuthController {
 }
 
 // Register handles POST /api/auth/register
-// Request body: { "email": "...", "password": "...", "name": "...", "phone": "...", "college": "..." }
-// Response 201: { "success": true, "data": { user } }
+// Request body: { "email": "...", "password": "...", "name": "...", "phone": "...", "college": "...", "department": "..." }
+// Response 201: { "success": true, "data": { user, token } }
 func (ctrl *AuthController) Register(c *gin.Context) {
 	var req models.RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -31,7 +31,7 @@ func (ctrl *AuthController) Register(c *gin.Context) {
 		return
 	}
 
-	user, err := ctrl.authService.Register(req)
+	user, token, err := ctrl.authService.Register(req)
 	if err != nil {
 		if err.Error() == "email already registered" {
 			utils.Conflict(c, err.Error())
@@ -41,7 +41,10 @@ func (ctrl *AuthController) Register(c *gin.Context) {
 		return
 	}
 
-	utils.SuccessResponse(c, http.StatusCreated, "user registered successfully", user.ToUserResponse())
+	utils.SuccessResponse(c, http.StatusCreated, "user registered successfully", gin.H{
+		"user":  user.ToUserResponse(),
+		"token": token,
+	})
 }
 
 // Login handles POST /api/auth/login
