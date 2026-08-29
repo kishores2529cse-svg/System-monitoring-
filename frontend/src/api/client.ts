@@ -55,13 +55,13 @@ let adminEvents = getStore<MonitoringEvent[]>('admin_events', []);
 const API_BASE = import.meta.env.VITE_API_BASE || (
   window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? 'http://localhost:8080/api'
-    : 'https://system-monitoring-backend.onrender.com/api'
+    : 'https://system-monitoring-backend-ddyg.onrender.com/api'
 );
 
 const ANTICHEATING_API_BASE = import.meta.env.VITE_ANTICHEATING_API_BASE || (
   window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? 'http://localhost:8081/api'
-    : 'https://system-monitoring-backend.onrender.com/api'
+    : 'https://system-monitoring-backend-ddyg.onrender.com/api'
 );
 
 // Pre-registered users store for offline fallback
