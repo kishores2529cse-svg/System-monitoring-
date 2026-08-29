@@ -52,15 +52,7 @@ func InitDB(cfg *Config) *gorm.DB {
 		}
 	}
 
-	// Ensure users table compatibility if legacy table with conflicting ID exists
-	if db.Migrator().HasTable("users") {
-		var colType string
-		db.Raw("SELECT data_type FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'id'").Scan(&colType)
-		if colType == "uuid" || colType == "text" {
-			log.Println("Migrating legacy users table structure to GORM schema...")
-			db.Exec("DROP TABLE IF EXISTS users CASCADE;")
-		}
-	}
+	// Auto-migrate all models (creates or updates tables safely without dropping data)
 
 	// Auto-migrate all models
 	if err := db.AutoMigrate(
