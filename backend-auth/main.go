@@ -27,6 +27,7 @@ func main() {
 	submissionRepo := repositories.NewSubmissionRepo(db)
 	leaderboardRepo := repositories.NewLeaderboardRepo(db)
 	timerRepo := repositories.NewTimerRepo(db)
+	malpracticeRepo := repositories.NewMalpracticeRepo(db)
 
 	// Initialize services
 	authService := services.NewAuthService(userRepo, adminRepo, cfg)
@@ -36,6 +37,7 @@ func main() {
 	compilerService := services.NewCompilerService(problemRepo, submissionRepo, cfg)
 	leaderboardService := services.NewLeaderboardService(leaderboardRepo, submissionRepo, userRepo)
 	timerService := services.NewTimerService(timerRepo)
+	malpracticeService := services.NewMalpracticeService(malpracticeRepo, userRepo)
 
 	// Initialize controllers
 	authCtrl := controllers.NewAuthController(authService)
@@ -45,6 +47,7 @@ func main() {
 	compilerCtrl := controllers.NewCompilerController(compilerService, leaderboardService)
 	leaderboardCtrl := controllers.NewLeaderboardController(leaderboardService)
 	timerCtrl := controllers.NewTimerController(timerService)
+	malpracticeCtrl := controllers.NewMalpracticeController(malpracticeService)
 
 	// Initialize middleware
 	authMiddleware := middleware.NewAuthMiddleware(authService, cfg)
@@ -53,6 +56,7 @@ func main() {
 	router := routes.Setup(
 		authCtrl, userCtrl, examCtrl, problemCtrl,
 		compilerCtrl, leaderboardCtrl, timerCtrl,
+		malpracticeCtrl,
 		authMiddleware, cfg,
 	)
 

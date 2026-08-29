@@ -18,6 +18,7 @@ func Setup(
 	compilerCtrl *controllers.CompilerController,
 	leaderboardCtrl *controllers.LeaderboardController,
 	timerCtrl *controllers.TimerController,
+	malpracticeCtrl *controllers.MalpracticeController,
 	authMiddleware *middleware.AuthMiddleware,
 	cfg *config.Config,
 ) *gin.Engine {
@@ -63,11 +64,19 @@ func Setup(
 		adminProtected.POST("/timer/resume", timerCtrl.ResumeTimer)
 		adminProtected.POST("/timer/extend", timerCtrl.ExtendTimer)
 		adminProtected.POST("/timer/end", timerCtrl.EndTimer)
+		adminProtected.GET("/malpractice", malpracticeCtrl.GetAllMalpractices)
 	}
 
 	// ======== Public/Student Read-only Timer Status & Exam Gate ========
 	api.GET("/timer/status", timerCtrl.GetTimerStatus)
 	api.POST("/exam/verify-password", timerCtrl.VerifyExamPassword)
+
+	// ======== Malpractice Logging Routes ========
+	monitoring := api.Group("/monitoring")
+	{
+		monitoring.POST("/malpractice", malpracticeCtrl.LogMalpractice)
+		monitoring.GET("/malpractice/user/:userId", malpracticeCtrl.GetUserMalpractices)
+	}
 
 	// ======== Protected User Routes ========
 	user := api.Group("/user")

@@ -892,20 +892,42 @@ export const api = {
       });
       setStore('candidates', candidates);
 
-      // Real backend integration with Anticheating microservice
+      // Real backend integration: persist to Supabase & Anticheating
       const token = localStorage.getItem('codeshield_token');
-      if (token) {
-        try {
-          const cleanUserId = event.candidateId.replace('USR-', '').replace('USR', '');
-          let eventType = 'PROCTOR_EVENT';
-          if (event.event === 'Mobile Phone Detected') {
-            eventType = 'MOBILE_PHONE_DETECTED';
-          } else if (event.event === 'Candidate Turned Around') {
-            eventType = 'HEAD_TURNED_AWAY';
-          } else {
-            eventType = event.event.toUpperCase().replace(/\s+/g, '_');
-          }
+      try {
+        const rawId = event.candidateId.replace(/[^0-9]/g, '');
+        const userIdNum = parseInt(rawId, 10) || 1;
+        
+        let eventType = 'PROCTOR_EVENT';
+        if (isUnauthObj) {
+          eventType = 'UNAUTHORIZED_OBJECT';
+        } else if (isFocusShift) {
+          eventType = 'TAB_SWITCH';
+        } else if (event.event.includes('Fullscreen')) {
+          eventType = 'EXIT_FULLSCREEN';
+        } else {
+          eventType = event.event.toUpperCase().replace(/\s+/g, '_');
+        }
 
+        // 1. Write directly to Supabase malpractice_logs table via backend-auth
+        await fetch(`${API_BASE}/monitoring/malpractice`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify({
+            user_id: userIdNum,
+            event_type: eventType,
+            details: event.details || event.event,
+            severity: event.severity.toUpperCase(),
+            detected_item: isUnauthObj ? (event.details?.match(/object:\s*([a-zA-Z\s]+)/i)?.[1] || 'cell phone') : '',
+            confidence: 0.95
+          })
+        });
+
+        // 2. Also notify Anticheating microservice if available
+        if (token) {
           await fetch(`${ANTICHEATING_API_BASE}/monitor/event`, {
             method: 'POST',
             headers: {
@@ -913,15 +935,15 @@ export const api = {
               'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify({
-              user_id: cleanUserId || '1',
+              user_id: rawId || '1',
               event_type: eventType,
               details: event.details || '',
               timestamp: new Date()
             })
           });
-        } catch (e) {
-          console.warn('Anticheating backend offline. Saving malpractice event in browser offline store.');
         }
+      } catch (e) {
+        console.warn('Backend malpractice sync offline. Event preserved in local session.');
       }
 
       return newEvt;

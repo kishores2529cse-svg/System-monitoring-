@@ -334,3 +334,29 @@ type LeaderboardEntry struct {
 	TotalTime        float64   `json:"total_time"`
 	LastSubmissionAt time.Time `json:"last_submission_at"`
 }
+
+// ==================== MalpracticeLog ====================
+
+// MalpracticeLog records violations triggered by a candidate during an assessment.
+type MalpracticeLog struct {
+	ID           uint      `gorm:"primaryKey" json:"id"`
+	UserID       uint      `gorm:"index;not null" json:"user_id"`
+	User         User      `gorm:"foreignKey:UserID" json:"-"`
+	EventType    string    `gorm:"size:100;not null" json:"event_type"` // UNAUTHORIZED_OBJECT, TAB_SWITCH, EXIT_FULLSCREEN, DEVTOOLS_OPEN, MULTIPLE_FACES, COPY_PASTE
+	Details      string    `gorm:"size:500" json:"details"`
+	Severity     string    `gorm:"size:20;default:WARNING" json:"severity"` // INFO, WARNING, CRITICAL
+	DetectedItem string    `gorm:"size:100" json:"detected_item"`
+	Confidence   float64   `json:"confidence"`
+	Timestamp    time.Time `json:"timestamp"`
+	CreatedAt    time.Time `json:"created_at"`
+}
+
+// LogMalpracticeRequest is the DTO for logging candidate violations.
+type LogMalpracticeRequest struct {
+	UserID       uint    `json:"user_id"`
+	EventType    string  `json:"event_type" binding:"required"`
+	Details      string  `json:"details"`
+	Severity     string  `json:"severity"`
+	DetectedItem string  `json:"detected_item"`
+	Confidence   float64 `json:"confidence"`
+}

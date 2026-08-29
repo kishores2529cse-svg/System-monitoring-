@@ -9,7 +9,7 @@ func TestSupabaseInitDB(t *testing.T) {
 	cfg := Load()
 	t.Logf("Connecting to Supabase Host=%s, User=%s", cfg.DBHost, cfg.DBUser)
 	
-	// Open connection
+	// Open connection & auto-migrate all models (including MalpracticeLog)
 	db := InitDB(cfg)
 	if db == nil {
 		t.Fatal("Failed to initialize DB")
@@ -19,5 +19,19 @@ func TestSupabaseInitDB(t *testing.T) {
 	if err := db.Model(&models.User{}).Count(&userCount).Error; err != nil {
 		t.Fatalf("Failed to query users table: %v", err)
 	}
-	t.Logf("🎉 Supabase migration and seeding successful! User count: %d", userCount)
+	t.Logf("🎉 Users table active! User count: %d", userCount)
+
+	// Seed a test malpractice log
+	testLog := models.MalpracticeLog{
+		UserID:       1,
+		EventType:    "UNAUTHORIZED_OBJECT",
+		Details:      "Mobile phone detected during assessment",
+		Severity:     "CRITICAL",
+		DetectedItem: "cell phone (91.2%)",
+		Confidence:   0.912,
+	}
+	if err := db.Create(&testLog).Error; err != nil {
+		t.Fatalf("Failed to create test malpractice log: %v", err)
+	}
+	t.Logf("🎉 malpractice_logs table created and verified in Supabase! Log ID: %d", testLog.ID)
 }

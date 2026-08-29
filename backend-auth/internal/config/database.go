@@ -72,6 +72,7 @@ func InitDB(cfg *Config) *gorm.DB {
 		&models.Submission{},
 		&models.Leaderboard{},
 		&models.ExamTimer{},
+		&models.MalpracticeLog{},
 	); err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)
 	}
