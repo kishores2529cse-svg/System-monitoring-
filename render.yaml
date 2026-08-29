@@ -8,3 +8,29 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
+
+  - type: web
+    name: system-monitoring-backend
+    env: go
+    rootDir: backend-auth
+    buildCommand: go build -o server .
+    startCommand: ./server
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: DB_HOST
+        value: aws-1-ap-south-1.pooler.supabase.com
+      - key: DB_PORT
+        value: "5432"
+      - key: DB_USER
+        value: postgres.wdtshwffstjzfclwsqox
+      - key: DB_PASSWORD
+        value: Kishores%402029
+      - key: DB_NAME
+        value: postgres
+      - key: DB_SSLMODE
+        value: require
+      - key: JWT_SECRET
+        value: codeshield-user-secret-key-change-in-production-2026
+      - key: ADMIN_JWT_SECRET
+        value: codeshield-admin-secret-key-change-in-production-2026
