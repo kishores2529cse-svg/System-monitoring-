@@ -82,34 +82,34 @@ export const AdminLogin: React.FC = () => {
             )}
 
         {!show2FA ? (
-          <form onSubmit={handleInitialSubmit} className="space-y-4 font-serif-luxury">
+          <form onSubmit={handleInitialSubmit} className="space-y-4 font-sans">
             
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-800 font-serif-luxury">Admin Identity Key (ID)</label>
+              <label className="text-xs font-semibold text-slate-200">Admin Identity Key (ID)</label>
               <div className="relative">
-                <Key className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+                <Key className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
                 <input
                   type="text"
                   required
                   value={adminId}
                   onChange={(e) => setAdminId(e.target.value)}
                   placeholder="ADM-CHIEF-01"
-                  className="w-full pl-10 pr-4 py-2.75 rounded-2xl bg-slate-900/80 border border-slate-700/80 text-white text-sm transition-all duration-300 focus:outline-none focus:border-rose-400 focus:shadow-[0_0_0_3px_rgba(244,63,94,0.12)] placeholder:text-slate-500 font-mono"
+                  className="w-full pl-10 pr-4 py-3 rounded-2xl bg-slate-900 border border-slate-700 text-white text-sm transition-all duration-300 focus:outline-none focus:border-rose-400 focus:shadow-[0_0_0_3px_rgba(244,63,94,0.12)] placeholder:text-slate-500 font-mono"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-800 font-serif-luxury">Passphrase</label>
+              <label className="text-xs font-semibold text-slate-200">Passphrase</label>
               <div className="relative">
-                <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+                <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
                 <input
                   type="password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:outline-none focus:border-rose-500 shadow-2xs"
+                  className="w-full pl-10 pr-4 py-3 rounded-2xl bg-slate-900 border border-slate-700 text-white text-sm transition-all duration-300 focus:outline-none focus:border-rose-400 focus:shadow-[0_0_0_3px_rgba(244,63,94,0.12)] placeholder:text-slate-500 font-mono"
                 />
               </div>
             </div>
@@ -120,17 +120,17 @@ export const AdminLogin: React.FC = () => {
               className="w-full"
               icon={<ArrowRight className="w-4 h-4" />}
             >
-              Verify Credentials & Proceed to 2FA
+              Verify Credentials &amp; Proceed to 2FA
             </GlowingButton>
 
             <div className="pt-2 text-center">
-              <span className="text-[10px] uppercase tracking-wider text-slate-500 block mb-2 font-mono">⚡ Quick Demo Login</span>
+              <span className="text-[10px] uppercase tracking-wider text-slate-400 block mb-2 font-mono">⚡ Quick Demo Login</span>
               <div className="flex gap-2 justify-center">
                 <button
                   type="button"
                   onClick={() => handleMockLogin('abc@gmail.com', 'xyz')}
                   disabled={loading}
-                  className="px-3 py-1.5 rounded-xl border border-rose-500/20 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold font-mono transition-all animate-pulse"
+                  className="px-3 py-1.5 rounded-xl border border-rose-500/20 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold font-mono transition-all"
                 >
                   Admin ABC (abc@gmail.com)
                 </button>
@@ -148,12 +148,12 @@ export const AdminLogin: React.FC = () => {
         ) : (
           <form onSubmit={handleFinalSubmit} className="space-y-4 font-sans">
             
-            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-800 text-center font-mono font-semibold">
+            <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-xs text-rose-300 text-center font-mono font-semibold">
               Two-Factor Security Challenge (TOTP)
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-800 text-center block font-serif-luxury">Enter 6-Digit Authenticator Code</label>
+              <label className="text-xs font-semibold text-slate-200 text-center block">Enter 6-Digit Authenticator Code</label>
               <input
                 type="text"
                 required
@@ -161,7 +161,7 @@ export const AdminLogin: React.FC = () => {
                 value={code2FA}
                 onChange={(e) => setCode2FA(e.target.value)}
                 placeholder="849201"
-                className="w-full text-center py-3 rounded-2xl bg-slate-900/80 border border-slate-700/80 text-sky-300 text-xl font-mono tracking-[0.5em] focus:outline-none focus:border-sky-400 focus:shadow-[0_0_0_3px_rgba(56,189,248,0.12)] font-bold"
+                className="w-full text-center py-3 rounded-2xl bg-slate-900 border border-slate-700 text-sky-300 text-xl font-mono tracking-[0.5em] focus:outline-none focus:border-sky-400 focus:shadow-[0_0_0_3px_rgba(56,189,248,0.12)] font-bold"
               />
             </div>
 

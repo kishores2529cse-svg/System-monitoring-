@@ -227,21 +227,21 @@
 
 /* Route-scoped application skin. Public landing and login routes are intentionally excluded. */
 .app-premium {
-  --premium-ink: #fdf8e8;
-  --premium-muted: #b8c4b1;
+  --premium-ink: #f8fafc;
+  --premium-muted: #94a3b8;
   --premium-green: #7CFF4D;
   --premium-gold: #FFD84D;
   color: var(--premium-ink);
   position: relative;
   isolation: isolate;
   min-height: 100vh;
-  background: #f7f9fc;
+  background: #090e0a;
 }
 
 .app-premium > :not(.premium-workspace-background) { position: relative; z-index: 1; }
 .app-premium .min-h-screen, .app-premium .h-screen.w-screen { background-color: transparent !important; }
 
-.premium-workspace-background { --pointer-x: 0px; --pointer-y: 0px; --pointer-x-slow: 0px; --pointer-y-slow: 0px; --pointer-x-fast: 0px; --pointer-y-fast: 0px; --cursor-left: 50%; --cursor-top: 50%; --scroll-shift: 0px; position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; background: radial-gradient(circle at 18% 8%, #1f3624 0%, #132817 42%, #0a160d 100%); }
+.premium-workspace-background { --pointer-x: 0px; --pointer-y: 0px; --pointer-x-slow: 0px; --pointer-y-slow: 0px; --pointer-x-fast: 0px; --pointer-y-fast: 0px; --cursor-left: 50%; --cursor-top: 50%; --scroll-shift: 0px; position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; background: radial-gradient(circle at 18% 8%, #142217 0%, #0d1910 42%, #060c07 100%); }
 .premium-workspace-background__canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
 .premium-workspace-background__aurora { position: absolute; inset: -20%; background: conic-gradient(from 210deg at 50% 45%, transparent, rgba(125, 211, 252, 0.15), transparent 22%, rgba(167, 139, 250, 0.12), transparent 48%, rgba(56, 189, 248, 0.12), transparent 71%); filter: blur(55px); opacity: 0.72; animation: premium-aurora 24s cubic-bezier(0.37, 0, 0.63, 1) infinite alternate; transform: translate3d(var(--pointer-x), var(--pointer-y), 0); }
 .premium-workspace-background__orb { position: absolute; border-radius: 999px; filter: blur(5px); opacity: 0.56; will-change: transform; }
@@ -264,19 +264,6 @@
   .premium-workspace-background__aurora, .premium-workspace-background__orb, .premium-workspace-background__ring, .premium-workspace-background__glass { animation: none; }
   .premium-workspace-background__glass--two { display: none; }
 }
-
-.app-premium :is(.bg-slate-50, .bg-white, .bg-white\/90, .bg-white\/85, .bg-white\/80, .bg-white\/95) { background-color: rgba(13, 25, 13, 0.9) !important; }
-.app-premium :is(.bg-slate-100, .bg-slate-200) { background-color: rgba(30, 48, 28, 0.78) !important; }
-.app-premium :is(.border-slate-100, .border-slate-200, .border-slate-300, .border-slate-700) { border-color: rgba(255, 216, 77, 0.14) !important; }
-.app-premium :is(.text-slate-950, .text-slate-900, .text-slate-800, .text-slate-700) { color: #fdf8e8 !important; }
-.app-premium :is(.text-slate-600, .text-slate-500, .text-slate-400) { color: #b8c4b1 !important; }
-.app-premium :is(input, textarea, select) { background-color: rgba(8, 18, 9, 0.78) !important; border-color: rgba(255, 216, 77, 0.2) !important; color: #fdf8e8 !important; }
-.app-premium :is(input, textarea, select):focus { border-color: rgba(124, 255, 77, 0.7) !important; box-shadow: 0 0 0 3px rgba(124, 255, 77, 0.1) !important; }
-.app-premium table thead { background: rgba(255, 216, 77, 0.06) !important; }
-.app-premium table tbody tr { transition: background-color 250ms ease, transform 250ms ease; }
-.app-premium table tbody tr:hover { background: rgba(124, 255, 77, 0.055) !important; }
-.app-premium :is(.bg-sky-50, .bg-emerald-50, .bg-amber-50) { background-color: rgba(124, 255, 77, 0.1) !important; }
-.app-premium :is(.text-sky-700, .text-emerald-700, .text-amber-700) { color: #dfffd2 !important; }
 
 /* Custom keyframes & utilities for premium interactions */
 @keyframes ripple {

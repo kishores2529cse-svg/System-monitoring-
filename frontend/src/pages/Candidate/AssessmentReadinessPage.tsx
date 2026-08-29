@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Camera, CheckCircle2, Expand, LoaderCircle, ShieldCheck } from 'lucide-react';
+import { Camera, CheckCircle2, Expand, LoaderCircle, ShieldCheck, ShieldAlert, ArrowLeft, ArrowRight } from 'lucide-react';
 import { useMonitoring } from '../../contexts/MonitoringContext';
+import { PageTransition } from '../../components/ui/PageTransition';
 
-const assessmentNames: Record<string, string> = { '101': 'DSA Round 1', '102': 'Java Programming Assessment', '103': 'SQL Fundamentals Assessment' };
+const assessmentNames: Record<string, string> = {
+  '101': 'DSA Round 1 — Algorithm Assessment',
+  '102': 'Java Programming & Data Structures',
+  '103': 'SQL & Database Architecture Assessment'
+};
 
 export const AssessmentReadinessPage: React.FC = () => {
   const { id = '101' } = useParams();
@@ -26,12 +31,153 @@ export const AssessmentReadinessPage: React.FC = () => {
   };
 
   const startAssessment = async () => {
-    if (!cameraReady) { setError('Complete the camera and microphone check before starting.'); return; }
+    if (!cameraReady) {
+      setError('Please complete the camera and microphone verification check before starting.');
+      return;
+    }
     setStarting(true);
     await requestFullscreen();
     navigate(`/sandbox?assessment=${id}`);
   };
 
-  return <div className="min-h-screen bg-premium-light px-4 py-10 font-sans text-slate-900 sm:px-6"><main className="mx-auto max-w-3xl"><div className="rounded-3xl border border-slate-200 bg-white p-7 shadow-xl shadow-slate-200/50 sm:p-10"><div className="flex items-center gap-3"><span className="rounded-2xl bg-sky-50 p-3 text-sky-700"><ShieldCheck className="h-7 w-7" /></span><div><p className="text-xs font-semibold uppercase tracking-[0.25em] text-sky-600">Assessment readiness</p><h1 className="mt-1 text-2xl font-semibold">{assessmentNames[id] ?? 'Coding Assessment'}</h1></div></div><p className="mt-6 text-sm leading-6 text-slate-600">Complete these checks before you enter the secure assessment environment. The normal navigation bar will be hidden during the examination.</p><div className="mt-8 space-y-4"><div className="rounded-2xl border border-slate-200 p-5"><div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><div><h2 className="font-semibold">Camera and microphone permission</h2><p className="mt-1 text-sm text-slate-500">Required for AI proctoring and evidence collection.</p></div><button onClick={validateCamera} className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold ${cameraReady ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-950 text-white'}`}>{cameraReady ? <><CheckCircle2 className="h-4 w-4" />Verified</> : <><Camera className="h-4 w-4" />Check camera</>}</button></div></div><div className="rounded-2xl border border-slate-200 p-5"><div className="flex items-center gap-3"><Expand className="h-5 w-5 text-sky-600" /><div><h2 className="font-semibold">Fullscreen secure mode</h2><p className="mt-1 text-sm text-slate-500">Fullscreen is requested when you click Start Assessment. Exiting it is logged as a security event.</p></div></div></div></div><div className="mt-8 rounded-2xl bg-premium-light p-5 text-sm text-slate-600"><h2 className="font-semibold text-slate-900">Assessment rules</h2><ul className="mt-3 list-disc space-y-2 pl-5"><li>Do not switch tabs, exit fullscreen, or use copy/paste.</li><li>Keep your face visible and remain alone throughout the assessment.</li><li>The timer starts immediately and cannot be paused.</li><li>All questions, activity events, and risk signals are recorded.</li></ul></div>{error && <p className="mt-4 text-sm font-medium text-rose-700">{error}</p>}<div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end"><button onClick={() => navigate('/assessments')} className="rounded-xl px-5 py-3 text-sm font-semibold text-slate-600">Back to assessments</button><button onClick={startAssessment} disabled={starting} className="inline-flex items-center justify-center gap-2 rounded-xl bg-sky-600 px-5 py-3 text-sm font-semibold text-white disabled:opacity-60">{starting && <LoaderCircle className="h-4 w-4 animate-spin" />}Start Assessment</button></div></div></main></div>;
+  return (
+    <PageTransition>
+      <div className="min-h-screen bg-transparent px-4 py-10 font-sans text-slate-100 sm:px-6 flex items-center justify-center">
+        <main className="mx-auto max-w-3xl w-full">
+          <div className="rounded-3xl border border-slate-800 bg-slate-900/90 p-7 shadow-2xl shadow-black/60 sm:p-10 backdrop-blur-2xl ring-1 ring-white/10 space-y-7">
+            
+            {/* Header */}
+            <div className="flex items-start gap-4">
+              <div className="rounded-2xl border border-[#7CFF4D]/30 bg-[#7CFF4D]/10 p-3.5 text-[#7CFF4D] shrink-0 shadow-inner">
+                <ShieldCheck className="h-8 w-8" />
+              </div>
+              <div className="space-y-1">
+                <div className="inline-flex items-center gap-2 rounded-full border border-sky-400/30 bg-sky-400/10 px-3 py-0.5 text-[10px] font-bold uppercase tracking-[0.25em] text-sky-300">
+                  Pre-Assessment Verification
+                </div>
+                <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                  {assessmentNames[id] ?? 'Coding Assessment'}
+                </h1>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                  Complete these system hardware and proctoring checks before entering the secure assessment environment. Standard navigation will be locked.
+                </p>
+              </div>
+            </div>
+
+            {/* Verification Checklist */}
+            <div className="space-y-4">
+              {/* Camera & Mic Check */}
+              <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-5 transition-all hover:border-slate-700">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="space-y-1">
+                    <h2 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+                      <Camera className="w-4 h-4 text-sky-400" />
+                      Camera &amp; Microphone Permissions
+                    </h2>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      Required for live AI proctoring, facial landmark orientation, and audio telemetry.
+                    </p>
+                  </div>
+                  <button
+                    onClick={validateCamera}
+                    type="button"
+                    className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold transition-all shadow-md cursor-pointer shrink-0 ${
+                      cameraReady
+                        ? 'border border-emerald-500/40 bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30'
+                        : 'bg-[#7CFF4D] text-[#091109] hover:bg-[#A3FF1A]'
+                    }`}
+                  >
+                    {cameraReady ? (
+                      <>
+                        <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                        <span>Verified &amp; Active</span>
+                      </>
+                    ) : (
+                      <>
+                        <Camera className="h-4 w-4" />
+                        <span>Verify Camera &amp; Mic</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Fullscreen Mode Check */}
+              <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-5 transition-all hover:border-slate-700">
+                <div className="flex items-start gap-3.5">
+                  <div className="p-2 rounded-xl bg-sky-500/10 border border-sky-500/20 text-sky-400 shrink-0 mt-0.5">
+                    <Expand className="h-5 w-5" />
+                  </div>
+                  <div className="space-y-1">
+                    <h2 className="text-sm sm:text-base font-bold text-white">
+                      Mandatory Fullscreen Secure Mode
+                    </h2>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      Fullscreen mode will automatically engage when you launch the assessment. Exiting or switching windows is immediately flagged in the audit logs.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Assessment Rules High-Contrast Box */}
+            <div className="rounded-2xl border border-amber-500/30 bg-slate-950/85 p-5 sm:p-6 space-y-3 shadow-inner">
+              <div className="flex items-center gap-2 text-amber-300 font-bold uppercase tracking-wider text-xs">
+                <ShieldAlert className="w-4 h-4 text-amber-400" />
+                <span>Mandatory Examination Rules &amp; Protocols</span>
+              </div>
+              <ul className="list-disc space-y-2 pl-5 text-xs sm:text-sm text-slate-200 leading-relaxed font-sans">
+                <li><strong className="text-white">Zero Tab Switching:</strong> Do not navigate away, switch windows, or exit fullscreen mode.</li>
+                <li><strong className="text-white">Continuous Presence:</strong> Keep your face centered in the camera viewport and remain alone in the testing space.</li>
+                <li><strong className="text-white">Real-Time Telemetry:</strong> Code compilation, clipboard actions, and suspicious object detections are logged live.</li>
+                <li><strong className="text-white">No Pausing:</strong> The exam timer runs continuously and cannot be paused once initiated.</li>
+              </ul>
+            </div>
+
+            {/* Error Message */}
+            {error && (
+              <div className="flex items-center gap-2 rounded-2xl border border-rose-500/40 bg-rose-500/15 p-4 text-xs font-semibold text-rose-300">
+                <ShieldAlert className="h-4 w-4 shrink-0 text-rose-400" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            {/* Navigation & Action Buttons */}
+            <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between pt-2 border-t border-slate-800">
+              <button
+                type="button"
+                onClick={() => navigate('/assessments')}
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-800/80 px-5 py-3 text-xs font-semibold text-slate-300 transition-all hover:bg-slate-700 hover:text-white cursor-pointer"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to Assessments
+              </button>
+
+              <button
+                type="button"
+                onClick={startAssessment}
+                disabled={starting}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#7CFF4D] hover:bg-[#A3FF1A] text-[#091109] px-7 py-3 text-sm font-extrabold shadow-lg shadow-[#7CFF4D]/20 transition-all disabled:opacity-60 cursor-pointer"
+              >
+                {starting ? (
+                  <>
+                    <LoaderCircle className="h-4 w-4 animate-spin" />
+                    <span>Entering Secure Workspace...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Start Assessment</span>
+                    <ArrowRight className="h-4 w-4" />
+                  </>
+                )}
+              </button>
+            </div>
+
+          </div>
+        </main>
+      </div>
+    </PageTransition>
+  );
 };
+
 

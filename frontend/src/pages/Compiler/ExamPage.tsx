@@ -94,49 +94,56 @@ export const ExamPage: React.FC = () => {
   };
 
   return (
-    <div className="h-screen w-screen bg-transparent text-slate-900 flex flex-col overflow-hidden select-none font-serif-luxury relative">
-      <header className="h-20 bg-white/95 backdrop-blur-xl border-b border-slate-200 px-4 flex flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between shrink-0 shadow-2xs">
+    <div className="h-screen w-screen bg-[#070b08] text-slate-100 flex flex-col overflow-hidden select-none font-sans relative">
+      <header className="h-auto sm:h-18 bg-slate-950/95 backdrop-blur-xl border-b border-slate-800 px-4 sm:px-6 flex flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between shrink-0 shadow-xl z-20">
         <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-3xl bg-slate-950/5 border border-slate-200 text-slate-900">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-900 border border-slate-700 text-[#7CFF4D] shadow-inner">
             <Shield className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-slate-900">🔒 Secure Assessment Mode</p>
-            <p className="text-xs text-slate-500">Minimal header, locked navigation, distraction-free exam.</p>
+            <p className="text-sm font-bold text-white flex items-center gap-1.5">
+              <span>🔒 Proctored Examination Mode</span>
+            </p>
+            <p className="text-xs text-slate-400">Locked environment • Continuous AI surveillance active</p>
           </div>
         </div>
 
         <div className="flex flex-wrap items-center justify-end gap-2">
-          <span className="rounded-full border border-slate-200 bg-premium-light px-3 py-2 text-xs font-semibold text-slate-700">
+          <span className="rounded-full border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs font-mono font-semibold text-slate-300">
             {currentProblem ? `Question ${currentProblem.id} of ${problems.length}` : 'Question in progress'}
           </span>
 
           {/* Synchronized Timer Readout */}
           {timerStatus === 'PAUSED' ? (
-            <span className="rounded-full border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-700 animate-pulse flex items-center">
-              <PauseCircle className="mr-1 inline h-3.5 w-3.5" /> Paused by Admin
+            <span className="rounded-full border border-amber-500/40 bg-amber-500/20 px-3 py-1.5 text-xs font-bold text-amber-300 animate-pulse flex items-center font-mono">
+              <PauseCircle className="mr-1.5 inline h-3.5 w-3.5 text-amber-400" /> Paused by Admin
             </span>
           ) : (
-            <span className={`rounded-full border px-3 py-2 text-xs font-semibold font-mono flex items-center ${
+            <span className={`rounded-full border px-3 py-1.5 text-xs font-bold font-mono flex items-center ${
               isExamExpired
-                ? 'border-rose-300 bg-rose-50 text-rose-700'
-                : 'border-sky-200 bg-sky-50 text-sky-700'
+                ? 'border-rose-500/40 bg-rose-500/20 text-rose-300'
+                : 'border-sky-500/30 bg-sky-500/10 text-sky-300'
             }`}>
-              <Clock3 className="mr-1 inline h-3.5 w-3.5" />
+              <Clock3 className="mr-1.5 inline h-3.5 w-3.5 text-sky-400" />
               {isExamExpired ? '00:00 (Time Expired)' : formatTime(secondsRemaining)}
             </span>
           )}
 
-          <span className="rounded-full border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700">Risk {riskScore}%</span>
-          <span className="rounded-full border border-slate-200 bg-premium-light px-3 py-2 text-xs font-semibold text-slate-700">
-            <Camera className="mr-1 inline h-3.5 w-3.5" />{cameraActive ? 'Webcam On' : 'Webcam Off'}
+          <span className="rounded-full border border-rose-500/30 bg-rose-500/10 px-3 py-1.5 text-xs font-mono font-bold text-rose-300">
+            Risk {riskScore}%
           </span>
-          <span className="rounded-full border border-slate-200 bg-premium-light px-3 py-2 text-xs font-semibold text-slate-700">
-            <Monitor className="mr-1 inline h-3.5 w-3.5" />{isFullscreen ? 'Fullscreen' : 'Windowed'}
+          <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-300 flex items-center">
+            <Camera className="mr-1.5 inline h-3.5 w-3.5 text-emerald-400" />
+            {cameraActive ? 'Webcam Active' : 'Webcam Offline'}
+          </span>
+          <span className="rounded-full border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-300 flex items-center">
+            <Monitor className="mr-1.5 inline h-3.5 w-3.5 text-sky-400" />
+            {isFullscreen ? 'Fullscreen' : 'Windowed'}
           </span>
           <button
+            type="button"
             onClick={handleExitAssessment}
-            className="inline-flex items-center gap-2 rounded-full border border-rose-300 bg-rose-50 px-4 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-100"
+            className="inline-flex items-center gap-1.5 rounded-full border border-rose-500/40 bg-rose-500/15 px-3.5 py-1.5 text-xs font-bold text-rose-300 transition hover:bg-rose-500/25 cursor-pointer"
           >
             <LogOut className="h-3.5 w-3.5" />
             Exit Assessment

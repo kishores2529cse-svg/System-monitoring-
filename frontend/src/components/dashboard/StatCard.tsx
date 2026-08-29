@@ -19,29 +19,30 @@ export const StatCard: React.FC<StatCardProps> = ({
   color = 'cyan'
 }) => {
   const badgeStyles = {
-    cyan: 'border-sky-200 text-sky-700 bg-sky-50',
-    purple: 'border-indigo-200 text-indigo-700 bg-indigo-50',
-    emerald: 'border-emerald-200 text-emerald-700 bg-emerald-50',
-    rose: 'border-rose-200 text-rose-700 bg-rose-50',
-    amber: 'border-amber-200 text-amber-700 bg-amber-50',
+    cyan: 'border-sky-400/30 text-sky-300 bg-sky-500/15 shadow-inner',
+    purple: 'border-purple-400/30 text-purple-300 bg-purple-500/15 shadow-inner',
+    emerald: 'border-emerald-400/30 text-emerald-300 bg-emerald-500/15 shadow-inner',
+    rose: 'border-rose-400/30 text-rose-300 bg-rose-500/15 shadow-inner',
+    amber: 'border-amber-400/30 text-amber-300 bg-amber-500/15 shadow-inner',
   };
 
   return (
-    <GlassCard className="p-5 border border-slate-200/90 shadow-2xs font-serif-luxury">
+    <GlassCard className="p-5 border border-slate-800 bg-slate-900/85 shadow-xl font-sans">
       <div className="flex items-center justify-between">
         <div className="space-y-1">
-          <span className="text-xs font-bold text-slate-700 uppercase tracking-wider font-serif-luxury">{title}</span>
-          <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight font-mono">{value}</div>
+          <span className="text-[11px] font-mono font-bold text-slate-400 uppercase tracking-wider">{title}</span>
+          <div className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight font-mono">{value}</div>
           {change && (
-            <div className={`text-[11px] font-medium font-mono ${isPositive ? 'text-emerald-700' : 'text-rose-700'}`}>
+            <div className={`text-[11px] font-medium font-mono ${isPositive ? 'text-emerald-400' : 'text-rose-400'}`}>
               {isPositive ? '↑' : '↓'} {change} vs last session
             </div>
           )}
         </div>
-        <div className={`w-12 h-12 rounded-2xl border flex items-center justify-center shadow-2xs ${badgeStyles[color]}`}>
+        <div className={`w-12 h-12 rounded-2xl border flex items-center justify-center shadow-md ${badgeStyles[color]}`}>
           {icon}
         </div>
       </div>
     </GlassCard>
   );
 };
+

@@ -63,7 +63,7 @@ export const CandidateRegister: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             
             <div className="space-y-1.5">
-              <label className="font-semibold text-slate-200">Full Name</label>
+              <label className="font-semibold text-slate-200 text-xs">Full Name</label>
               <div className="relative">
                 <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
                 <input
@@ -72,13 +72,13 @@ export const CandidateRegister: React.FC = () => {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="Kishore S"
-                  className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:outline-none focus:border-sky-500 shadow-2xs"
+                  className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:outline-none focus:border-[#7CFF4D] placeholder-slate-500 shadow-inner"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="font-semibold text-slate-200">College / Institution</label>
+              <label className="font-semibold text-slate-200 text-xs">College / Institution</label>
               <div className="relative">
                 <Building className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
                 <input
@@ -87,7 +87,7 @@ export const CandidateRegister: React.FC = () => {
                   value={formData.college}
                   onChange={(e) => setFormData({ ...formData, college: e.target.value })}
                   placeholder="Sri Shakthi Institute of Engineering"
-                  className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:outline-none focus:border-sky-500 shadow-2xs"
+                  className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:outline-none focus:border-[#7CFF4D] placeholder-slate-500 shadow-inner"
                 />
               </div>
             </div>
@@ -97,31 +97,31 @@ export const CandidateRegister: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             
             <div className="space-y-1.5">
-              <label className="font-semibold text-slate-200">Department</label>
+              <label className="font-semibold text-slate-200 text-xs">Department</label>
               <div className="relative">
-                <BookOpen className="w-4 h-4 text-neutral-400 absolute left-3.5 top-3" />
+                <BookOpen className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
                 <input
                   type="text"
                   required
                   value={formData.department}
                   onChange={(e) => setFormData({ ...formData, department: e.target.value })}
                   placeholder="Computer Science & Engineering"
-                  className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-neutral-900 border border-neutral-800/80 text-white text-xs focus:outline-none focus:border-[#7CFF4D] focus:shadow-[0_0_15px_rgba(124,255,77,0.2)] placeholder-neutral-500 shadow-2xs"
+                  className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:outline-none focus:border-[#7CFF4D] placeholder-slate-500 shadow-inner"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="font-semibold text-slate-200">Mobile Phone</label>
+              <label className="font-semibold text-slate-200 text-xs">Mobile Phone</label>
               <div className="relative">
-                <Phone className="w-4 h-4 text-neutral-400 absolute left-3.5 top-3" />
+                <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
                 <input
                   type="tel"
                   required
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   placeholder="+91 9876543210"
-                  className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-neutral-900 border border-neutral-800/80 text-white text-xs focus:outline-none focus:border-[#7CFF4D] focus:shadow-[0_0_15px_rgba(124,255,77,0.2)] placeholder-neutral-500 shadow-2xs"
+                  className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:outline-none focus:border-[#7CFF4D] placeholder-slate-500 shadow-inner"
                 />
               </div>
             </div>
@@ -129,16 +129,16 @@ export const CandidateRegister: React.FC = () => {
           </div>
 
           <div className="space-y-1.5">
-            <label className="font-semibold text-slate-200">Official Institutional Email</label>
+            <label className="font-semibold text-slate-200 text-xs">Official Institutional Email</label>
             <div className="relative">
-              <Mail className="w-4 h-4 text-neutral-400 absolute left-3.5 top-3" />
+              <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
               <input
                 type="email"
                 required
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 placeholder="kishore@shakthi.edu"
-                className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-neutral-900 border border-neutral-800/80 text-white text-xs focus:outline-none focus:border-[#7CFF4D] focus:shadow-[0_0_15px_rgba(124,255,77,0.2)] placeholder-neutral-500 shadow-2xs"
+                className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:outline-none focus:border-[#7CFF4D] placeholder-slate-500 shadow-inner"
               />
             </div>
           </div>
@@ -146,31 +146,31 @@ export const CandidateRegister: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             
             <div className="space-y-1.5">
-              <label className="font-semibold text-slate-200">Password</label>
+              <label className="font-semibold text-slate-200 text-xs">Password</label>
               <div className="relative">
-                <Lock className="w-4 h-4 text-neutral-400 absolute left-3.5 top-3" />
+                <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
                 <input
                   type="password"
                   required
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   placeholder="••••••••••••"
-                  className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-neutral-900 border border-neutral-800/80 text-white text-xs focus:outline-none focus:border-[#7CFF4D] focus:shadow-[0_0_15px_rgba(124,255,77,0.2)] placeholder-neutral-500 shadow-2xs"
+                  className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:outline-none focus:border-[#7CFF4D] placeholder-slate-500 shadow-inner"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="font-semibold text-slate-200">Confirm Password</label>
+              <label className="font-semibold text-slate-200 text-xs">Confirm Password</label>
               <div className="relative">
-                <Lock className="w-4 h-4 text-neutral-400 absolute left-3.5 top-3" />
+                <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
                 <input
                   type="password"
                   required
                   value={formData.confirmPassword}
                   onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                   placeholder="••••••••••••"
-                  className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-neutral-900 border border-neutral-800/80 text-white text-xs focus:outline-none focus:border-[#7CFF4D] focus:shadow-[0_0_15px_rgba(124,255,77,0.2)] placeholder-neutral-500 shadow-2xs"
+                  className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:outline-none focus:border-[#7CFF4D] placeholder-slate-500 shadow-inner"
                 />
               </div>
             </div>
