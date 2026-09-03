@@ -80,9 +80,6 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = ({
   const wsRef = useRef<WebSocket | null>(null);
   const [wsConnected, setWsConnected] = useState<boolean>(false);
 
-  // Simulation / Manual Demo trigger
-  const [isSimulated, setIsSimulated] = useState<boolean>(false);
-
   // In-flight processing locks and bounding box storage
   const isProcessingRef = useRef<boolean>(false);
   const isDetectingRef = useRef<boolean>(false);
@@ -233,7 +230,7 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = ({
                   score: data.confidence || 0.88
                 }
               ];
-            } else if (!isSimulated) {
+            } else {
               setUnauthObject(prev => {
                 if (!prev.detected && prev.object === '') return prev;
                 return { detected: false, object: '', confidence: 0 };
@@ -271,7 +268,7 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = ({
       }
       setWsConnected(false);
     };
-  }, [cameraActive, isSimulated]);
+  }, [cameraActive]);
 
   // 3. Frame Stream to YOLO WebSocket & MediaPipe
   useEffect(() => {
@@ -355,7 +352,7 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = ({
 
   // 5. In-Browser Multi-Tier AI Object Detection
   useEffect(() => {
-    if (!cameraActive || isSimulated) return;
+    if (!cameraActive) return;
 
     const detectObjects = async () => {
       if (isDetectingRef.current) return;
@@ -426,7 +423,7 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = ({
       clearInterval(interval);
       isDetectingRef.current = false;
     };
-  }, [model, cameraActive, wsConnected, isSimulated]);
+  }, [model, cameraActive, wsConnected]);
 
   // 6. Infraction State Notification & Reporting
   useEffect(() => {
@@ -635,25 +632,6 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = ({
     };
   }, [cameraActive]);
 
-  // Quick Manual Test Toggle for Demonstrations
-  const handleToggleSimulatePhone = () => {
-    if (isSimulated) {
-      setIsSimulated(false);
-      setUnauthObject({ detected: false, object: '', confidence: 0 });
-      detectedBoxesRef.current = [];
-    } else {
-      setIsSimulated(true);
-      detectedBoxesRef.current = [
-        { x: 30, y: 35, width: 220, height: 100, label: 'cell phone', score: 0.96 }
-      ];
-      setUnauthObject({
-        detected: true,
-        object: 'cell phone',
-        confidence: 0.96
-      });
-    }
-  };
-
   if (!showVideo) {
     return (
       <>
@@ -768,23 +746,6 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = ({
             </span>
           </div>
         )}
-      </div>
-
-      {/* Interactive Detection Test Action */}
-      <div className="mt-2 pt-2 border-t border-slate-800 flex items-center justify-between gap-1.5">
-        <button
-          type="button"
-          onClick={handleToggleSimulatePhone}
-          className={`w-full py-1 px-2 rounded-xl text-[10px] font-mono font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer border ${
-            isSimulated
-              ? 'bg-rose-600 hover:bg-rose-500 text-white border-rose-400 shadow-lg shadow-rose-900/50'
-              : 'bg-slate-900 hover:bg-slate-800 text-cyan-300 border-slate-700 hover:border-cyan-400'
-          }`}
-          title="Toggle instant simulated object detection for testing"
-        >
-          <Smartphone className="w-3 h-3" />
-          {isSimulated ? 'Clear Test Detection' : '⚡ Test Phone Detection'}
-        </button>
       </div>
 
       {/* Live Malpractice Telemetry Event Stream */}
