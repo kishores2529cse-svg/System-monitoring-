@@ -24,10 +24,10 @@ type Config struct {
 	DBSSLMode  string
 
 	// JWT settings
-	JWTSecret        string
-	JWTExpiry        time.Duration
-	AdminJWTSecret   string
-	AdminJWTExpiry   time.Duration
+	JWTSecret      string
+	JWTExpiry      time.Duration
+	AdminJWTSecret string
+	AdminJWTExpiry time.Duration
 
 	// Compiler settings
 	CompilerTimeout time.Duration
@@ -40,21 +40,21 @@ func Load() *Config {
 	loadDotEnv(".env")
 
 	return &Config{
-		ServerPort:       getEnv("SERVER_PORT", getEnv("PORT", "8080")),
-		AppEnv:           getEnv("APP_ENV", "development"),
-		DBHost:           getEnv("DB_HOST", "aws-1-ap-south-1.pooler.supabase.com"),
-		DBPort:           getEnv("DB_PORT", "5432"),
-		DBUser:           getEnv("DB_USER", "postgres.wdtshwffstjzfclwsqox"),
-		DBPassword:       getEnv("DB_PASSWORD", "Kishores%402029"),
-		DBName:           getEnv("DB_NAME", "postgres"),
-		DBSSLMode:        getEnv("DB_SSLMODE", "require"),
-		JWTSecret:        getEnv("JWT_SECRET", "codeshield-user-secret-key-change-in-production-2026"),
-		JWTExpiry:        getDurationEnv("JWT_EXPIRY_HOURS", 24),
-		AdminJWTSecret:   getEnv("ADMIN_JWT_SECRET", "codeshield-admin-secret-key-change-in-production-2026"),
-		AdminJWTExpiry:   getDurationEnv("ADMIN_JWT_EXPIRY_HOURS", 12),
-		CompilerTimeout:  getDurationEnv("COMPILER_TIMEOUT_SECONDS", 5),
-		MaxCodeSize:      getIntEnv("MAX_CODE_SIZE_KB", 100) * 1024,
-		TempDir:          validateTempDir(getEnv("TEMP_DIR", os.TempDir())),
+		ServerPort:      getEnv("PORT", getEnv("SERVER_PORT", "8080")),
+		AppEnv:          getEnv("APP_ENV", "development"),
+		DBHost:          getEnv("DB_HOST", "aws-1-ap-south-1.pooler.supabase.com"),
+		DBPort:          getEnv("DB_PORT", "5432"),
+		DBUser:          getEnv("DB_USER", "postgres.wdtshwffstjzfclwsqox"),
+		DBPassword:      getEnv("DB_PASSWORD", "Kishores%402029"),
+		DBName:          getEnv("DB_NAME", "postgres"),
+		DBSSLMode:       getEnv("DB_SSLMODE", "require"),
+		JWTSecret:       getEnv("JWT_SECRET", "codeshield-user-secret-key-change-in-production-2026"),
+		JWTExpiry:       getDurationEnv("JWT_EXPIRY_HOURS", 24),
+		AdminJWTSecret:  getEnv("ADMIN_JWT_SECRET", "codeshield-admin-secret-key-change-in-production-2026"),
+		AdminJWTExpiry:  getDurationEnv("ADMIN_JWT_EXPIRY_HOURS", 12),
+		CompilerTimeout: getDurationEnv("COMPILER_TIMEOUT_SECONDS", 5),
+		MaxCodeSize:     getIntEnv("MAX_CODE_SIZE_KB", 100) * 1024,
+		TempDir:         validateTempDir(getEnv("TEMP_DIR", os.TempDir())),
 	}
 }
 
