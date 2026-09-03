@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Camera, Eye, EyeOff, Cpu, Wifi, Smartphone, AlertTriangle } from 'lucide-react';
+import { Camera, Eye, EyeOff, Cpu, Wifi, AlertTriangle } from 'lucide-react';
 import { useMonitoring } from '../../contexts/MonitoringContext';
 
 const loadScriptWithFallbacks = async (urls: string[]): Promise<void> => {
