@@ -55,13 +55,13 @@ let adminEvents = getStore<MonitoringEvent[]>('admin_events', []);
 const API_BASE = import.meta.env.VITE_API_BASE || (
   window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? 'http://localhost:8080/api'
-    : 'https://system-monitoring-backend-ddyg.onrender.com/api'
+    : 'https://system-monitoring-backend-new.onrender.com/api'
 );
 
 const ANTICHEATING_API_BASE = import.meta.env.VITE_ANTICHEATING_API_BASE || (
   window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? 'http://localhost:8081/api'
-    : 'https://system-monitoring-backend-ddyg.onrender.com/api'
+    : 'https://system-monitoring-backend-new.onrender.com/api'
 );
 
 // Pre-registered users store for offline fallback
@@ -233,7 +233,7 @@ export const api = {
       // 2. Offline / Demo / Instant Fallback
       const allUsers = getStore<Array<{ email: string; password?: string; name: string; college?: string; department?: string; phone?: string }>>('registered_users', registeredUsers);
       const found = allUsers.find(u => u.email && u.email.trim().toLowerCase() === cleanEmail);
-      
+
       if (found) {
         if (cleanPassword && found.password && found.password.trim() !== cleanPassword) {
           throw new Error('Invalid email or password');
@@ -347,7 +347,7 @@ export const api = {
       // Offline storage fallback: re-read store, update or insert user
       const allUsers = getStore<Array<{ email: string; password?: string; name: string; college?: string; department?: string; phone?: string }>>('registered_users', registeredUsers);
       const existingIdx = allUsers.findIndex(u => u.email && u.email.trim().toLowerCase() === cleanEmail);
-      
+
       const userRecord = {
         email: cleanEmail,
         password: cleanPassword,
@@ -610,7 +610,7 @@ export const api = {
         if (response.ok && resData.success) {
           return true;
         }
-      } catch (e) {}
+      } catch (e) { }
 
       // Offline fallback verification against stored exam password
       const timer = getStore<{ exam_password?: string }>('central_timer', { exam_password: 'exam123' });
@@ -676,7 +676,7 @@ export const api = {
       }
 
       const token = localStorage.getItem('codeshield_token') || localStorage.getItem('codeshield_admin_token');
-      
+
       try {
         const response = await fetch(`${API_BASE}/compiler/run`, {
           method: 'POST',
@@ -695,7 +695,7 @@ export const api = {
         if (response.ok && resData.success && resData.data) {
           const data = resData.data;
           const isError = !!(data.compilation_error || data.runtime_error);
-          
+
           const currentList = getStore<ProblemData[]>('problems', problems);
           const targetProblem = currentList.find(p => p.id === problemId) || currentList[0];
           const testCaseSources = targetProblem?.testCases && targetProblem.testCases.length > 0
@@ -830,7 +830,7 @@ export const api = {
       }
 
       const token = localStorage.getItem('codeshield_token') || localStorage.getItem('codeshield_admin_token');
-      
+
       try {
         const targetId = problemId || 1;
         const response = await fetch(`${API_BASE}/compiler/submit?problemId=${targetId}`, {
@@ -953,7 +953,7 @@ export const api = {
           const newScore = Math.max(0, Math.min(100, c.confidenceScore + event.confidenceImpact));
           const newWarnings = event.severity === 'High' || event.severity === 'Critical' ? c.warnings + 1 : c.warnings;
           const isLocked = newWarnings >= 3 || event.severity === 'Critical' || c.status === 'Locked';
-          
+
           return {
             ...c,
             confidenceScore: newScore,
@@ -975,7 +975,7 @@ export const api = {
       try {
         const rawId = event.candidateId.replace(/[^0-9]/g, '');
         const userIdNum = parseInt(rawId, 10) || 1;
-        
+
         let eventType = 'PROCTOR_EVENT';
         if (isUnauthObj) {
           eventType = 'UNAUTHORIZED_OBJECT';
@@ -1039,7 +1039,7 @@ export const api = {
           const url = candidateId
             ? `${ANTICHEATING_API_BASE}/monitor/history?userId=${candidateId.replace('USR-', '').replace('USR', '')}`
             : `${ANTICHEATING_API_BASE}/monitor/history`;
-          
+
           const response = await fetch(url, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
@@ -1057,7 +1057,7 @@ export const api = {
                 status: 'Flagged',
                 details: item.details || 'Malpractice violation registered on server'
               }));
-              
+
               const merged = [...backendEvents, ...events];
               const unique = merged.filter((v, i, a) => a.findIndex(t => t.timestamp === v.timestamp && t.event === v.event) === i);
               return candidateId ? unique.filter(e => e.candidateId === candidateId) : unique;
@@ -1218,7 +1218,7 @@ export const api = {
         if (response.ok && resData.success) {
           return resData.data;
         }
-      } catch (e) {}
+      } catch (e) { }
 
       // Offline fallback
       const timer = getStore<CentralTimerState>('central_timer', DEFAULT_TIMER);
@@ -1247,7 +1247,7 @@ export const api = {
         if (response.ok && resData.success) {
           return resData.data;
         }
-      } catch (e) {}
+      } catch (e) { }
 
       const timer = getStore<CentralTimerState>('central_timer', DEFAULT_TIMER);
 
@@ -1269,7 +1269,7 @@ export const api = {
         if (response.ok && resData.success) {
           return resData.data;
         }
-      } catch (e) {}
+      } catch (e) { }
 
       const timer = getStore<CentralTimerState>('central_timer', DEFAULT_TIMER);
 
@@ -1294,7 +1294,7 @@ export const api = {
         if (response.ok && resData.success) {
           return resData.data;
         }
-      } catch (e) {}
+      } catch (e) { }
 
       const timer = getStore<CentralTimerState>('central_timer', DEFAULT_TIMER);
 
@@ -1319,7 +1319,7 @@ export const api = {
         if (response.ok && resData.success) {
           return resData.data;
         }
-      } catch (e) {}
+      } catch (e) { }
 
       const timer = getStore<CentralTimerState>('central_timer', DEFAULT_TIMER);
 
@@ -1346,7 +1346,7 @@ export const api = {
         if (response.ok && resData.success) {
           return resData.data;
         }
-      } catch (e) {}
+      } catch (e) { }
 
       const timer = getStore<CentralTimerState>('central_timer', DEFAULT_TIMER);
 
