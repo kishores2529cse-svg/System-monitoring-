@@ -142,34 +142,35 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = ({
               await (window as any).tf.ready();
             }
             const loadedModel = await (window as any).cocoSsd.load({ base: 'lite_mobilenet_v2' });
-            if (active) {
+            if (active && loadedModel) {
               setModel(loadedModel);
               setModelType('COCO-SSD Neural Vision');
               console.log('✅ In-browser COCO-SSD Object Detection AI loaded successfully.');
-            }
-            } else {
-              if (active) setModelType('Heuristic Vision Guard (COCO failed)');
+            } else if (active) {
+              setModelType('Heuristic Vision Guard');
             }
           } catch (modelErr) {
             console.warn('COCO-SSD model init fallback:', modelErr);
             if (active) setModelType('Heuristic Vision Guard');
           }
         } else {
-          // Poll for a few seconds if it's somehow delayed
+          // Poll for a few seconds if script loading was slightly delayed
           for (let i = 0; i < 10; i++) {
             await new Promise(r => setTimeout(r, 500));
             if ((window as any).cocoSsd) {
-              const loadedModel = await (window as any).cocoSsd.load({ base: 'lite_mobilenet_v2' });
-              if (active) {
-                setModel(loadedModel);
-                setModelType('COCO-SSD Neural Vision');
-                console.log('✅ COCO-SSD Object Detection AI loaded after polling.');
-              }
+              try {
+                const loadedModel = await (window as any).cocoSsd.load({ base: 'lite_mobilenet_v2' });
+                if (active && loadedModel) {
+                  setModel(loadedModel);
+                  setModelType('COCO-SSD Neural Vision');
+                  console.log('✅ COCO-SSD Object Detection AI loaded after polling.');
+                }
+              } catch (e) {}
               break;
             }
           }
           if (active && !model) {
-            setModelType('Heuristic Vision Guard (Script missing)');
+            setModelType('Heuristic Vision Guard');
           }
         }
 
