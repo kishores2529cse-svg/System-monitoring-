@@ -4,7 +4,21 @@ import { useMonitoring } from '../../contexts/MonitoringContext';
 
 const loadScriptWithFallbacks = async (urls: string[]): Promise<void> => {
   for (const src of urls) {
-    if (document.querySelector(`script[src="${src}"]`)) {
+    const existingScript = document.querySelector(`script[src="${src}"]`) as HTMLScriptElement;
+    if (existingScript) {
+      if (existingScript.getAttribute('data-loaded') === 'true') {
+        return;
+      }
+      // Wait for it to finish loading
+      await new Promise<void>((resolve) => {
+        const originalOnLoad = existingScript.onload;
+        existingScript.onload = (e) => {
+          if (originalOnLoad) (originalOnLoad as any)(e);
+          resolve();
+        };
+        // Fallback timeout in case it's already loaded but we missed the event
+        setTimeout(resolve, 2000);
+      });
       return;
     }
   }
@@ -16,7 +30,10 @@ const loadScriptWithFallbacks = async (urls: string[]): Promise<void> => {
         script.src = src;
         script.async = true;
         script.crossOrigin = 'anonymous';
-        script.onload = () => resolve();
+        script.onload = () => {
+          script.setAttribute('data-loaded', 'true');
+          resolve();
+        };
         script.onerror = () => {
           script.remove();
           reject(new Error(`Failed script: ${src}`));
@@ -130,9 +147,29 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = ({
               setModelType('COCO-SSD Neural Vision');
               console.log('✅ In-browser COCO-SSD Object Detection AI loaded successfully.');
             }
+            } else {
+              if (active) setModelType('Heuristic Vision Guard (COCO failed)');
+            }
           } catch (modelErr) {
             console.warn('COCO-SSD model init fallback:', modelErr);
             if (active) setModelType('Heuristic Vision Guard');
+          }
+        } else {
+          // Poll for a few seconds if it's somehow delayed
+          for (let i = 0; i < 10; i++) {
+            await new Promise(r => setTimeout(r, 500));
+            if ((window as any).cocoSsd) {
+              const loadedModel = await (window as any).cocoSsd.load({ base: 'lite_mobilenet_v2' });
+              if (active) {
+                setModel(loadedModel);
+                setModelType('COCO-SSD Neural Vision');
+                console.log('✅ COCO-SSD Object Detection AI loaded after polling.');
+              }
+              break;
+            }
+          }
+          if (active && !model) {
+            setModelType('Heuristic Vision Guard (Script missing)');
           }
         }
 
