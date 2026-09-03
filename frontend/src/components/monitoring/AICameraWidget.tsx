@@ -340,7 +340,7 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = ({
       }
     };
 
-    const interval = setInterval(processFrame, 500);
+    const interval = setInterval(processFrame, 200);
     return () => {
       clearInterval(interval);
       isProcessingRef.current = false;
@@ -400,7 +400,7 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = ({
       try {
         // Method A: COCO-SSD Neural Vision with calibrated confidence (eliminating hallucinations / false positives)
         if (model) {
-          const predictions = await model.detect(videoRef.current, 8, 0.40);
+          const predictions = await model.detect(videoRef.current, 10, 0.25);
           
           const forbiddenPredictions = predictions.filter((p: any) => {
             const cls = (p.class || '').toLowerCase();
@@ -412,7 +412,7 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = ({
               cls.includes('laptop') ||
               cls.includes('tablet');
 
-            const minConfidence = isPhone ? 0.42 : 0.50;
+            const minConfidence = isPhone ? 0.28 : 0.35;
             return isForbidden && p.score >= minConfidence;
           });
 
@@ -456,7 +456,7 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = ({
       }
     };
 
-    const interval = setInterval(detectObjects, 400);
+    const interval = setInterval(detectObjects, 200);
     return () => {
       clearInterval(interval);
       isDetectingRef.current = false;

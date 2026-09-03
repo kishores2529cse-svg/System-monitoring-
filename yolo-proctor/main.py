@@ -52,8 +52,8 @@ async def websocket_endpoint(websocket: WebSocket):
             if frame is None:
                 continue
 
-            # Run inference using YOLOv8 with calibrated confidence to eliminate hallucinations / false positives
-            results = model(frame, conf=0.40, verbose=False)[0]
+            # Run inference using YOLOv8 with lower confidence for faster detection
+            results = model(frame, conf=0.25, verbose=False)[0]
 
             phone_detected = False
             detected_object = ""
@@ -68,7 +68,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 is_phone = "phone" in class_name or "cell" in class_name or "mobile" in class_name or class_id == 67
                 is_forbidden = is_phone or any(f in class_name for f in ["laptop", "book", "remote", "calculator", "tablet", "headphone", "earphone", "backpack", "watch"]) or class_id in [63, 64, 65, 66, 67, 73]
 
-                min_thresh = 0.45 if is_phone else 0.50
+                min_thresh = 0.30 if is_phone else 0.35
 
                 if is_forbidden and confidence >= min_thresh:
                     phone_detected = True
