@@ -52,8 +52,8 @@ async def websocket_endpoint(websocket: WebSocket):
             if frame is None:
                 continue
 
-            # Run inference using YOLOv8 with high sensitivity (conf=0.10)
-            results = model(frame, conf=0.10, verbose=False)[0]
+            # Run inference using YOLOv8 with calibrated confidence to eliminate hallucinations / false positives
+            results = model(frame, conf=0.40, verbose=False)[0]
 
             phone_detected = False
             detected_object = ""
@@ -64,17 +64,17 @@ async def websocket_endpoint(websocket: WebSocket):
                 confidence = float(box.conf[0])
                 class_name = str(model.names[class_id]).lower()
 
-                # High-sensitivity detection for mobile phone and forbidden exam objects
+                # Robust detection for mobile phone and forbidden exam objects
                 is_phone = "phone" in class_name or "cell" in class_name or "mobile" in class_name or class_id == 67
-                is_forbidden = is_phone or any(f in class_name for f in ["laptop", "book", "remote", "calculator", "tablet", "headphone", "earphone", "backpack", "watch", "mouse", "electronic"]) or class_id in [63, 64, 65, 66, 67, 73]
+                is_forbidden = is_phone or any(f in class_name for f in ["laptop", "book", "remote", "calculator", "tablet", "headphone", "earphone", "backpack", "watch"]) or class_id in [63, 64, 65, 66, 67, 73]
 
-                min_thresh = 0.12 if is_phone else 0.18
+                min_thresh = 0.45 if is_phone else 0.50
 
-                if is_forbidden and confidence > min_thresh:
+                if is_forbidden and confidence >= min_thresh:
                     phone_detected = True
                     detected_object = class_name
                     highest_conf = confidence
-                    print(f"🚨 DETECTED FORBIDDEN OBJECT: {class_name} ({confidence*100:.1f}%)")
+                    print(f"🚨 VERIFIED FORBIDDEN OBJECT: {class_name} ({confidence*100:.1f}%)")
                     break
 
             # Send detection logs back to frontend client

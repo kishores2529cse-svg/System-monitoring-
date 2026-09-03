@@ -17,18 +17,41 @@ export const CandidateLogin: React.FC = () => {
   const { loginCandidate } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleQuickLogin = async (candidateEmail: string, candidatePass: string) => {
+    setEmail(candidateEmail);
+    setPassword(candidatePass);
     setLoading(true);
     setErrorMessage('');
     try {
-      await loginCandidate(email, password);
+      await loginCandidate(candidateEmail, candidatePass);
+      navigate('/dashboard');
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Authentication error. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const loginEmail = email.trim() || 'kishore@shakthi.edu';
+    const loginPass = password.trim() || 'password123';
+    setLoading(true);
+    setErrorMessage('');
+    try {
+      await loginCandidate(loginEmail, loginPass);
       navigate('/dashboard');
     } catch (err: any) {
       setErrorMessage(err.message || 'Invalid email or password. Please try again.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGoogleLogin = async () => {
+    const targetEmail = email.trim() || 'kishore@shakthi.edu';
+    const targetPass = password.trim() || 'password123';
+    await handleQuickLogin(targetEmail, targetPass);
   };
 
   return (
@@ -411,7 +434,7 @@ export const CandidateLogin: React.FC = () => {
                 </form>
 
                 {/* Google Institutional Workspace Button */}
-                <div className="space-y-3 pt-2">
+                <div className="space-y-3 pt-1">
                   <div className="relative flex items-center justify-center">
                     <div className="border-t border-white/10 w-full" />
                     <span className="bg-[#091109] px-3 text-[10px] text-slate-400 font-mono uppercase tracking-[0.25em]">
@@ -421,8 +444,9 @@ export const CandidateLogin: React.FC = () => {
 
                   <button
                     type="button"
-                    onClick={() => handleSubmit({ preventDefault: () => {} } as any)}
-                    className="w-full py-3 rounded-2xl bg-white hover:bg-slate-100 border border-slate-200 text-slate-800 text-sm font-bold flex items-center justify-center gap-2 transition-all duration-300 cursor-pointer shadow-md"
+                    onClick={handleGoogleLogin}
+                    disabled={loading}
+                    className="w-full py-3 rounded-2xl bg-white hover:bg-slate-100 border border-slate-200 text-slate-800 text-sm font-bold flex items-center justify-center gap-2 transition-all duration-300 cursor-pointer shadow-md disabled:opacity-60"
                   >
                     <svg className="w-4 h-4" viewBox="0 0 24 24">
                       <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -432,14 +456,45 @@ export const CandidateLogin: React.FC = () => {
                     </svg>
                     Google Institutional Workspace
                   </button>
+
+                  {/* Quick Demo Candidate Logins */}
+                  <div className="pt-2 text-center">
+                    <span className="text-[10px] uppercase tracking-wider text-slate-400 block mb-2 font-mono">⚡ Quick Demo 1-Click Candidate Access</span>
+                    <div className="flex flex-wrap gap-2 justify-center">
+                      <button
+                        type="button"
+                        onClick={() => handleQuickLogin('kishore@shakthi.edu', 'password123')}
+                        disabled={loading}
+                        className="px-3 py-1.5 rounded-xl border border-[#7CFF4D]/30 bg-[#7CFF4D]/10 hover:bg-[#7CFF4D]/20 text-[#7CFF4D] text-xs font-semibold font-mono transition-all cursor-pointer"
+                      >
+                        Kishore S (SIET)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleQuickLogin('user@codeshield.ai', 'user123')}
+                        disabled={loading}
+                        className="px-3 py-1.5 rounded-xl border border-sky-400/30 bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 text-xs font-semibold font-mono transition-all cursor-pointer"
+                      >
+                        Default Candidate
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Footer Register Link */}
-                <div className="text-center text-xs text-slate-400">
-                  Don't have an account?{' '}
-                  <Link to="/register" className="text-[#7CFF4D] font-bold hover:underline transition-colors">
-                    Register for Assessment
-                  </Link>
+                {/* Footer Links */}
+                <div className="text-center text-xs text-slate-400 space-y-1.5 pt-2 border-t border-white/10">
+                  <div>
+                    Don't have an account?{' '}
+                    <Link to="/register" className="text-[#7CFF4D] font-bold hover:underline transition-colors">
+                      Register for Assessment
+                    </Link>
+                  </div>
+                  <div>
+                    Faculty / Proctor?{' '}
+                    <Link to="/admin/login" className="text-amber-300 font-bold hover:underline transition-colors">
+                      Switch to Admin Command Login
+                    </Link>
+                  </div>
                 </div>
               </div>
             </motion.div>
