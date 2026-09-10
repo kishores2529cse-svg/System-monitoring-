@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, LogIn, Shield, Sparkles, AlertCircle, Laptop, GraduationCap, PenTool, Mouse, BookOpen, Quote, Cpu, Cloud, Globe, Brain, Layers, ShieldCheck, Eye, EyeOff, ShieldAlert, Key, ArrowRight } from 'lucide-react';
+import { Mail, Lock, LogIn, Shield, Sparkles, AlertCircle, Laptop, GraduationCap, BookOpen, Quote, Cpu, Cloud, Globe, Brain, Eye, EyeOff, ShieldAlert, Key, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 import { PageTransition } from '../../components/ui/PageTransition';
