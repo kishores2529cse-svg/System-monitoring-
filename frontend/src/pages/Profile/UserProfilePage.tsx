@@ -6,9 +6,11 @@ import { Footer } from '../../components/common/Footer';
 import { GlassCard } from '../../components/ui/GlassCard';
 import { GlowingButton } from '../../components/ui/GlowingButton';
 import { PageTransition } from '../../components/ui/PageTransition';
+import { cn } from '../../utils/cn';
 
 export const UserProfilePage: React.FC = () => {
   const { user, updateProfile } = useAuth();
+  const isAdmin = user?.role === 'admin';
   const [formData, setFormData] = useState({
     name: user?.name || '',
     email: user?.email || '',
@@ -68,14 +70,14 @@ export const UserProfilePage: React.FC = () => {
               className="w-20 h-20 rounded-2xl object-cover border-2 border-[#7CFF4D]/60 shadow-lg shadow-[#7CFF4D]/10"
             />
             <div className="space-y-1 text-center sm:text-left">
-              <div className="inline-flex items-center gap-2 rounded-full border border-sky-400/30 bg-sky-400/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.25em] text-sky-300">
-                <Sparkles className="w-3 h-3" /> Candidate Profile
+              <div className={cn("inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-[0.25em]", isAdmin ? "border-rose-400/30 bg-rose-400/10 text-rose-300" : "border-sky-400/30 bg-sky-400/10 text-sky-300")}>
+                <Sparkles className="w-3 h-3" /> {isAdmin ? 'Admin Profile' : 'Candidate Profile'}
               </div>
               <h1 className="text-3xl font-extrabold text-white tracking-tight">
-                {user?.name || 'Verified Candidate'}
+                {isAdmin ? 'ADMIN PROFILE' : (user?.name || 'Verified Candidate')}
               </h1>
               <p className="text-xs text-slate-300">
-                {user?.college ? `${user.college}${user?.department ? ` • ${user.department}` : ''}` : user?.email || 'Institutional Candidate'}
+                {user?.college ? `${user.college}${user?.department ? ` • ${user.department}` : ''}` : (user?.email || (isAdmin ? 'System Administrator' : 'Institutional Candidate'))}
               </p>
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 text-xs font-mono border border-emerald-500/30 font-bold uppercase mt-1">
                 <UserCheck className="w-3 h-3" /> Role: {user?.role || 'candidate'}
@@ -170,7 +172,8 @@ export const UserProfilePage: React.FC = () => {
 
             {/* Badges & Achievements */}
             <div className="space-y-6">
-              <GlassCard className="p-6 border border-slate-800 bg-slate-900/80 space-y-4 text-xs shadow-xl">
+              {!isAdmin && (
+                <GlassCard className="p-6 border border-slate-800 bg-slate-900/80 space-y-4 text-xs shadow-xl">
                 <h3 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-800 pb-2">
                   <Award className="w-4 h-4 text-amber-400" /> Verified Achievements
                 </h3>
@@ -196,6 +199,7 @@ export const UserProfilePage: React.FC = () => {
                   </div>
                 </div>
               </GlassCard>
+              )}
 
               <GlassCard className="p-6 border border-slate-800 bg-slate-900/80 space-y-3 text-xs shadow-xl">
                 <h3 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
@@ -204,8 +208,8 @@ export const UserProfilePage: React.FC = () => {
                 <p className="text-slate-300 text-xs leading-relaxed">
                   Candidate identity is cryptographically linked with proctoring audit logs.
                 </p>
-                <div className="rounded-xl border border-sky-500/30 bg-sky-500/10 p-3 text-[11px] font-mono text-sky-300">
-                  Status: Full Clearance (ID-VERIFIED)
+                <div className={cn("rounded-xl border p-3 text-[11px] font-mono", isAdmin ? "border-rose-500/30 bg-rose-500/10 text-rose-300" : "border-sky-500/30 bg-sky-500/10 text-sky-300")}>
+                  Status: {isAdmin ? 'System Administrator Clearance' : 'Full Clearance (ID-VERIFIED)'}
                 </div>
               </GlassCard>
             </div>

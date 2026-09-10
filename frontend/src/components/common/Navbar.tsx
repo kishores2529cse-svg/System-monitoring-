@@ -13,7 +13,6 @@ const candidateNavItems = [
   { label: 'Assessments', to: '/assessments', icon: ClipboardList },
   { label: 'Problems', to: '/problems', icon: BookOpen },
   { label: 'Results', to: '/results', icon: BarChart3 },
-  { label: 'Admin', to: '/admin/dashboard', icon: ShieldCheck },
   { label: 'About', to: '/about', icon: Info },
   { label: 'Profile', to: '/profile', icon: UserCircle }
 ];

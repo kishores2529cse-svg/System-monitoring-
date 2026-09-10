@@ -7,6 +7,43 @@ import (
 	"gorm.io/gorm"
 )
 
+// ==================== Admin ====================
+
+// Admin represents a system administrator.
+type Admin struct {
+	ID        uint           `gorm:"primaryKey" json:"id"`
+	Username  string         `gorm:"uniqueIndex;size:50" json:"username"`
+	Email     string         `gorm:"uniqueIndex;size:255;not null" json:"email" binding:"required,email"`
+	Password  string         `gorm:"not null" json:"-"`
+	Name      string         `gorm:"size:255;not null" json:"name" binding:"required"`
+	Role      string         `gorm:"size:20;default:admin;not null" json:"role"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
+}
+
+// AdminResponse is the DTO returned for admin data.
+type AdminResponse struct {
+	ID        uint      `json:"id"`
+	Username  string    `json:"username"`
+	Email     string    `json:"email"`
+	Name      string    `json:"name"`
+	Role      string    `json:"role"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+// ToAdminResponse converts an Admin model to an AdminResponse DTO.
+func (a *Admin) ToAdminResponse() AdminResponse {
+	return AdminResponse{
+		ID:        a.ID,
+		Username:  a.Username,
+		Email:     a.Email,
+		Name:      a.Name,
+		Role:      a.Role,
+		CreatedAt: a.CreatedAt,
+	}
+}
+
 // ==================== User ====================
 
 // User represents a registered user or admin.
@@ -77,32 +114,6 @@ func (u *User) ToUserResponse() UserResponse {
 		Department: u.Department,
 		CreatedAt:  u.CreatedAt,
 	}
-}
-
-// ==================== Admin ====================
-
-// Admin represents an administrator account.
-type Admin struct {
-	ID        uint           `gorm:"primaryKey" json:"id"`
-	Email     string         `gorm:"uniqueIndex;size:255;not null" json:"email"`
-	Password  string         `gorm:"not null" json:"-"`
-	Name      string         `gorm:"size:255;not null" json:"name"`
-	CreatedAt time.Time      `json:"created_at"`
-	UpdatedAt time.Time      `json:"updated_at"`
-	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
-}
-
-// AdminLoginRequest is the DTO for admin login.
-type AdminLoginRequest struct {
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required"`
-}
-
-// AdminResponse is the DTO returned for admin data.
-type AdminResponse struct {
-	ID   uint   `json:"id"`
-	Email string `json:"email"`
-	Name string `json:"name"`
 }
 
 // ==================== ExamSession ====================

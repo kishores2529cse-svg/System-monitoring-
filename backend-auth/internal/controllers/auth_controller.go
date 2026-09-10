@@ -76,11 +76,37 @@ func (ctrl *AuthController) Logout(c *gin.Context) {
 	utils.SuccessResponse(c, http.StatusOK, "logged out successfully", nil)
 }
 
+// AdminRegister handles POST /api/admin/register
+// Request body: { "email": "...", "password": "...", "name": "..." }
+// Response 201: { "success": true, "data": { user, token } }
+func (ctrl *AuthController) AdminRegister(c *gin.Context) {
+	var req models.RegisterRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.BadRequest(c, "validation failed: "+err.Error())
+		return
+	}
+
+	admin, token, err := ctrl.authService.RegisterAdmin(req)
+	if err != nil {
+		if err.Error() == "email already registered" {
+			utils.Conflict(c, err.Error())
+			return
+		}
+		utils.InternalError(c, err.Error())
+		return
+	}
+
+	utils.SuccessResponse(c, http.StatusCreated, "admin registered successfully", gin.H{
+		"user":  admin.ToAdminResponse(),
+		"token": token,
+	})
+}
+
 // AdminLogin handles POST /api/admin/login
 // Request body: { "email": "...", "password": "..." }
-// Response 200: { "success": true, "data": { admin, token } }
+// Response 200: { "success": true, "data": { user, token } }
 func (ctrl *AuthController) AdminLogin(c *gin.Context) {
-	var req models.AdminLoginRequest
+	var req models.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.BadRequest(c, "validation failed: "+err.Error())
 		return
@@ -93,11 +119,7 @@ func (ctrl *AuthController) AdminLogin(c *gin.Context) {
 	}
 
 	utils.SuccessResponse(c, http.StatusOK, "admin login successful", gin.H{
-		"admin": models.AdminResponse{
-			ID:    admin.ID,
-			Email: admin.Email,
-			Name:  admin.Name,
-		},
+		"user":  admin.ToAdminResponse(),
 		"token": token,
 	})
 }

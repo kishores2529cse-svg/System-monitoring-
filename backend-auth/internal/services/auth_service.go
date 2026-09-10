@@ -52,10 +52,9 @@ func (s *AuthService) Register(req models.RegisterRequest) (*models.User, string
 		return nil, "", errors.New("failed to hash password")
 	}
 
-	role := req.Role
-	if role == "" {
-		role = "user"
-	}
+	// Force role to user to prevent privilege escalation
+	role := "user"
+	
 	username := req.Username
 	if username == "" {
 		username = req.Email
@@ -109,8 +108,42 @@ func (s *AuthService) AuthenticateUser(req models.LoginRequest) (*models.User, s
 	return user, token, nil
 }
 
+// RegisterAdmin creates a new admin account.
+func (s *AuthService) RegisterAdmin(req models.RegisterRequest) (*models.Admin, string, error) {
+	existing, _ := s.adminRepo.FindByEmail(req.Email)
+	if existing != nil && existing.ID != 0 {
+		return nil, "", errors.New("email already registered")
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, "", errors.New("failed to hash password")
+	}
+
+	role := "admin"
+	username := req.Username
+	if username == "" {
+		username = req.Email
+	}
+
+	admin := &models.Admin{
+		Username: username,
+		Email:    req.Email,
+		Password: string(hashedPassword),
+		Name:     req.Name,
+		Role:     role,
+	}
+
+	if err := s.adminRepo.Create(admin); err != nil {
+		return nil, "", errors.New("failed to create admin user")
+	}
+
+	token, _ := s.generateToken(admin.ID, admin.Email, role, s.cfg.JWTSecret, s.cfg.AdminJWTExpiry)
+	return admin, token, nil
+}
+
 // AuthenticateAdmin validates admin credentials and returns an admin JWT.
-func (s *AuthService) AuthenticateAdmin(req models.AdminLoginRequest) (*models.Admin, string, error) {
+func (s *AuthService) AuthenticateAdmin(req models.LoginRequest) (*models.Admin, string, error) {
 	admin, err := s.adminRepo.FindByEmail(req.Email)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -123,7 +156,7 @@ func (s *AuthService) AuthenticateAdmin(req models.AdminLoginRequest) (*models.A
 		return nil, "", errors.New("invalid email or password")
 	}
 
-	token, err := s.generateToken(admin.ID, admin.Email, "admin", s.cfg.AdminJWTSecret, s.cfg.AdminJWTExpiry)
+	token, err := s.generateToken(admin.ID, admin.Email, "admin", s.cfg.JWTSecret, s.cfg.AdminJWTExpiry)
 	if err != nil {
 		return nil, "", errors.New("failed to generate token")
 	}

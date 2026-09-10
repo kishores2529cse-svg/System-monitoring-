@@ -379,76 +379,80 @@ export const api = {
       return profile;
     },
 
+    adminRegister: async (data: any): Promise<UserProfile> => {
+      const cleanEmail = (data.email || '').trim().toLowerCase();
+      const cleanPassword = (data.password || '').trim();
+      const cleanName = (data.name || '').trim();
+
+      const response = await fetchWithTimeout(`${API_BASE}/admin/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: cleanName,
+          email: cleanEmail,
+          password: cleanPassword,
+          name: cleanName,
+          role: 'admin'
+        })
+      }, 3500);
+
+      const isJson = response.headers.get('content-type')?.includes('application/json');
+      if (isJson) {
+        const resData = await response.json();
+        if (response.ok && resData.success && resData.data) {
+          const userObj = resData.data.user || resData.data;
+          const token = resData.data.token;
+          if (token) localStorage.setItem('codeshield_token', token);
+          const adminProfile: UserProfile = {
+            id: `ADM-${userObj.id}`,
+            name: userObj.name || cleanName,
+            email: userObj.email || cleanEmail,
+            role: 'admin',
+            adminId: cleanEmail,
+            avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80'
+          };
+          localStorage.setItem('codeshield_auth_user', JSON.stringify(adminProfile));
+          return adminProfile;
+        } else {
+          throw new Error(resData.message || 'Registration failed');
+        }
+      }
+      throw new Error('Backend registration failed');
+    },
+
     adminLogin: async (adminIdOrEmail: string, password?: string, _code2FA?: string): Promise<UserProfile> => {
       const cleanId = (adminIdOrEmail || '').toLowerCase().trim();
       const cleanPass = (password || '').trim();
 
-      // 1. Try real Go Backend Admin Auth API with safety timeout
-      try {
-        const response = await fetchWithTimeout(`${API_BASE}/admin/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: cleanId, password: cleanPass })
-        }, 3500);
+      // Try real Go Backend Admin Auth API
+      const response = await fetchWithTimeout(`${API_BASE}/admin/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: cleanId, password: cleanPass })
+      }, 3500);
 
-        const isJson = response.headers.get('content-type')?.includes('application/json');
-        if (isJson) {
-          const resData = await response.json();
-          if (response.ok && resData.success && resData.data) {
-            const adminObj = resData.data.admin || resData.data;
-            const token = resData.data.token;
-            if (token) localStorage.setItem('codeshield_admin_token', token);
-            const adminProfile: UserProfile = {
-              id: `ADM-${adminObj.id}`,
-              name: adminObj.name || 'Proctor Admin',
-              email: adminObj.email || cleanId,
-              role: 'admin',
-              adminId: adminIdOrEmail,
-              avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80'
-            };
-            localStorage.setItem('codeshield_auth_user', JSON.stringify(adminProfile));
-            return adminProfile;
-          }
+      const isJson = response.headers.get('content-type')?.includes('application/json');
+      if (isJson) {
+        const resData = await response.json();
+        if (response.ok && resData.success && resData.data) {
+          const adminObj = resData.data.user || resData.data;
+          const token = resData.data.token;
+          if (token) localStorage.setItem('codeshield_token', token); // Use same token key to unify session
+          const adminProfile: UserProfile = {
+            id: `ADM-${adminObj.id}`,
+            name: adminObj.name || 'Proctor Admin',
+            email: adminObj.email || cleanId,
+            role: 'admin',
+            adminId: adminIdOrEmail,
+            avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80'
+          };
+          localStorage.setItem('codeshield_auth_user', JSON.stringify(adminProfile));
+          return adminProfile;
+        } else {
+          throw new Error(resData.message || 'Invalid email or password');
         }
-      } catch (err) {
-        console.warn('Backend admin auth offline, using local verification.', err);
       }
-
-      // Fallback validation for offline admin credentials
-      const validAdmins: Record<string, { pass: string; name: string }> = {
-        'admin@codeshield.ai': { pass: 'admin123', name: 'Enterprise Chief Proctor' },
-        'abc@gmail.com': { pass: 'xyz', name: 'Admin ABC' },
-        'adm-chief-01': { pass: 'adminpass123', name: 'Chief Proctor 01' },
-        'admin': { pass: 'admin123', name: 'System Administrator' }
-      };
-
-      if (validAdmins[cleanId]) {
-        if (cleanPass && validAdmins[cleanId].pass !== cleanPass) {
-          throw new Error('Invalid admin passphrase');
-        }
-        const adminProfile: UserProfile = {
-          id: cleanId === 'abc@gmail.com' ? 'ADM002' : 'ADM001',
-          name: validAdmins[cleanId].name,
-          email: cleanId.includes('@') ? cleanId : `${cleanId}@codeshield.ai`,
-          role: 'admin',
-          adminId: adminIdOrEmail,
-          avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80'
-        };
-        localStorage.setItem('codeshield_auth_user', JSON.stringify(adminProfile));
-        return adminProfile;
-      }
-
-      // Default fallback administrator profile
-      const fallbackAdmin: UserProfile = {
-        id: `ADM-${cleanId.replace(/[^a-zA-Z0-9]/g, '') || '001'}`,
-        name: cleanId ? cleanId.split('@')[0].toUpperCase() : 'Proctor Admin',
-        email: cleanId.includes('@') ? cleanId : `${cleanId || 'admin'}@codeshield.ai`,
-        role: 'admin',
-        adminId: adminIdOrEmail,
-        avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80'
-      };
-      localStorage.setItem('codeshield_auth_user', JSON.stringify(fallbackAdmin));
-      return fallbackAdmin;
+      throw new Error('Backend admin authentication failed.');
     },
 
     logout: async (): Promise<boolean> => {

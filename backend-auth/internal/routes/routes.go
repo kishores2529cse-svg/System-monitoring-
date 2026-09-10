@@ -20,6 +20,7 @@ func Setup(
 	timerCtrl *controllers.TimerController,
 	malpracticeCtrl *controllers.MalpracticeController,
 	authMiddleware *middleware.AuthMiddleware,
+	
 	cfg *config.Config,
 ) *gin.Engine {
 	// Set release mode in production
@@ -50,6 +51,7 @@ func Setup(
 	// ======== Admin Routes ========
 	admin := api.Group("/admin")
 	{
+		admin.POST("/register", authCtrl.AdminRegister)
 		admin.POST("/login", authCtrl.AdminLogin)
 	}
 
@@ -80,7 +82,7 @@ func Setup(
 
 	// ======== Protected User Routes ========
 	user := api.Group("/user")
-	user.Use(authMiddleware.RequireAuth())
+	user.Use(authMiddleware.RequireAnyAuth())
 	{
 		user.GET("/profile", userCtrl.GetProfile)
 		user.PUT("/profile", userCtrl.UpdateProfile)

@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { LandingPage } from '../pages/Landing/LandingPage';
 import { CandidateLogin } from '../pages/Auth/CandidateLogin';
 import { CandidateRegister } from '../pages/Auth/CandidateRegister';
-import { AdminLogin } from '../pages/Auth/AdminLogin';
+import { AdminRegister } from '../pages/Auth/AdminRegister';
 import { CandidateDashboard } from '../pages/Candidate/CandidateDashboard';
 import { ExamPage } from '../pages/Compiler/ExamPage';
 import { SandboxPage } from '../pages/Compiler/SandboxPage';
@@ -24,7 +24,8 @@ export const AppRoutes: React.FC = () => {
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<CandidateLogin />} />
       <Route path="/register" element={<CandidateRegister />} />
-      <Route path="/admin/login" element={<AdminLogin />} />
+      <Route path="/admin/login" element={<Navigate to="/login" replace />} />
+      <Route path="/admin/register" element={<AdminRegister />} />
       <Route path="/about" element={<AboutPage />} />
 
       {/* Candidate Pages */}

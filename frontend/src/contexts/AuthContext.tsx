@@ -9,6 +9,7 @@ interface AuthContextType {
   loginCandidate: (email: string, pass: string) => Promise<void>;
   registerCandidate: (data: any) => Promise<void>;
   loginAdmin: (adminId: string, pass: string, code2FA?: string) => Promise<void>;
+  registerAdmin: (data: any) => Promise<void>;
   logout: () => Promise<void>;
   updateProfile: (data: Partial<UserProfile>) => Promise<UserProfile>;
   refreshProfile: () => Promise<UserProfile | null>;
@@ -59,6 +60,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(res);
   };
 
+  const registerAdmin = async (data: any) => {
+    const res = await api.auth.adminRegister(data);
+    setUser(res);
+  };
+
   const logout = async () => {
     await api.auth.logout();
     setUser(null);
@@ -89,6 +95,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         loginCandidate,
         registerCandidate,
         loginAdmin,
+        registerAdmin,
         logout,
         updateProfile,
         refreshProfile

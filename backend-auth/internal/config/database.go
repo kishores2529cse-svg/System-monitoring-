@@ -56,8 +56,8 @@ func InitDB(cfg *Config) *gorm.DB {
 
 	// Auto-migrate all models
 	if err := db.AutoMigrate(
-		&models.User{},
 		&models.Admin{},
+		&models.User{},
 		&models.ExamSession{},
 		&models.Problem{},
 		&models.TestCase{},
@@ -83,9 +83,11 @@ func SeedInitialData(db *gorm.DB) {
 		hashedAdminPassword, err := bcrypt.GenerateFromPassword([]byte("admin123"), bcrypt.DefaultCost)
 		if err == nil {
 			admin := models.Admin{
+				Username: "admin_codeshield",
 				Email:    "admin@codeshield.ai",
 				Password: string(hashedAdminPassword),
 				Name:     "System Administrator",
+				Role:     "admin",
 			}
 			if err := db.Create(&admin).Error; err == nil {
 				log.Println("Seeded initial Admin account: admin@codeshield.ai")
@@ -99,9 +101,11 @@ func SeedInitialData(db *gorm.DB) {
 		hashedPwd, err := bcrypt.GenerateFromPassword([]byte("xyz"), bcrypt.DefaultCost)
 		if err == nil {
 			admin := models.Admin{
+				Username: "abc_admin",
 				Email:    "abc@gmail.com",
 				Password: string(hashedPwd),
 				Name:     "Admin ABC",
+				Role:     "admin",
 			}
 			if err := db.Create(&admin).Error; err == nil {
 				log.Println("Seeded Admin account: abc@gmail.com")

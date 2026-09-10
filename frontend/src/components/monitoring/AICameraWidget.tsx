@@ -122,14 +122,21 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = ({
   // 1. Load Bundled TensorFlow.js / COCO-SSD and MediaPipe FaceMesh
   useEffect(() => {
     let active = true;
+    let retryTimer: any = null;
+
     const initVisionAI = async () => {
+      if (!active) return;
       try {
         setModelLoading(true);
         setModelType('Loading Neural Vision...');
 
         try {
           await tf.ready();
-          const loadedModel = await cocoSsd.load({ base: 'lite_mobilenet_v2' });
+          // Wrap in a promise with timeout to prevent hanging forever
+          const loadPromise = cocoSsd.load({ base: 'lite_mobilenet_v2' });
+          const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 15000));
+          const loadedModel = await Promise.race([loadPromise, timeoutPromise]);
+          
           if (active && loadedModel) {
             setModel(loadedModel);
             setModelType('COCO-SSD Neural Vision');
@@ -146,7 +153,10 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = ({
             'https://unpkg.com/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js'
           ]);
           if (active && (window as any).cocoSsd) {
-            const loadedModel = await (window as any).cocoSsd.load({ base: 'lite_mobilenet_v2' });
+            const loadPromise = (window as any).cocoSsd.load({ base: 'lite_mobilenet_v2' });
+            const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 20000));
+            const loadedModel = await Promise.race([loadPromise, timeoutPromise]);
+            
             if (active && loadedModel) {
               setModel(loadedModel);
               setModelType('COCO-SSD Neural Vision');
@@ -186,17 +196,36 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = ({
 
         if (active) setModelLoading(false);
       } catch (err) {
-        console.warn('AI libraries loaded with local heuristic fallback:', err);
+        console.warn('AI libraries loaded with error, retrying in 5s...', err);
         if (active) {
-          setModelType('Edge Vision Analyzer');
-          setModelLoading(false);
+          setModelType('Retrying AI Init...');
+          retryTimer = setTimeout(initVisionAI, 5000);
         }
       }
     };
 
     initVisionAI();
+
+    // Listen for WebGL context loss to automatically reload the model
+    const handleContextLost = (e: Event) => {
+      e.preventDefault();
+      console.warn('WebGL context lost. Restarting AI automatically...');
+      setModel(null);
+      if (active) initVisionAI();
+    };
+    
+    // Attach to the document canvas to catch global context loss
+    window.addEventListener('webglcontextlost', handleContextLost, false);
+
     return () => {
       active = false;
+      if (retryTimer) clearTimeout(retryTimer);
+      window.removeEventListener('webglcontextlost', handleContextLost);
+      try {
+        if (tf && tf.engine) {
+          tf.disposeVariables();
+        }
+      } catch (e) {}
     };
   }, []);
 
