@@ -9,15 +9,17 @@ import (
 
 // MalpracticeService handles business logic for recording and querying anti-cheating events.
 type MalpracticeService struct {
-	repo     *repositories.MalpracticeRepo
-	userRepo *repositories.UserRepo
+	repo         *repositories.MalpracticeRepo
+	userRepo     *repositories.UserRepo
+	emailService *EmailService
 }
 
 // NewMalpracticeService creates a new MalpracticeService.
-func NewMalpracticeService(repo *repositories.MalpracticeRepo, userRepo *repositories.UserRepo) *MalpracticeService {
+func NewMalpracticeService(repo *repositories.MalpracticeRepo, userRepo *repositories.UserRepo, emailService *EmailService) *MalpracticeService {
 	return &MalpracticeService{
-		repo:     repo,
-		userRepo: userRepo,
+		repo:         repo,
+		userRepo:     userRepo,
+		emailService: emailService,
 	}
 }
 
@@ -69,6 +71,12 @@ func (s *MalpracticeService) LogViolation(req *models.LogMalpracticeRequest) (*m
 
 	if err := s.repo.Create(logEntry); err != nil {
 		return nil, err
+	}
+
+	// Malpractice record is now safely persisted.
+	// Fire email notification asynchronously — never blocks or affects the response.
+	if s.emailService != nil {
+		go s.emailService.SendMalpracticeAlert(logEntry)
 	}
 
 	return logEntry, nil

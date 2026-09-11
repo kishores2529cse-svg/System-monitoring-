@@ -37,7 +37,8 @@ func main() {
 	compilerService := services.NewCompilerService(problemRepo, submissionRepo, cfg)
 	leaderboardService := services.NewLeaderboardService(leaderboardRepo, submissionRepo, userRepo)
 	timerService := services.NewTimerService(timerRepo)
-	malpracticeService := services.NewMalpracticeService(malpracticeRepo, userRepo)
+	emailService := services.NewEmailService(cfg, adminRepo)
+	malpracticeService := services.NewMalpracticeService(malpracticeRepo, userRepo, emailService)
 
 	// Initialize controllers
 	authCtrl := controllers.NewAuthController(authService)

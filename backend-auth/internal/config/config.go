@@ -33,6 +33,13 @@ type Config struct {
 	CompilerTimeout time.Duration
 	MaxCodeSize     int
 	TempDir         string
+
+	// SMTP Email settings
+	SMTPHost     string
+	SMTPPort     int
+	SMTPUser     string
+	SMTPPassword string
+	MailFrom     string
 }
 
 // Load reads configuration from environment variables and returns a Config struct.
@@ -55,6 +62,11 @@ func Load() *Config {
 		CompilerTimeout: getDurationEnv("COMPILER_TIMEOUT_SECONDS", 5),
 		MaxCodeSize:     getIntEnv("MAX_CODE_SIZE_KB", 100) * 1024,
 		TempDir:         validateTempDir(getEnv("TEMP_DIR", os.TempDir())),
+		SMTPHost:        getEnv("SMTP_HOST", "smtp.gmail.com"),
+		SMTPPort:        getIntEnv("SMTP_PORT", 587),
+		SMTPUser:        getEnv("SMTP_USER", ""),
+		SMTPPassword:    getEnv("SMTP_PASSWORD", ""),
+		MailFrom:        getEnv("MAIL_FROM", "alerts@yourdomain.com"),
 	}
 }
 
