@@ -131,9 +131,23 @@ export const MonitoringProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false });
     const eventDetails = details || `Security monitor flagged: ${eventTitle}`;
 
+    const authUserStr = localStorage.getItem('codeshield_auth_user');
+    let candidateName = 'Candidate';
+    let candidateId = 'USR001';
+    
+    if (authUserStr) {
+      try {
+        const authUser = JSON.parse(authUserStr);
+        if (authUser.name) candidateName = authUser.name;
+        if (authUser.id) candidateId = authUser.id;
+      } catch (e) {
+        console.warn('Error parsing auth user', e);
+      }
+    }
+
     const newEvt = await api.monitor.reportEvent({
-      candidateId: 'USR001',
-      candidateName: 'Kishore S',
+      candidateId: candidateId,
+      candidateName: candidateName,
       timestamp,
       event: eventTitle,
       severity,
