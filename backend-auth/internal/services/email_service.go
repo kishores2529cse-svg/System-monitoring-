@@ -1,18 +1,21 @@
 package services
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"html"
 	"log"
-	"net/smtp"
+	"net/http"
 	"strings"
+	"time"
 
 	"backend-auth/internal/config"
 	"backend-auth/internal/models"
 	"backend-auth/internal/repositories"
 )
 
-// EmailService handles sending malpractice alert emails via SMTP.
+// EmailService handles sending malpractice alert emails via Resend HTTP API.
 type EmailService struct {
 	cfg       *config.Config
 	adminRepo *repositories.AdminRepo
@@ -36,9 +39,9 @@ func (s *EmailService) SendMalpracticeAlert(logEntry *models.MalpracticeLog) {
 		}
 	}()
 
-	// 1. Check if SMTP is configured
-	if s.cfg.SMTPHost == "" || s.cfg.SMTPUser == "" || s.cfg.SMTPPassword == "" {
-		log.Printf("[EMAIL] malpractice email skipped reason=SMTP credentials not fully configured malpractice_id=%d", logEntry.ID)
+	// 1. Check if Resend API key is configured
+	if s.cfg.ResendAPIKey == "" {
+		log.Printf("[EMAIL] malpractice email skipped reason=RESEND_API_KEY missing malpractice_id=%d", logEntry.ID)
 		return
 	}
 
@@ -52,14 +55,18 @@ func (s *EmailService) SendMalpracticeAlert(logEntry *models.MalpracticeLog) {
 	// 3. Build email subject and body
 	subject := s.buildSubject(logEntry)
 	htmlBody := s.buildHTMLBody(logEntry)
+	from := s.cfg.MailFrom
+	if from == "" {
+		from = "onboarding@resend.dev"
+	}
 
-	// 4. Send email to each admin
+	// 4. Send email to each admin using Resend API
 	for _, admin := range admins {
 		if admin.Email == "" {
 			continue
 		}
 
-		err := s.sendViaSMTP(admin.Email, subject, htmlBody)
+		err := s.sendViaResend(admin.Email, from, subject, htmlBody)
 		if err != nil {
 			log.Printf("[EMAIL] malpractice email failed to send malpractice_id=%d admin_email=%s error=%s", logEntry.ID, admin.Email, err.Error())
 		} else {
@@ -68,37 +75,39 @@ func (s *EmailService) SendMalpracticeAlert(logEntry *models.MalpracticeLog) {
 	}
 }
 
-// sendViaSMTP sends an HTML email via SMTP
-func (s *EmailService) sendViaSMTP(to string, subject string, htmlBody string) error {
-	from := s.cfg.MailFrom
-	if from == "" {
-		from = s.cfg.SMTPUser
+// sendViaResend sends an HTML email using the Resend HTTP API.
+func (s *EmailService) sendViaResend(to, from, subject, htmlBody string) error {
+	url := "https://api.resend.com/emails"
+
+	payload := map[string]interface{}{
+		"from":    from,
+		"to":      []string{to},
+		"subject": subject,
+		"html":    htmlBody,
 	}
 
-	// Build the MIME email message
-	headers := make(map[string]string)
-	headers["From"] = from
-	headers["To"] = to
-	headers["Subject"] = subject
-	headers["MIME-Version"] = "1.0"
-	headers["Content-Type"] = "text/html; charset=\"UTF-8\""
-
-	var message strings.Builder
-	for k, v := range headers {
-		message.WriteString(fmt.Sprintf("%s: %s\r\n", k, v))
-	}
-	message.WriteString("\r\n")
-	message.WriteString(htmlBody)
-
-	// Setup authentication
-	auth := smtp.PlainAuth("", s.cfg.SMTPUser, s.cfg.SMTPPassword, s.cfg.SMTPHost)
-
-	addr := fmt.Sprintf("%s:%d", s.cfg.SMTPHost, s.cfg.SMTPPort)
-
-	// smtp.SendMail automatically handles STARTTLS
-	err := smtp.SendMail(addr, auth, s.cfg.SMTPUser, []string{to}, []byte(message.String()))
+	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
-		return fmt.Errorf("smtp_send_error: %w", err)
+		return err
+	}
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payloadBytes))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Authorization", "Bearer "+s.cfg.ResendAPIKey)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 400 {
+		return fmt.Errorf("resend API returned status code %d", resp.StatusCode)
 	}
 
 	return nil
@@ -126,7 +135,6 @@ func (s *EmailService) buildSubject(logEntry *models.MalpracticeLog) string {
 func (s *EmailService) buildHTMLBody(logEntry *models.MalpracticeLog) string {
 	esc := html.EscapeString
 
-	// Build detail rows — only include fields that have values
 	var detailRows strings.Builder
 
 	if logEntry.CandidateName != "" {
@@ -163,7 +171,6 @@ func (s *EmailService) buildHTMLBody(logEntry *models.MalpracticeLog) string {
 		detailRows.WriteString(s.buildDetailRow("Confidence", fmt.Sprintf("%.0f%%", logEntry.Confidence*100)))
 	}
 
-	// Format timestamp
 	ts := logEntry.Timestamp
 	if ts.IsZero() {
 		ts = logEntry.CreatedAt
@@ -215,7 +222,6 @@ func (s *EmailService) buildHTMLBody(logEntry *models.MalpracticeLog) string {
 </html>`, detailRows.String())
 }
 
-// buildDetailRow creates a single HTML table row for an email detail field.
 func (s *EmailService) buildDetailRow(label, value string) string {
 	return fmt.Sprintf(`<tr><td style="padding:12px 16px;font-weight:600;color:#94a3b8;width:160px;border-bottom:1px solid #1e293b;">%s</td><td style="padding:12px 16px;color:#f1f5f9;border-bottom:1px solid #1e293b;">%s</td></tr>`, label, value)
 }

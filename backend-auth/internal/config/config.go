@@ -34,11 +34,8 @@ type Config struct {
 	MaxCodeSize     int
 	TempDir         string
 
-	// SMTP Email settings
-	SMTPHost     string
-	SMTPPort     int
-	SMTPUser     string
-	SMTPPassword string
+	// Resend Email settings
+	ResendAPIKey string
 	MailFrom     string
 }
 
@@ -62,11 +59,8 @@ func Load() *Config {
 		CompilerTimeout: getDurationEnv("COMPILER_TIMEOUT_SECONDS", 5),
 		MaxCodeSize:     getIntEnv("MAX_CODE_SIZE_KB", 100) * 1024,
 		TempDir:         validateTempDir(getEnv("TEMP_DIR", os.TempDir())),
-		SMTPHost:        getEnv("SMTP_HOST", "smtp.gmail.com"),
-		SMTPPort:        getIntEnv("SMTP_PORT", 587),
-		SMTPUser:        getEnv("SMTP_USER", ""),
-		SMTPPassword:    getEnv("SMTP_PASSWORD", ""),
-		MailFrom:        getEnv("MAIL_FROM", "alerts@yourdomain.com"),
+		ResendAPIKey:    getEnv("RESEND_API_KEY", ""),
+		MailFrom:        getEnv("MAIL_FROM", "onboarding@resend.dev"),
 	}
 }
 
