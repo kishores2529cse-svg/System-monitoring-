@@ -6,4 +6,6 @@ __pycache__/
 *.pyc
 node_modules/
 dist/
-build/
+build/
+backend-auth/.env
+backend-auth/.env
