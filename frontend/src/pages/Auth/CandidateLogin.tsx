@@ -331,6 +331,13 @@ export const CandidateLogin: React.FC = () => {
                       Google Institutional Workspace
                     </button>
                   </div>
+
+                  <div className="text-center text-xs text-slate-400 mt-6 relative z-10">
+                    Don't have a candidate account?{' '}
+                    <Link to="/register" className="text-[#7CFF4D] font-bold hover:underline transition-colors">
+                      Register here
+                    </Link>
+                  </div>
                 </div>
 
                 {/* ADMIN SIDE (Right) */}
