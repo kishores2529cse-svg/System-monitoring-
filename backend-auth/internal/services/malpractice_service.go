@@ -36,9 +36,10 @@ func (s *MalpracticeService) LogViolation(req *models.LogMalpracticeRequest) (*m
 
 	candidateName := req.CandidateName
 	candidateEmail := req.CandidateEmail
+	candidateRegNo := req.CandidateRegNo
 
-	// Auto-lookup candidate name & email from user repository if missing
-	if candidateName == "" || candidateEmail == "" {
+	// Auto-lookup candidate name & email & regNo from user repository if missing
+	if candidateName == "" || candidateEmail == "" || candidateRegNo == "" {
 		if user, err := s.userRepo.FindByID(req.UserID); err == nil && user != nil {
 			if candidateName == "" {
 				candidateName = user.Name
@@ -48,6 +49,9 @@ func (s *MalpracticeService) LogViolation(req *models.LogMalpracticeRequest) (*m
 			}
 			if candidateEmail == "" {
 				candidateEmail = user.Email
+			}
+			if candidateRegNo == "" {
+				candidateRegNo = user.RegNo
 			}
 		}
 	}
@@ -60,6 +64,7 @@ func (s *MalpracticeService) LogViolation(req *models.LogMalpracticeRequest) (*m
 		UserID:         req.UserID,
 		CandidateName:  candidateName,
 		CandidateEmail: candidateEmail,
+		CandidateRegNo: candidateRegNo,
 		EventType:      req.EventType,
 		Details:        req.Details,
 		Severity:       severity,

@@ -10,6 +10,7 @@ import { PageTransition } from '../../components/ui/PageTransition';
 export const CandidateRegister: React.FC = () => {
   const [formData, setFormData] = useState({
     name: '',
+    regNo: '',
     college: '',
     department: '',
     email: '',
@@ -54,6 +55,7 @@ export const CandidateRegister: React.FC = () => {
     try {
       await registerCandidate({
         name: formData.name.trim(),
+        regNo: formData.regNo.trim(),
         email: formData.email.trim(),
         password: formData.password,
         college: formData.college.trim(),
@@ -123,6 +125,21 @@ export const CandidateRegister: React.FC = () => {
                   value={formData.college}
                   onChange={(e) => setFormData({ ...formData, college: e.target.value })}
                   placeholder="Sri Shakthi Institute of Engineering"
+                  className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:outline-none focus:border-[#7CFF4D] placeholder-slate-500 shadow-inner"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5 col-span-1 sm:col-span-2">
+              <label className="font-semibold text-slate-200 text-xs">Register Number</label>
+              <div className="relative">
+                <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+                <input
+                  type="text"
+                  required
+                  value={formData.regNo}
+                  onChange={(e) => setFormData({ ...formData, regNo: e.target.value })}
+                  placeholder="714025104120"
                   className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:outline-none focus:border-[#7CFF4D] placeholder-slate-500 shadow-inner"
                 />
               </div>

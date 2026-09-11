@@ -143,6 +143,11 @@ func (s *EmailService) buildHTMLBody(logEntry *models.MalpracticeLog) string {
 	if logEntry.CandidateEmail != "" {
 		detailRows.WriteString(s.buildDetailRow("Candidate Email", esc(logEntry.CandidateEmail)))
 	}
+	if logEntry.CandidateRegNo != "" {
+		detailRows.WriteString(s.buildDetailRow("Reg. No", esc(logEntry.CandidateRegNo)))
+	} else {
+		detailRows.WriteString(s.buildDetailRow("Reg. No", "N/A"))
+	}
 	if logEntry.UserID > 0 {
 		detailRows.WriteString(s.buildDetailRow("Candidate ID", fmt.Sprintf("%d", logEntry.UserID)))
 	}

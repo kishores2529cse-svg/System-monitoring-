@@ -57,6 +57,7 @@ type User struct {
 	Phone      string         `gorm:"size:20" json:"phone"`
 	College    string         `gorm:"size:255" json:"college"`
 	Department string         `gorm:"size:255" json:"department"`
+	RegNo      string         `gorm:"size:50" json:"reg_no"`
 	CreatedAt  time.Time      `json:"created_at"`
 	UpdatedAt  time.Time      `json:"updated_at"`
 	DeletedAt  gorm.DeletedAt `gorm:"index" json:"-"`
@@ -72,6 +73,7 @@ type RegisterRequest struct {
 	Phone      string `json:"phone"`
 	College    string `json:"college"`
 	Department string `json:"department"`
+	RegNo      string `json:"reg_no"`
 }
 
 // LoginRequest is the DTO for user login.
@@ -98,6 +100,7 @@ type UserResponse struct {
 	Phone      string    `json:"phone"`
 	College    string    `json:"college"`
 	Department string    `json:"department"`
+	RegNo      string    `json:"reg_no"`
 	CreatedAt  time.Time `json:"created_at"`
 }
 
@@ -112,6 +115,7 @@ func (u *User) ToUserResponse() UserResponse {
 		Phone:      u.Phone,
 		College:    u.College,
 		Department: u.Department,
+		RegNo:      u.RegNo,
 		CreatedAt:  u.CreatedAt,
 	}
 }
@@ -354,6 +358,7 @@ type MalpracticeLog struct {
 	UserID         uint      `gorm:"index;not null" json:"user_id"`
 	CandidateName  string    `gorm:"size:255;not null;default:'Candidate'" json:"candidate_name"`
 	CandidateEmail string    `gorm:"size:255" json:"candidate_email"`
+	CandidateRegNo string    `gorm:"size:50" json:"candidate_reg_no"`
 	EventType      string    `gorm:"size:100;not null" json:"event_type"` // UNAUTHORIZED_OBJECT, TAB_SWITCH, EXIT_FULLSCREEN, DEVTOOLS_OPEN, MULTIPLE_FACES, COPY_PASTE
 	Details        string    `gorm:"size:500" json:"details"`
 	Severity       string    `gorm:"size:20;default:WARNING" json:"severity"` // INFO, WARNING, CRITICAL
@@ -368,6 +373,7 @@ type LogMalpracticeRequest struct {
 	UserID         uint    `json:"user_id"`
 	CandidateName  string  `json:"candidate_name"`
 	CandidateEmail string  `json:"candidate_email"`
+	CandidateRegNo string  `json:"candidate_reg_no"`
 	EventType      string  `json:"event_type" binding:"required"`
 	Details        string  `json:"details"`
 	Severity       string  `json:"severity"`

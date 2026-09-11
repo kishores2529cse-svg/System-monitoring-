@@ -69,6 +69,7 @@ func (s *AuthService) Register(req models.RegisterRequest) (*models.User, string
 		Phone:      req.Phone,
 		College:    req.College,
 		Department: req.Department,
+		RegNo:      req.RegNo,
 	}
 
 	if err := s.userRepo.Create(user); err != nil {

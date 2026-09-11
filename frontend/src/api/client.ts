@@ -303,6 +303,7 @@ export const api = {
       const cleanCollege = (data.college || '').trim();
       const cleanDept = (data.department || '').trim();
       const cleanPhone = (data.phone || '').trim();
+      const cleanRegNo = (data.regNo || '').trim();
 
       try {
         const response = await fetchWithTimeout(`${API_BASE}/auth/register`, {
@@ -316,6 +317,7 @@ export const api = {
             phone: cleanPhone,
             college: cleanCollege,
             department: cleanDept,
+            reg_no: cleanRegNo,
             role: 'user'
           })
         }, 3500);
@@ -354,6 +356,7 @@ export const api = {
         name: cleanName,
         college: cleanCollege,
         department: cleanDept,
+        reg_no: cleanRegNo,
         phone: cleanPhone
       };
 
