@@ -176,7 +176,11 @@ func (s *EmailService) buildHTMLBody(logEntry *models.MalpracticeLog) string {
 		ts = logEntry.CreatedAt
 	}
 	if !ts.IsZero() {
-		detailRows.WriteString(s.buildDetailRow("Detected At", ts.Format("02 January 2006, 03:04:05 PM")))
+		// Convert to IST (Indian Standard Time)
+		if loc, err := time.LoadLocation("Asia/Kolkata"); err == nil {
+			ts = ts.In(loc)
+		}
+		detailRows.WriteString(s.buildDetailRow("Detected At", ts.Format("02 January 2006, 03:04:05 PM (IST)")))
 	}
 
 	return fmt.Sprintf(`<!DOCTYPE html>
