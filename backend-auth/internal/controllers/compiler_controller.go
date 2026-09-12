@@ -13,7 +13,7 @@ import (
 
 // CompilerController handles code execution and submission endpoints.
 type CompilerController struct {
-	compilerService   *services.CompilerService
+	compilerService    *services.CompilerService
 	leaderboardService *services.LeaderboardService
 }
 

@@ -198,4 +198,3 @@ func SeedInitialData(db *gorm.DB) {
 		}
 	}
 }
-

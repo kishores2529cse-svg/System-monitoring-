@@ -1,14 +1,14 @@
 package config
 
 import (
-	"testing"
 	"backend-auth/internal/models"
+	"testing"
 )
 
 func TestSupabaseInitDB(t *testing.T) {
 	cfg := Load()
 	t.Logf("Connecting to Supabase Host=%s, User=%s", cfg.DBHost, cfg.DBUser)
-	
+
 	// Open connection & auto-migrate all models (including MalpracticeLog with candidate_name)
 	db := InitDB(cfg)
 	if db == nil {

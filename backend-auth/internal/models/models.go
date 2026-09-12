@@ -133,15 +133,15 @@ const (
 
 // ExamSession tracks a candidate's exam attempt.
 type ExamSession struct {
-	ID          uint      `gorm:"primaryKey" json:"id"`
-	UserID      uint      `gorm:"index;not null" json:"user_id"`
-	User        User      `gorm:"foreignKey:UserID" json:"-"`
-	Status      ExamStatus `gorm:"size:20;default:NOT_STARTED" json:"status"`
-	StartTime   *time.Time `json:"start_time"`
-	EndTime     *time.Time `json:"end_time"`
-	Duration    int        `gorm:"default:60" json:"duration"` // in minutes
-	CreatedAt   time.Time  `json:"created_at"`
-	UpdatedAt   time.Time  `json:"updated_at"`
+	ID        uint       `gorm:"primaryKey" json:"id"`
+	UserID    uint       `gorm:"index;not null" json:"user_id"`
+	User      User       `gorm:"foreignKey:UserID" json:"-"`
+	Status    ExamStatus `gorm:"size:20;default:NOT_STARTED" json:"status"`
+	StartTime *time.Time `json:"start_time"`
+	EndTime   *time.Time `json:"end_time"`
+	Duration  int        `gorm:"default:60" json:"duration"` // in minutes
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at"`
 }
 
 // StartExamRequest is the DTO to start an exam.
@@ -171,19 +171,19 @@ const (
 
 // Problem represents a coding problem.
 type Problem struct {
-	ID          uint       `gorm:"primaryKey" json:"id"`
-	Title       string     `gorm:"size:255;not null" json:"title"`
-	Description string     `gorm:"type:text;not null" json:"description"`
-	Constraints string     `gorm:"type:text" json:"constraints"`
-	Difficulty  Difficulty `gorm:"size:20;not null" json:"difficulty"`
-	Tags        string     `gorm:"size:500" json:"tags"` // comma-separated
-	SampleInput  string    `gorm:"type:text" json:"sample_input"`
-	SampleOutput string    `gorm:"type:text" json:"sample_output"`
-	TimeLimit   int        `gorm:"default:2" json:"time_limit"`   // seconds
-	MemoryLimit int        `gorm:"default:256" json:"memory_limit"` // MB
-	TestCases   []TestCase `gorm:"foreignKey:ProblemID" json:"-"`
-	CreatedAt   time.Time  `json:"created_at"`
-	UpdatedAt   time.Time  `json:"updated_at"`
+	ID           uint       `gorm:"primaryKey" json:"id"`
+	Title        string     `gorm:"size:255;not null" json:"title"`
+	Description  string     `gorm:"type:text;not null" json:"description"`
+	Constraints  string     `gorm:"type:text" json:"constraints"`
+	Difficulty   Difficulty `gorm:"size:20;not null" json:"difficulty"`
+	Tags         string     `gorm:"size:500" json:"tags"` // comma-separated
+	SampleInput  string     `gorm:"type:text" json:"sample_input"`
+	SampleOutput string     `gorm:"type:text" json:"sample_output"`
+	TimeLimit    int        `gorm:"default:2" json:"time_limit"`     // seconds
+	MemoryLimit  int        `gorm:"default:256" json:"memory_limit"` // MB
+	TestCases    []TestCase `gorm:"foreignKey:ProblemID" json:"-"`
+	CreatedAt    time.Time  `json:"created_at"`
+	UpdatedAt    time.Time  `json:"updated_at"`
 }
 
 // TableName sets the table name to "questions".
@@ -264,13 +264,13 @@ type TestCase struct {
 type Verdict string
 
 const (
-	VerdictAccepted        Verdict = "Accepted"
-	VerdictWrongAnswer     Verdict = "Wrong Answer"
-	VerdictRuntimeError    Verdict = "Runtime Error"
-	VerdictCompilationError Verdict = "Compilation Error"
-	VerdictTimeLimitExceeded Verdict = "Time Limit Exceeded"
+	VerdictAccepted            Verdict = "Accepted"
+	VerdictWrongAnswer         Verdict = "Wrong Answer"
+	VerdictRuntimeError        Verdict = "Runtime Error"
+	VerdictCompilationError    Verdict = "Compilation Error"
+	VerdictTimeLimitExceeded   Verdict = "Time Limit Exceeded"
 	VerdictMemoryLimitExceeded Verdict = "Memory Limit Exceeded"
-	VerdictPending         Verdict = "Pending"
+	VerdictPending             Verdict = "Pending"
 )
 
 // Submission records a candidate's code submission.
@@ -305,21 +305,21 @@ type SubmitRequest struct {
 
 // CompilerResponse is the DTO returned by the compiler.
 type CompilerResponse struct {
-	Verdict       Verdict `json:"verdict"`
-	Output        string  `json:"output"`
-	Error         string  `json:"error_message"`
-	ExecutionTime float64 `json:"execution_time"`
-	MemoryUsed    int     `json:"memory_used"`
-	TestCasesPassed int   `json:"test_cases_passed"`
-	TotalTestCases int    `json:"total_test_cases"`
+	Verdict         Verdict `json:"verdict"`
+	Output          string  `json:"output"`
+	Error           string  `json:"error_message"`
+	ExecutionTime   float64 `json:"execution_time"`
+	MemoryUsed      int     `json:"memory_used"`
+	TestCasesPassed int     `json:"test_cases_passed"`
+	TotalTestCases  int     `json:"total_test_cases"`
 }
 
 // RunResponse is returned when running against sample cases.
 type RunResponse struct {
-	Output        string  `json:"output"`
-	CompilationError string `json:"compilation_error,omitempty"`
-	RuntimeError  string  `json:"runtime_error,omitempty"`
-	ExecutionTime float64 `json:"execution_time"`
+	Output           string  `json:"output"`
+	CompilationError string  `json:"compilation_error,omitempty"`
+	RuntimeError     string  `json:"runtime_error,omitempty"`
+	ExecutionTime    float64 `json:"execution_time"`
 }
 
 // ==================== Leaderboard ====================

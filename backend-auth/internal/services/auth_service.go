@@ -54,7 +54,7 @@ func (s *AuthService) Register(req models.RegisterRequest) (*models.User, string
 
 	// Force role to user to prevent privilege escalation
 	role := "user"
-	
+
 	username := req.Username
 	if username == "" {
 		username = req.Email

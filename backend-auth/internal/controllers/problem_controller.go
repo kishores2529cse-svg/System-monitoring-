@@ -70,4 +70,3 @@ func (ctrl *ProblemController) CreateProblem(c *gin.Context) {
 
 	utils.SuccessResponse(c, http.StatusCreated, "problem created successfully", problem)
 }
-

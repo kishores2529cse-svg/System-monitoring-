@@ -20,7 +20,7 @@ func Setup(
 	timerCtrl *controllers.TimerController,
 	malpracticeCtrl *controllers.MalpracticeController,
 	authMiddleware *middleware.AuthMiddleware,
-	
+
 	cfg *config.Config,
 ) *gin.Engine {
 	// Set release mode in production
