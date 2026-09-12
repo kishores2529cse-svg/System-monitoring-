@@ -60,32 +60,25 @@ func (s *EmailService) SendMalpracticeAlert(logEntry *models.MalpracticeLog) {
 		from = "onboarding@resend.dev"
 	}
 
-	// 4. Send email to admins using CC
-	var to string
-	var cc []string
+	// 4. Send email to each admin individually
+	// We MUST send them individually. If we use CC, and even ONE admin is an unverified email,
+	// Resend's free tier will reject the ENTIRE API request and nobody gets the email.
 	for _, admin := range admins {
 		if admin.Email == "" {
 			continue
 		}
-		if to == "" {
-			to = admin.Email
-		} else {
-			cc = append(cc, admin.Email)
-		}
-	}
 
-	if to != "" {
-		err := s.sendViaResend(to, cc, from, subject, htmlBody)
+		err := s.sendViaResend(admin.Email, from, subject, htmlBody)
 		if err != nil {
-			log.Printf("[EMAIL] malpractice email failed to send malpractice_id=%d error=%s", logEntry.ID, err.Error())
+			log.Printf("[EMAIL] malpractice email failed to send malpractice_id=%d admin_email=%s error=%s", logEntry.ID, admin.Email, err.Error())
 		} else {
-			log.Printf("[EMAIL] malpractice email sent successfully malpractice_id=%d to=%s cc=%v", logEntry.ID, to, cc)
+			log.Printf("[EMAIL] malpractice email sent successfully malpractice_id=%d admin_email=%s", logEntry.ID, admin.Email)
 		}
 	}
 }
 
 // sendViaResend sends an HTML email using the Resend HTTP API.
-func (s *EmailService) sendViaResend(to string, cc []string, from, subject, htmlBody string) error {
+func (s *EmailService) sendViaResend(to, from, subject, htmlBody string) error {
 	url := "https://api.resend.com/emails"
 
 	payload := map[string]interface{}{
@@ -93,10 +86,6 @@ func (s *EmailService) sendViaResend(to string, cc []string, from, subject, html
 		"to":      []string{to},
 		"subject": subject,
 		"html":    htmlBody,
-	}
-
-	if len(cc) > 0 {
-		payload["cc"] = cc
 	}
 
 	payloadBytes, err := json.Marshal(payload)
