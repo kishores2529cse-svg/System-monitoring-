@@ -16,6 +16,8 @@ services:
     buildCommand: go build -o server .
     startCommand: ./server
     envVars:
+      - key: GO_VERSION
+        value: 1.26.5
       - key: APP_ENV
         value: production
       - key: DB_HOST
