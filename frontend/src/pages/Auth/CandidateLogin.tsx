@@ -29,25 +29,16 @@ export const CandidateLogin: React.FC = () => {
   const navigate = useNavigate();
 
   // Candidate Handlers
-  const handleQuickLogin = async (email: string, pass: string) => {
-    setCandidateEmail(email);
-    setCandidatePassword(pass);
-    setCandidateLoading(true);
-    setCandidateErrorMessage('');
-    try {
-      await loginCandidate(email, pass);
-      navigate('/dashboard');
-    } catch (err: any) {
-      setCandidateErrorMessage(err.message || 'Authentication error. Please try again.');
-    } finally {
-      setCandidateLoading(false);
-    }
-  };
-
   const handleCandidateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const loginEmail = candidateEmail.trim() || 'kishore@shakthi.edu';
-    const loginPass = candidatePassword.trim() || 'password123';
+    const loginEmail = candidateEmail.trim();
+    const loginPass = candidatePassword.trim();
+
+    if (!loginEmail || !loginPass) {
+      setCandidateErrorMessage('Please enter both email and password.');
+      return;
+    }
+
     setCandidateLoading(true);
     setCandidateErrorMessage('');
     try {
@@ -59,14 +50,6 @@ export const CandidateLogin: React.FC = () => {
       setCandidateLoading(false);
     }
   };
-
-  const handleGoogleLogin = async () => {
-    const targetEmail = candidateEmail.trim() || 'kishore@shakthi.edu';
-    const targetPass = candidatePassword.trim() || 'password123';
-    await handleQuickLogin(targetEmail, targetPass);
-  };
-
-  // Admin Handlers
   const handleAdminInitialSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setAdminErrorMessage('');
