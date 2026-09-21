@@ -37,6 +37,16 @@ type Config struct {
 	// Resend Email settings
 	ResendAPIKey string
 	MailFrom     string
+
+	// SMTP settings
+	SMTPHost     string
+	SMTPPort     string
+	SMTPUser     string
+	SMTPPassword string
+
+	// Supabase API
+	SupabaseURL        string
+	SupabaseServiceKey string
 }
 
 // Load reads configuration from environment variables and returns a Config struct.
@@ -61,6 +71,12 @@ func Load() *Config {
 		TempDir:         validateTempDir(getEnv("TEMP_DIR", os.TempDir())),
 		ResendAPIKey:    getEnv("RESEND_API_KEY", ""),
 		MailFrom:        getEnv("MAIL_FROM", "onboarding@resend.dev"),
+		SMTPHost:        getEnv("SMTP_HOST", "smtp.resend.com"),
+		SMTPPort:        getEnv("SMTP_PORT", "465"),
+		SMTPUser:        getEnv("SMTP_USER", "resend"),
+		SMTPPassword:    getEnv("SMTP_PASSWORD", ""),
+		SupabaseURL:        getEnv("SUPABASE_URL", ""),
+		SupabaseServiceKey: getEnv("SUPABASE_SERVICE_ROLE_KEY", ""),
 	}
 }
 
@@ -89,6 +105,7 @@ func loadDotEnv(filepath string) {
 		if len(parts) == 2 {
 			key := strings.TrimSpace(parts[0])
 			val := strings.TrimSpace(parts[1])
+			val = strings.Trim(val, `"'`)
 			if os.Getenv(key) == "" {
 				os.Setenv(key, val)
 			}

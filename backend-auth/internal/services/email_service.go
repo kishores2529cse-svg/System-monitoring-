@@ -1,31 +1,32 @@
 package services
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 	"html"
 	"log"
-	"net/http"
 	"strings"
 	"time"
 
 	"backend-auth/internal/config"
 	"backend-auth/internal/models"
 	"backend-auth/internal/repositories"
+
+	"github.com/resend/resend-go/v2"
 )
 
 // EmailService handles sending malpractice alert emails via Resend HTTP API.
 type EmailService struct {
 	cfg       *config.Config
 	adminRepo *repositories.AdminRepo
+	supabase  *SupabaseService
 }
 
 // NewEmailService creates a new EmailService.
-func NewEmailService(cfg *config.Config, adminRepo *repositories.AdminRepo) *EmailService {
+func NewEmailService(cfg *config.Config, adminRepo *repositories.AdminRepo, supabase *SupabaseService) *EmailService {
 	return &EmailService{
 		cfg:       cfg,
 		adminRepo: adminRepo,
+		supabase:  supabase,
 	}
 }
 
@@ -39,9 +40,9 @@ func (s *EmailService) SendMalpracticeAlert(logEntry *models.MalpracticeLog) {
 		}
 	}()
 
-	// 1. Check if Resend API key is configured
+	// 1. Check if Resend API Key is configured
 	if s.cfg.ResendAPIKey == "" {
-		log.Printf("[EMAIL] malpractice email skipped reason=RESEND_API_KEY missing malpractice_id=%d", logEntry.ID)
+		log.Printf("[EMAIL] malpractice email skipped reason=Resend API key not configured malpractice_id=%d", logEntry.ID)
 		return
 	}
 
@@ -54,62 +55,53 @@ func (s *EmailService) SendMalpracticeAlert(logEntry *models.MalpracticeLog) {
 
 	// 3. Build email subject and body
 	subject := s.buildSubject(logEntry)
-	htmlBody := s.buildHTMLBody(logEntry)
-	from := s.cfg.MailFrom
-	if from == "" {
-		from = "onboarding@resend.dev"
+	
+	// Check for snapshot evidence and generate a signed URL (e.g., valid for 24 hours)
+	var signedURL string
+	if logEntry.SnapshotPath != "" && s.supabase != nil {
+		if url, err := s.supabase.GetSignedURL("malpractice-evidence", logEntry.SnapshotPath, 86400); err == nil {
+			signedURL = url
+		} else {
+			log.Printf("[EMAIL] failed to generate signed URL for snapshot %s: %v", logEntry.SnapshotPath, err)
+		}
 	}
 
-	// 4. Send email to each admin individually
-	// We MUST send them individually. If we use CC, and even ONE admin is an unverified email,
-	// Resend's free tier will reject the ENTIRE API request and nobody gets the email.
+	htmlBody := s.buildHTMLBody(logEntry, signedURL)
+
+	// 4. Send email to each admin individually using Resend API
 	for _, admin := range admins {
 		if admin.Email == "" {
 			continue
 		}
 
-		err := s.sendViaResend(admin.Email, from, subject, htmlBody)
+		err := s.sendViaResend(admin.Email, subject, htmlBody)
 		if err != nil {
-			log.Printf("[EMAIL] malpractice email failed to send malpractice_id=%d admin_email=%s error=%s", logEntry.ID, admin.Email, err.Error())
+			log.Printf("[EMAIL] malpractice email failed to send malpractice_id=%d admin_email=%s error=%v", logEntry.ID, admin.Email, err)
 		} else {
 			log.Printf("[EMAIL] malpractice email sent successfully malpractice_id=%d admin_email=%s", logEntry.ID, admin.Email)
 		}
 	}
 }
 
-// sendViaResend sends an HTML email using the Resend HTTP API.
-func (s *EmailService) sendViaResend(to, from, subject, htmlBody string) error {
-	url := "https://api.resend.com/emails"
+// sendViaResend sends an HTML email via the Resend HTTP API
+func (s *EmailService) sendViaResend(to string, subject string, htmlBody string) error {
+	client := resend.NewClient(s.cfg.ResendAPIKey)
 
-	payload := map[string]interface{}{
-		"from":    from,
-		"to":      []string{to},
-		"subject": subject,
-		"html":    htmlBody,
+	from := s.cfg.MailFrom
+	if from == "" {
+		from = "onboarding@resend.dev"
 	}
 
-	payloadBytes, err := json.Marshal(payload)
+	params := &resend.SendEmailRequest{
+		From:    from,
+		To:      []string{to},
+		Subject: subject,
+		Html:    htmlBody,
+	}
+
+	_, err := client.Emails.Send(params)
 	if err != nil {
-		return err
-	}
-
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payloadBytes))
-	if err != nil {
-		return err
-	}
-
-	req.Header.Set("Authorization", "Bearer "+s.cfg.ResendAPIKey)
-	req.Header.Set("Content-Type", "application/json")
-
-	client := &http.Client{Timeout: 10 * time.Second}
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode >= 400 {
-		return fmt.Errorf("resend API returned status code %d", resp.StatusCode)
+		return fmt.Errorf("resend_send_error: %w", err)
 	}
 
 	return nil
@@ -134,7 +126,7 @@ func (s *EmailService) buildSubject(logEntry *models.MalpracticeLog) string {
 
 // buildHTMLBody generates a professional HTML email from the malpractice record.
 // All dynamic values are HTML-escaped to prevent injection.
-func (s *EmailService) buildHTMLBody(logEntry *models.MalpracticeLog) string {
+func (s *EmailService) buildHTMLBody(logEntry *models.MalpracticeLog, signedURL string) string {
 	esc := html.EscapeString
 
 	var detailRows strings.Builder
@@ -190,6 +182,16 @@ func (s *EmailService) buildHTMLBody(logEntry *models.MalpracticeLog) string {
 		detailRows.WriteString(s.buildDetailRow("Detected At", ts.Format("02 January 2006, 03:04:05 PM (IST)")))
 	}
 
+	evidenceCTA := ""
+	if signedURL != "" {
+		evidenceCTA = fmt.Sprintf(`
+<!-- Evidence -->
+<tr><td style="padding:0 40px 24px;text-align:center;">
+<a href="%s" style="background-color:#ef4444;color:#ffffff;padding:12px 24px;text-decoration:none;border-radius:6px;font-weight:700;font-size:14px;display:inline-block;">View Webcam Evidence</a>
+</td></tr>
+`, esc(signedURL))
+	}
+
 	return fmt.Sprintf(`<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
@@ -216,6 +218,8 @@ func (s *EmailService) buildHTMLBody(logEntry *models.MalpracticeLog) string {
 </table>
 </td></tr>
 
+%s
+
 <!-- CTA -->
 <tr><td style="padding:0 40px 32px;text-align:center;">
 <p style="margin:0 0 16px;font-size:13px;color:#94a3b8;">Please review the assessment monitoring dashboard for further details.</p>
@@ -230,7 +234,7 @@ func (s *EmailService) buildHTMLBody(logEntry *models.MalpracticeLog) string {
 </td></tr>
 </table>
 </body>
-</html>`, detailRows.String())
+</html>`, detailRows.String(), evidenceCTA)
 }
 
 func (s *EmailService) buildDetailRow(label, value string) string {

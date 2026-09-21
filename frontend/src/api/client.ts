@@ -1013,7 +1013,8 @@ export const api = {
             details: event.details || event.event,
             severity: event.severity.toUpperCase(),
             detected_item: isUnauthObj ? (event.details?.match(/object:\s*([a-zA-Z\s]+)/i)?.[1] || 'cell phone') : '',
-            confidence: 0.95
+            confidence: 0.95,
+            snapshot_base64: (event as any).snapshot_base64 || ''
           })
         });
 
@@ -1062,7 +1063,8 @@ export const api = {
                 severity: (item.event_type === 'MOBILE_PHONE_DETECTED' || item.event_type === 'HEAD_TURNED_AWAY') ? 'Critical' : 'Medium',
                 confidenceImpact: -30,
                 status: 'Flagged',
-                details: item.details || 'Malpractice violation registered on server'
+                details: item.details || 'Malpractice violation registered on server',
+                snapshot_base64: item.snapshot_base64
               }));
 
               const merged = [...backendEvents, ...events];

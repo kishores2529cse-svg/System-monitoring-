@@ -364,6 +364,7 @@ type MalpracticeLog struct {
 	Severity       string    `gorm:"size:20;default:WARNING" json:"severity"` // INFO, WARNING, CRITICAL
 	DetectedItem   string    `gorm:"size:100" json:"detected_item"`
 	Confidence     float64   `json:"confidence"`
+	SnapshotPath   string    `gorm:"type:text" json:"snapshot_path"` // URL or relative path to the image in Supabase storage
 	Timestamp      time.Time `json:"timestamp"`
 	CreatedAt      time.Time `json:"created_at"`
 }
@@ -379,4 +380,6 @@ type LogMalpracticeRequest struct {
 	Severity       string  `json:"severity"`
 	DetectedItem   string  `json:"detected_item"`
 	Confidence     float64 `json:"confidence"`
+	SnapshotPath   string  `json:"snapshot_path"`
+	SnapshotBase64 string  `json:"snapshot_base64"` // Used by frontend to upload evidence
 }

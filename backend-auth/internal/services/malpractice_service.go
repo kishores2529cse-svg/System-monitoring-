@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"time"
 
 	"backend-auth/internal/models"
@@ -12,14 +13,16 @@ type MalpracticeService struct {
 	repo         *repositories.MalpracticeRepo
 	userRepo     *repositories.UserRepo
 	emailService *EmailService
+	supabase     *SupabaseService
 }
 
 // NewMalpracticeService creates a new MalpracticeService.
-func NewMalpracticeService(repo *repositories.MalpracticeRepo, userRepo *repositories.UserRepo, emailService *EmailService) *MalpracticeService {
+func NewMalpracticeService(repo *repositories.MalpracticeRepo, userRepo *repositories.UserRepo, emailService *EmailService, supabase *SupabaseService) *MalpracticeService {
 	return &MalpracticeService{
 		repo:         repo,
 		userRepo:     userRepo,
 		emailService: emailService,
+		supabase:     supabase,
 	}
 }
 
@@ -60,6 +63,16 @@ func (s *MalpracticeService) LogViolation(req *models.LogMalpracticeRequest) (*m
 		candidateName = "Candidate"
 	}
 
+	snapshotPath := req.SnapshotPath
+	if req.SnapshotBase64 != "" && s.supabase != nil {
+		path := fmt.Sprintf("evidence/%d/%d.jpg", req.UserID, time.Now().UnixNano())
+		if uploadedPath, err := s.supabase.UploadBase64Image("malpractice-evidence", path, req.SnapshotBase64); err == nil {
+			snapshotPath = uploadedPath
+		} else {
+			fmt.Printf("[Malpractice] Failed to upload snapshot to Supabase: %v\n", err)
+		}
+	}
+
 	logEntry := &models.MalpracticeLog{
 		UserID:         req.UserID,
 		CandidateName:  candidateName,
@@ -70,6 +83,7 @@ func (s *MalpracticeService) LogViolation(req *models.LogMalpracticeRequest) (*m
 		Severity:       severity,
 		DetectedItem:   req.DetectedItem,
 		Confidence:     req.Confidence,
+		SnapshotPath:   snapshotPath,
 		Timestamp:      time.Now(),
 		CreatedAt:      time.Now(),
 	}
@@ -89,10 +103,30 @@ func (s *MalpracticeService) LogViolation(req *models.LogMalpracticeRequest) (*m
 
 // GetUserViolations returns all violations for a given user.
 func (s *MalpracticeService) GetUserViolations(userID uint) ([]models.MalpracticeLog, error) {
-	return s.repo.GetByUserID(userID)
+	logs, err := s.repo.GetByUserID(userID)
+	if err != nil {
+		return nil, err
+	}
+	return s.attachSignedURLs(logs), nil
 }
 
 // GetAllViolations returns all live violations across all candidates.
 func (s *MalpracticeService) GetAllViolations(limit int) ([]models.MalpracticeLog, error) {
-	return s.repo.GetAll(limit)
+	logs, err := s.repo.GetAll(limit)
+	if err != nil {
+		return nil, err
+	}
+	return s.attachSignedURLs(logs), nil
+}
+
+func (s *MalpracticeService) attachSignedURLs(logs []models.MalpracticeLog) []models.MalpracticeLog {
+	for i := range logs {
+		if logs[i].SnapshotPath != "" && s.supabase != nil {
+			if signedURL, err := s.supabase.GetSignedURL("malpractice-evidence", logs[i].SnapshotPath, 3600); err == nil {
+				// Replace the internal path with a temporary signed URL for the frontend
+				logs[i].SnapshotPath = signedURL
+			}
+		}
+	}
+	return logs
 }

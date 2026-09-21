@@ -37,6 +37,7 @@ async def websocket_endpoint(websocket: WebSocket):
             # Receive frame payload
             data = await websocket.receive_json()
             image_data = data.get("image")
+            frame_id = data.get("id")
             if not image_data:
                 continue
 
@@ -79,6 +80,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
             # Send detection logs back to frontend client
             await websocket.send_json({
+                "id": frame_id,
                 "detected": phone_detected,
                 "object": detected_object if phone_detected else "",
                 "confidence": round(highest_conf, 3),

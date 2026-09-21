@@ -74,15 +74,33 @@ interface AICameraWidgetProps {
 export const AICameraWidget: React.FC<AICameraWidgetProps> = ({
   onInfractionChange
 }) => {
-  const { cameraActive, warningsCount, events, reportViolation } = useMonitoring();
+  const { cameraActive, warningsCount, events, reportViolation, registerSnapshotProvider } = useMonitoring();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
+  useEffect(() => {
+    registerSnapshotProvider(() => {
+      if (videoRef.current && videoRef.current.readyState >= 2) {
+        const c = document.createElement('canvas');
+        c.width = videoRef.current.videoWidth || 640;
+        c.height = videoRef.current.videoHeight || 480;
+        const ctx = c.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(videoRef.current, 0, 0, c.width, c.height);
+          // Compress to JPEG at max 80% quality to save space
+          return c.toDataURL('image/jpeg', 0.80);
+        }
+      }
+      return null;
+    });
+  }, [registerSnapshotProvider]);
+
   // Object Detection State
-  const [unauthObject, setUnauthObject] = useState<{ detected: boolean; object: string; confidence: number }>({
+  const [unauthObject, setUnauthObject] = useState<{ detected: boolean; object: string; confidence: number; snapshot?: string }>({
     detected: false,
     object: '',
-    confidence: 0
+    confidence: 0,
+    snapshot: undefined
   });
 
   // Focus Shift State (MediaPipe / Face Yaw)
@@ -103,6 +121,7 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = ({
   const isProcessingRef = useRef<boolean>(false);
   const isDetectingRef = useRef<boolean>(false);
   const detectedBoxesRef = useRef<DetectedBox[]>([]);
+  const frameBufferRef = useRef<Map<string, string>>(new Map());
   const prevInfractionRef = useRef<{ mobile: boolean; turnedAround: boolean; unauthorizedObject?: boolean; objectName?: string; focusShift?: boolean }>({
     mobile: false,
     turnedAround: false,
@@ -262,10 +281,12 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = ({
           try {
             const data = JSON.parse(event.data);
             if (data.detected) {
+              const matchedSnapshot = data.id ? frameBufferRef.current.get(data.id) : undefined;
               setUnauthObject({
                 detected: true,
                 object: data.object || 'cell phone',
-                confidence: data.confidence || 0.88
+                confidence: data.confidence || 0.88,
+                snapshot: matchedSnapshot
               });
               detectedBoxesRef.current = [
                 {
@@ -335,7 +356,15 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = ({
         if (wsConnected && wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
           ctx?.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
           const base64Data = canvas.toDataURL('image/jpeg', 0.55);
-          wsRef.current.send(JSON.stringify({ image: base64Data }));
+          
+          const frameId = Date.now().toString();
+          frameBufferRef.current.set(frameId, base64Data);
+          if (frameBufferRef.current.size > 20) {
+             const firstKey = frameBufferRef.current.keys().next().value;
+             if (firstKey) frameBufferRef.current.delete(firstKey);
+          }
+
+          wsRef.current.send(JSON.stringify({ id: frameId, image: base64Data }));
         }
 
         if (faceMeshRef.current) {
@@ -409,6 +438,18 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = ({
       try {
         // Method A: COCO-SSD Neural Vision with calibrated confidence (eliminating hallucinations / false positives)
         if (model) {
+          let currentSnapshot: string | undefined;
+          if (videoRef.current && videoRef.current.readyState >= 2) {
+             const c = document.createElement('canvas');
+             c.width = videoRef.current.videoWidth || 640;
+             c.height = videoRef.current.videoHeight || 480;
+             const ctx = c.getContext('2d');
+             if (ctx) {
+               ctx.drawImage(videoRef.current, 0, 0, c.width, c.height);
+               currentSnapshot = c.toDataURL('image/jpeg', 0.80);
+             }
+          }
+
           const predictions = await model.detect(videoRef.current, 10, 0.25);
           
           const forbiddenPredictions = predictions.filter((p: any) => {
@@ -445,7 +486,8 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = ({
             setUnauthObject({
               detected: true,
               object: target.class,
-              confidence: target.score
+              confidence: target.score,
+              snapshot: currentSnapshot
             });
             return;
           }
@@ -502,7 +544,8 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = ({
           'Critical',
           -35,
           `Real-time AI detected forbidden device: ${unauthObject.object.toUpperCase()} (${Math.round(unauthObject.confidence * 100)}% confidence).`,
-          true
+          true,
+          unauthObject.snapshot
         );
       } else if (focusShift) {
         reportViolation(

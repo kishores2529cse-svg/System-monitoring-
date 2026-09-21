@@ -20,13 +20,14 @@ interface MonitoringContextType {
   evidenceCount: number;
   activeWarningModal: { open: boolean; title: string; message: string; severity: SeverityLevel } | null;
   dismissWarningModal: () => void;
-  reportViolation: (eventTitle: string, severity: SeverityLevel, impact: number, details?: string, showAlert?: boolean) => Promise<void>;
+  reportViolation: (eventTitle: string, severity: SeverityLevel, impact: number, details?: string, showAlert?: boolean, explicitSnapshotBase64?: string) => Promise<void>;
   toggleCamera: () => void;
   toggleMic: () => void;
   requestFullscreen: () => Promise<void>;
   unlockExam: () => void;
   setIsFullscreen: (fullscreen: boolean) => void;
   setTabFocused: (focused: boolean) => void;
+  registerSnapshotProvider: (provider: () => string | null) => void;
 }
 
 const MonitoringContext = createContext<MonitoringContextType | undefined>(undefined);
@@ -84,6 +85,23 @@ export const MonitoringProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         'f12': { event: 'DevTools Attempt (F12)', severity: 'High', impact: -15 },
         'i': { event: 'DevTools Attempt (Ctrl+Shift+I)', severity: 'High', impact: -15 },
         'j': { event: 'DevTools Attempt (Ctrl+Shift+J)', severity: 'High', impact: -15 },
+        'd': { event: 'System Shortcut Attempt (Win+D)', severity: 'Medium', impact: -8 },
+        'e': { event: 'System Shortcut Attempt (Win+E)', severity: 'Medium', impact: -8 },
+        'l': { event: 'System Shortcut Attempt (Win+L/Ctrl+L)', severity: 'Medium', impact: -8 },
+        'tab': { event: 'System Shortcut Attempt (Alt+Tab)', severity: 'Medium', impact: -8 },
+        'f4': { event: 'System Shortcut Attempt (Alt+F4)', severity: 'High', impact: -15 },
+        'escape': { event: 'Task Manager Attempt (Ctrl+Shift+Esc)', severity: 'High', impact: -15 },
+        'delete': { event: 'System Security Attempt (Ctrl+Alt+Del)', severity: 'High', impact: -15 },
+        't': { event: 'Browser Shortcut Attempt (New/Reopen Tab)', severity: 'Low', impact: -3 },
+        'w': { event: 'Browser Shortcut Attempt (Close Tab)', severity: 'High', impact: -15 },
+        'n': { event: 'Browser Shortcut Attempt (New Window)', severity: 'Medium', impact: -8 },
+        'h': { event: 'Browser Shortcut Attempt (History)', severity: 'Low', impact: -3 },
+        'f6': { event: 'Browser Shortcut Attempt (Address Bar)', severity: 'Low', impact: -3 },
+        'r': { event: 'Browser Shortcut Attempt (Reload)', severity: 'Medium', impact: -8 },
+        'f5': { event: 'Browser Shortcut Attempt (Reload)', severity: 'Medium', impact: -8 },
+        'arrowleft': { event: 'Browser Shortcut Attempt (Go Back)', severity: 'Medium', impact: -8 },
+        'f': { event: 'Browser Shortcut Attempt (Find)', severity: 'Low', impact: -3 },
+        'f11': { event: 'Browser Shortcut Attempt (Toggle Fullscreen)', severity: 'Low', impact: -3 },
         'contextmenu': { event: 'Right-click Context Menu', severity: 'Low', impact: -3 },
         'copy': { event: 'Copy Menu/Shortcut', severity: 'Medium', impact: -8 },
         'paste': { event: 'Paste Menu/Shortcut', severity: 'Medium', impact: -10 },
@@ -127,7 +145,14 @@ export const MonitoringProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
   const riskLevel = riskScore <= 30 ? 'Low' : riskScore <= 60 ? 'Medium' : 'High';
 
-  const reportViolation = useCallback(async (eventTitle: string, severity: SeverityLevel, impact: number, details?: string, showAlert: boolean = true) => {
+  const activeWarningModalRef = useRef(activeWarningModal);
+  const snapshotProviderRef = useRef<(() => string | null) | null>(null);
+
+  const registerSnapshotProvider = useCallback((provider: () => string | null) => {
+    snapshotProviderRef.current = provider;
+  }, []);
+
+  const reportViolation = useCallback(async (eventTitle: string, severity: SeverityLevel, impact: number, details?: string, showAlert: boolean = true, explicitSnapshotBase64?: string) => {
     const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false });
     const eventDetails = details || `Security monitor flagged: ${eventTitle}`;
 
@@ -145,6 +170,12 @@ export const MonitoringProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       }
     }
 
+    let snapshotBase64 = explicitSnapshotBase64 || '';
+    if (!snapshotBase64 && snapshotProviderRef.current) {
+      const snapshot = snapshotProviderRef.current();
+      if (snapshot) snapshotBase64 = snapshot;
+    }
+
     const newEvt = await api.monitor.reportEvent({
       candidateId: candidateId,
       candidateName: candidateName,
@@ -154,7 +185,8 @@ export const MonitoringProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       confidenceImpact: impact,
       status: 'Flagged',
       details: eventDetails,
-      evidenceSnapshot: 'webcam-placeholder'
+      evidenceSnapshot: 'webcam-placeholder',
+      snapshot_base64: snapshotBase64
     });
 
     setEvents(prev => [newEvt, ...prev]);
@@ -236,7 +268,8 @@ export const MonitoringProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       requestFullscreen,
       unlockExam,
       setIsFullscreen,
-      setTabFocused
+      setTabFocused,
+      registerSnapshotProvider
     }}>
       {children}
     </MonitoringContext.Provider>

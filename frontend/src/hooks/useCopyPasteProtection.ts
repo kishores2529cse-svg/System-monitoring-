@@ -31,25 +31,66 @@ export const useCopyPasteProtection = ({
   const handleKeyDown = (e: KeyboardEvent) => {
     if (!enabled) return;
 
+    const key = e.key.toLowerCase();
     const isCtrl = e.ctrlKey || e.metaKey;
-    const isCtrlA = isCtrl && e.key.toLowerCase() === 'a';
-    const isCtrlC = isCtrl && e.key.toLowerCase() === 'c';
-    const isCtrlV = isCtrl && e.key.toLowerCase() === 'v';
-    const isCtrlX = isCtrl && e.key.toLowerCase() === 'x';
-    const isCtrlS = isCtrl && e.key.toLowerCase() === 's';
-    const isCtrlP = isCtrl && e.key.toLowerCase() === 'p';
-    const isCtrlU = isCtrl && e.key.toLowerCase() === 'u';
-    const isF12 = e.key === 'F12';
-    const isCtrlShiftI = isCtrl && e.shiftKey && e.key.toLowerCase() === 'i';
-    const isCtrlShiftJ = isCtrl && e.shiftKey && e.key.toLowerCase() === 'j';
-    const isCtrlShiftC = isCtrl && e.shiftKey && e.key.toLowerCase() === 'c';
+    const isShift = e.shiftKey;
+    const isAlt = e.altKey;
 
-    const isEsc = e.key === 'Escape' || e.key === 'Esc' || e.keyCode === 27;
+    // Existing restricted keys
+    const isCtrlA = isCtrl && key === 'a';
+    const isCtrlC = isCtrl && key === 'c';
+    const isCtrlV = isCtrl && key === 'v';
+    const isCtrlX = isCtrl && key === 'x';
+    const isCtrlS = isCtrl && key === 's';
+    const isCtrlP = isCtrl && key === 'p';
+    const isCtrlU = isCtrl && key === 'u';
+    const isF12 = key === 'f12';
+    const isCtrlShiftI = isCtrl && isShift && key === 'i';
+    const isCtrlShiftJ = isCtrl && isShift && key === 'j';
+    const isCtrlShiftC = isCtrl && isShift && key === 'c';
 
-    if (isEsc || isCtrlA || isCtrlC || isCtrlV || isCtrlX || isCtrlS || isCtrlP || isCtrlU || isF12 || isCtrlShiftI || isCtrlShiftJ || isCtrlShiftC) {
+    // System-Level Shortcuts Requested
+    const isWinD = e.metaKey && key === 'd';
+    const isWinE = e.metaKey && key === 'e';
+    const isWinL = e.metaKey && key === 'l';
+    const isAltTab = isAlt && key === 'tab';
+    const isAltF4 = isAlt && key === 'f4';
+    const isCtrlShiftEsc = isCtrl && isShift && (key === 'escape' || key === 'esc');
+    const isCtrlAltDel = isCtrl && isAlt && key === 'delete';
+    const isPrtScn = key === 'printscreen';
+
+    // Browser-Level Shortcuts Requested
+    const isCtrlT = isCtrl && key === 't';
+    const isCtrlW = isCtrl && key === 'w';
+    const isCtrlShiftT = isCtrl && isShift && key === 't';
+    const isCtrlN = isCtrl && key === 'n';
+    const isCtrlShiftN = isCtrl && isShift && key === 'n';
+    const isCtrlH = isCtrl && key === 'h';
+    const isCtrlJ = isCtrl && key === 'j';
+    const isCtrlL = isCtrl && key === 'l';
+    const isF6 = key === 'f6';
+    const isCtrlR = isCtrl && key === 'r';
+    const isF5 = key === 'f5';
+    const isAltLeft = isAlt && key === 'arrowleft';
+
+    // Cross-Over Shortcuts Requested
+    const isCtrlF = isCtrl && key === 'f';
+    const isF11 = key === 'f11';
+
+    const isEsc = key === 'escape' || key === 'esc' || e.keyCode === 27;
+
+    const isBlocked = 
+      isCtrlA || isCtrlC || isCtrlV || isCtrlX || isCtrlS || isCtrlP || isCtrlU || 
+      isF12 || isCtrlShiftI || isCtrlShiftJ || isCtrlShiftC ||
+      isWinD || isWinE || isWinL || isAltTab || isAltF4 || isCtrlShiftEsc || isCtrlAltDel || isPrtScn ||
+      isCtrlT || isCtrlW || isCtrlShiftT || isCtrlN || isCtrlShiftN || isCtrlH || isCtrlJ || 
+      isCtrlL || isF6 || isCtrlR || isF5 || isAltLeft || isCtrlF || isF11;
+
+    if (isEsc || isBlocked) {
       e.preventDefault();
       e.stopPropagation();
       e.stopImmediatePropagation();
+      
       if (!isEsc) {
         onViolationRef.current?.(e.key.toLowerCase());
       }
