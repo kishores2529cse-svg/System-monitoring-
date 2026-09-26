@@ -6,12 +6,20 @@ import type { SupportedLanguage } from '../../types';
 
 export const MonacoWrapper: React.FC = React.memo(() => {
   const {
+    currentProblem,
     selectedLanguage,
     setSelectedLanguage,
     codeMap,
     setCodeForLang,
     autoSaveStatus
   } = useExam();
+
+  const [localCode, setLocalCode] = React.useState(codeMap[selectedLanguage]);
+
+  // Sync local code when language or problem changes
+  React.useEffect(() => {
+    setLocalCode(codeMap[selectedLanguage]);
+  }, [selectedLanguage, currentProblem.id]);
 
   const handleLanguageChange = (lang: SupportedLanguage) => {
     setSelectedLanguage(lang);
@@ -29,14 +37,20 @@ export const MonacoWrapper: React.FC = React.memo(() => {
   ];
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(codeMap[selectedLanguage]);
+    await navigator.clipboard.writeText(localCode);
   };
 
   const handleReset = () => {
-    const current = codeMap[selectedLanguage];
-    if (current && current.trim()) {
+    if (localCode.trim()) {
       setCodeForLang('');
+      setLocalCode('');
     }
+  };
+
+  const handleEditorChange = (val: string | undefined) => {
+    const code = val || '';
+    setLocalCode(code);
+    setCodeForLang(code);
   };
 
   return (
@@ -91,8 +105,13 @@ export const MonacoWrapper: React.FC = React.memo(() => {
           height="100%"
           language={selectedLanguage === 'cpp' ? 'cpp' : selectedLanguage}
           theme="vs-dark"
-          value={codeMap[selectedLanguage]}
-          onChange={(val) => setCodeForLang(val || '')}
+          value={localCode}
+          onChange={handleEditorChange}
+          onMount={(_editor, monaco) => {
+            document.fonts.ready.then(() => {
+              monaco.editor.remeasureFonts();
+            });
+          }}
           options={{
             fontSize: 14,
             fontFamily: "'JetBrains Mono', monospace",

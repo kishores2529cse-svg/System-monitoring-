@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { ArrowLeft, Code2, Play, CheckCircle, Clock3, PauseCircle } from 'lucide-react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { ProblemDescription } from '../../components/compiler/ProblemDescription';
@@ -11,6 +11,7 @@ import { useMonitoring } from '../../contexts/MonitoringContext';
 import { AICameraWidget } from '../../components/monitoring/AICameraWidget';
 import { GlowingButton } from '../../components/ui/GlowingButton';
 import { formatTime } from '../../utils/cn';
+import type { AICameraInfraction } from '../../components/monitoring/AICameraWidget';
 
 export const SandboxPage: React.FC = () => {
   useAntiCheating(true);
@@ -42,6 +43,13 @@ export const SandboxPage: React.FC = () => {
     // Immediately redirect to the dashboard
     navigate('/dashboard');
   };
+
+  const handleInfractionChange = useCallback((infractions: AICameraInfraction) => {
+    if (infractions.mobile && countdown === null) {
+      setDetectedClass('mobile phone');
+      setCountdown(3);
+    }
+  }, [countdown]);
 
   // Handle countdown ticks and auto-redirection on timeout (SandboxPage)
   useEffect(() => {
@@ -161,14 +169,7 @@ export const SandboxPage: React.FC = () => {
         
         {/* Floating Proctoring Camera Widget at Top-Right (occupies ~15% screen space) */}
         <div className="fixed top-24 right-4 z-40 shadow-2xl">
-          <AICameraWidget
-            onInfractionChange={(infractions) => {
-              if (infractions.mobile && countdown === null) {
-                setDetectedClass('mobile phone');
-                setCountdown(3);
-              }
-            }}
-          />
+          <AICameraWidget onInfractionChange={handleInfractionChange} />
         </div>
       </div>
     </PageTransition>

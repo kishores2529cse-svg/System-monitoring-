@@ -68,6 +68,13 @@ export const MonitoringProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     };
   }, []);
 
+  const isProctoringActiveRef = useRef(isLocked || isFullscreen);
+  useEffect(() => {
+    isProctoringActiveRef.current = isLocked || isFullscreen;
+  }, [isLocked, isFullscreen]);
+
+
+
   // Copy/Paste Protection - enabled when exam is locked or in fullscreen proctoring mode
   const isProctoringActive = isLocked || isFullscreen;
   useCopyPasteProtection({
@@ -145,7 +152,6 @@ export const MonitoringProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
   const riskLevel = riskScore <= 30 ? 'Low' : riskScore <= 60 ? 'Medium' : 'High';
 
-  const activeWarningModalRef = useRef(activeWarningModal);
   const snapshotProviderRef = useRef<(() => string | null) | null>(null);
 
   const registerSnapshotProvider = useCallback((provider: () => string | null) => {
@@ -176,7 +182,7 @@ export const MonitoringProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       if (snapshot) snapshotBase64 = snapshot;
     }
 
-    const newEvt = await api.monitor.reportEvent({
+    const payload: any = {
       candidateId: candidateId,
       candidateName: candidateName,
       timestamp,
@@ -187,7 +193,9 @@ export const MonitoringProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       details: eventDetails,
       evidenceSnapshot: 'webcam-placeholder',
       snapshot_base64: snapshotBase64
-    });
+    };
+
+    const newEvt = await api.monitor.reportEvent(payload);
 
     setEvents(prev => [newEvt, ...prev]);
     setConfidenceScore(prev => Math.max(0, Math.min(100, prev + impact)));
@@ -211,6 +219,41 @@ export const MonitoringProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       }
     }
   }, []);
+
+  // Sync tab visibility state (Tab-switch detection)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        setTabFocused(false);
+        if (isProctoringActiveRef.current) {
+          reportViolation('Tab Switch / Browser Minimized', 'High', -15, 'Candidate navigated away from the exam tab or minimized the browser window.', true);
+        }
+      } else {
+        setTabFocused(true);
+      }
+    };
+    
+    const handleBlur = () => {
+      setTabFocused(false);
+      if (isProctoringActiveRef.current) {
+        reportViolation('Browser Window Lost Focus', 'Medium', -10, 'Candidate clicked outside the exam window or switched to another application.', true);
+      }
+    };
+    
+    const handleFocus = () => {
+      setTabFocused(true);
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('blur', handleBlur);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('blur', handleBlur);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [reportViolation]);
 
   const toggleCamera = () => setCameraActive(prev => !prev);
   const toggleMic = () => setMicActive(prev => !prev);

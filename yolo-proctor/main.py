@@ -59,6 +59,7 @@ async def websocket_endpoint(websocket: WebSocket):
             phone_detected = False
             detected_object = ""
             highest_conf = 0.0
+            detected_bbox = None
 
             for box in results.boxes:
                 class_id = int(box.cls[0])
@@ -75,6 +76,8 @@ async def websocket_endpoint(websocket: WebSocket):
                     phone_detected = True
                     detected_object = class_name
                     highest_conf = confidence
+                    bx1, by1, bx2, by2 = box.xyxy[0].tolist()
+                    detected_bbox = {"x": bx1, "y": by1, "width": bx2 - bx1, "height": by2 - by1}
                     print(f"🚨 VERIFIED FORBIDDEN OBJECT: {class_name} ({confidence*100:.1f}%)")
                     break
 
@@ -84,6 +87,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 "detected": phone_detected,
                 "object": detected_object if phone_detected else "",
                 "confidence": round(highest_conf, 3),
+                "bbox": detected_bbox if phone_detected else None,
                 "message": "UNAUTHORIZED OBJECT DETECTED!!!" if phone_detected else "NORMAL"
             })
 

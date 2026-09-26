@@ -71,7 +71,7 @@ interface AICameraWidgetProps {
   onInfractionChange?: (infractions: AICameraInfraction) => void;
 }
 
-export const AICameraWidget: React.FC<AICameraWidgetProps> = ({
+export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
   onInfractionChange
 }) => {
   const { cameraActive, warningsCount, events, reportViolation, registerSnapshotProvider } = useMonitoring();
@@ -106,7 +106,12 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = ({
   // Focus Shift State (MediaPipe / Face Yaw)
   const [focusShift, setFocusShift] = useState<boolean>(false);
   const faceMeshRef = useRef<any>(null);
+  const selfieSegmentationRef = useRef<any>(null);
+  const maskCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const personCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const consecutiveShiftRef = useRef<number>(0);
+  const gadgetConfirmationRef = useRef<number>(0);
+  const gadgetHistoryRef = useRef<Array<{x: number, y: number, w: number, h: number, time: number}>>([]);
 
   const [model, setModel] = useState<any>(null);
   const [modelLoading, setModelLoading] = useState<boolean>(true);
@@ -210,7 +215,40 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = ({
             console.log('✅ MediaPipe Face Landmark engine initialized.');
           }
         } catch (mpErr) {
-          console.warn('MediaPipe script fallback:', mpErr);
+          console.warn('MediaPipe FaceMesh script fallback:', mpErr);
+        }
+
+        // MediaPipe SelfieSegmentation
+        try {
+          await loadScriptWithFallbacks([
+            'https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js',
+            'https://unpkg.com/@mediapipe/selfie_segmentation/selfie_segmentation.js'
+          ]);
+
+          if (active && (window as any).SelfieSegmentation) {
+            const ss = new (window as any).SelfieSegmentation({
+              locateFile: (file: string) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`
+            });
+            ss.setOptions({ modelSelection: 1 });
+            ss.onResults((results: any) => {
+              if (!active) return;
+              if (!maskCanvasRef.current) {
+                maskCanvasRef.current = document.createElement('canvas');
+                maskCanvasRef.current.width = 480;
+                maskCanvasRef.current.height = 360;
+              }
+              const mCtx = maskCanvasRef.current.getContext('2d', { willReadFrequently: true });
+              if (mCtx && results.segmentationMask) {
+                mCtx.clearRect(0, 0, maskCanvasRef.current.width, maskCanvasRef.current.height);
+                mCtx.drawImage(results.segmentationMask, 0, 0, maskCanvasRef.current.width, maskCanvasRef.current.height);
+              }
+            });
+
+            selfieSegmentationRef.current = ss;
+            console.log('✅ MediaPipe Selfie Segmentation engine initialized.');
+          }
+        } catch (mpErr) {
+          console.warn('MediaPipe Segmentation script fallback:', mpErr);
         }
 
         if (active) setModelLoading(false);
@@ -248,6 +286,53 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = ({
     };
   }, []);
 
+  const checkGadgetAssociation = (box: {x: number, y: number, width: number, height: number}, srcWidth: number, srcHeight: number) => {
+    if (!maskCanvasRef.current) return false;
+    const mCtx = maskCanvasRef.current.getContext('2d');
+    if (!mCtx) return false;
+    
+    const scaleX = maskCanvasRef.current.width / srcWidth;
+    const scaleY = maskCanvasRef.current.height / srcHeight;
+    const sx = Math.max(0, Math.floor(box.x * scaleX));
+    const sy = Math.max(0, Math.floor(box.y * scaleY));
+    const sw = Math.min(maskCanvasRef.current.width - sx, Math.floor(box.width * scaleX));
+    const sh = Math.min(maskCanvasRef.current.height - sy, Math.floor(box.height * scaleY));
+    
+    if (sw <= 0 || sh <= 0) return false;
+
+    const imgData = mCtx.getImageData(sx, sy, sw, sh);
+    const data = imgData.data;
+    let personPixels = 0;
+    
+    for (let i = 0; i < data.length; i += 4) {
+      if (data[i] > 50 || data[i+3] > 50) personPixels++;
+    }
+    
+    const totalPixels = sw * sh;
+    const overlapRatio = personPixels / totalPixels;
+    
+    // 10% overlap ensures the candidate is physically interacting with or heavily occluding the object.
+    return overlapRatio > 0.10;
+  };
+
+  const isHistoryStationary = (history: Array<{x: number, y: number, w: number, h: number}>) => {
+    if (history.length < 5) return false;
+    let maxDist = 0;
+    for (let i = 0; i < history.length; i++) {
+      for (let j = i + 1; j < history.length; j++) {
+        const h1 = history[i];
+        const h2 = history[j];
+        const cx1 = h1.x + h1.w / 2;
+        const cy1 = h1.y + h1.h / 2;
+        const cx2 = h2.x + h2.w / 2;
+        const cy2 = h2.y + h2.h / 2;
+        const dist = Math.sqrt((cx1 - cx2) ** 2 + (cy1 - cy2) ** 2);
+        if (dist > maxDist) maxDist = dist;
+      }
+    }
+    return maxDist < 25;
+  };
+
   // 2. Establish YOLOv8 WebSocket Connection
   useEffect(() => {
     if (!cameraActive) return;
@@ -282,23 +367,57 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = ({
             const data = JSON.parse(event.data);
             if (data.detected) {
               const matchedSnapshot = data.id ? frameBufferRef.current.get(data.id) : undefined;
-              setUnauthObject({
-                detected: true,
-                object: data.object || 'cell phone',
-                confidence: data.confidence || 0.88,
-                snapshot: matchedSnapshot
-              });
-              detectedBoxesRef.current = [
-                {
-                  x: 30,
-                  y: 40,
-                  width: 220,
-                  height: 100,
-                  label: data.object || 'cell phone',
-                  score: data.confidence || 0.88
-                }
-              ];
+              let isAssociated = true;
+              let scaledBox = { x: 30, y: 40, width: 220, height: 100 };
+              
+              if (data.bbox) {
+                 isAssociated = checkGadgetAssociation(data.bbox, 480, 360);
+                 
+                 const now = Date.now();
+                 gadgetHistoryRef.current.push({ x: data.bbox.x, y: data.bbox.y, w: data.bbox.width, h: data.bbox.height, time: now });
+                 gadgetHistoryRef.current = gadgetHistoryRef.current.filter(h => now - h.time < 3000);
+                 
+                 const isStationary = isHistoryStationary(gadgetHistoryRef.current);
+                 if (isStationary) {
+                    isAssociated = false; // Override to false if stationary
+                 }
+
+                 scaledBox = {
+                    x: (data.bbox.x / 480) * 280,
+                    y: (data.bbox.y / 360) * 144,
+                    width: (data.bbox.width / 480) * 280,
+                    height: (data.bbox.height / 360) * 144
+                 };
+              }
+              
+              if (isAssociated) {
+                 gadgetConfirmationRef.current += 1;
+                 detectedBoxesRef.current = [
+                    {
+                       x: scaledBox.x,
+                       y: scaledBox.y,
+                       width: scaledBox.width,
+                       height: scaledBox.height,
+                       label: data.object || 'cell phone',
+                       score: data.confidence || 0.88
+                    }
+                 ];
+
+                 if (gadgetConfirmationRef.current >= 3) {
+                   setUnauthObject({
+                     detected: true,
+                     object: data.object || 'cell phone',
+                     confidence: data.confidence || 0.88,
+                     snapshot: matchedSnapshot
+                   });
+                 }
+              } else {
+                 gadgetConfirmationRef.current = 0;
+                 setUnauthObject(prev => prev.detected ? { detected: false, object: '', confidence: 0 } : prev);
+                 detectedBoxesRef.current = [];
+              }
             } else {
+              gadgetConfirmationRef.current = 0;
               setUnauthObject(prev => {
                 if (!prev.detected && prev.object === '') return prev;
                 return { detected: false, object: '', confidence: 0 };
@@ -370,6 +489,11 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = ({
         if (faceMeshRef.current) {
           try {
             await faceMeshRef.current.send({ image: videoRef.current });
+          } catch (e) {}
+        }
+        if (selfieSegmentationRef.current) {
+          try {
+            await selfieSegmentationRef.current.send({ image: videoRef.current });
           } catch (e) {}
         }
       } catch (err) {
@@ -467,29 +591,61 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = ({
           });
 
           if (forbiddenPredictions.length > 0) {
-            const target = forbiddenPredictions[0];
+            let associatedPrediction = null;
             const vW = videoRef.current.videoWidth || 640;
             const vH = videoRef.current.videoHeight || 480;
-            const cW = 280;
-            const cH = 144;
+            
+            for (const p of forbiddenPredictions) {
+               const bbox = { x: p.bbox[0], y: p.bbox[1], width: p.bbox[2], height: p.bbox[3] };
+               let isAssociated = checkGadgetAssociation(bbox, vW, vH);
+               
+               const now = Date.now();
+               gadgetHistoryRef.current.push({ x: bbox.x, y: bbox.y, w: bbox.width, h: bbox.height, time: now });
+               gadgetHistoryRef.current = gadgetHistoryRef.current.filter(h => now - h.time < 3000);
+               
+               const isStationary = isHistoryStationary(gadgetHistoryRef.current);
+               if (isStationary) {
+                  isAssociated = false;
+               }
 
-            const boxes: DetectedBox[] = forbiddenPredictions.map((p: any) => ({
-              x: (p.bbox[0] / vW) * cW,
-              y: (p.bbox[1] / vH) * cH,
-              width: (p.bbox[2] / vW) * cW,
-              height: (p.bbox[3] / vH) * cH,
-              label: p.class,
-              score: p.score
-            }));
+               if (isAssociated) {
+                  associatedPrediction = p;
+                  break;
+               }
+            }
+            
+            if (associatedPrediction) {
+               gadgetConfirmationRef.current += 1;
+               const target = associatedPrediction;
+               const cW = 280;
+               const cH = 144;
+               
+               const box: DetectedBox = {
+                  x: (target.bbox[0] / vW) * cW,
+                  y: (target.bbox[1] / vH) * cH,
+                  width: (target.bbox[2] / vW) * cW,
+                  height: (target.bbox[3] / vH) * cH,
+                  label: target.class,
+                  score: target.score
+               };
 
-            detectedBoxesRef.current = boxes;
-            setUnauthObject({
-              detected: true,
-              object: target.class,
-              confidence: target.score,
-              snapshot: currentSnapshot
-            });
-            return;
+               detectedBoxesRef.current = [box];
+               
+               if (gadgetConfirmationRef.current >= 3) {
+                 setUnauthObject({
+                   detected: true,
+                   object: target.class,
+                   confidence: target.score,
+                   snapshot: currentSnapshot
+                 });
+               }
+               return;
+            } else {
+               gadgetConfirmationRef.current = 0;
+               detectedBoxesRef.current = [];
+               setUnauthObject(prev => prev.detected ? { detected: false, object: '', confidence: 0 } : prev);
+               return;
+            }
           }
         }
 
@@ -620,6 +776,38 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = ({
 
     const renderOverlay = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw Privacy Background & Candidate
+      if (videoRef.current && videoRef.current.readyState >= 2) {
+         if (maskCanvasRef.current) {
+            ctx.save();
+            // 1. Draw blurred background
+            ctx.filter = 'blur(16px)';
+            ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+            ctx.filter = 'none';
+
+            // 2. Composite candidate sharp image
+            if (!personCanvasRef.current) {
+               personCanvasRef.current = document.createElement('canvas');
+               personCanvasRef.current.width = canvas.width;
+               personCanvasRef.current.height = canvas.height;
+            }
+            const pCtx = personCanvasRef.current.getContext('2d');
+            if (pCtx) {
+               pCtx.clearRect(0, 0, canvas.width, canvas.height);
+               pCtx.drawImage(maskCanvasRef.current, 0, 0, canvas.width, canvas.height);
+               pCtx.globalCompositeOperation = 'source-in';
+               pCtx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+               pCtx.globalCompositeOperation = 'source-over';
+               
+               ctx.drawImage(personCanvasRef.current, 0, 0, canvas.width, canvas.height);
+            }
+            ctx.restore();
+         } else {
+            ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+         }
+      }
+
       const centerX = canvas.width / 2;
       const centerY = canvas.height / 2;
 
@@ -774,7 +962,7 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = ({
             autoPlay
             playsInline
             muted
-            className="w-full h-full object-cover opacity-85"
+            className="absolute opacity-0 pointer-events-none"
           />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center text-slate-500 text-xs font-sans">
@@ -788,7 +976,7 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = ({
           ref={canvasRef}
           width={280}
           height={144}
-          className="absolute inset-0 w-full h-full pointer-events-none z-10"
+          className="absolute inset-0 w-full h-full object-cover pointer-events-none z-10"
         />
 
         {/* Live HUD Model Badge */}
@@ -870,4 +1058,4 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = ({
 
     </div>
   );
-};
+});
