@@ -116,7 +116,6 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
   const personCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const consecutiveShiftRef = useRef<number>(0);
   const gadgetConfirmationRef = useRef<number>(0);
-  const gadgetHistoryRef = useRef<Array<{x: number, y: number, w: number, h: number, time: number}>>([]);
 
   const [model, setModel] = useState<any>(null);
   const [modelLoading, setModelLoading] = useState<boolean>(true);
@@ -292,52 +291,6 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
     };
   }, []);
 
-  const checkGadgetAssociation = (box: {x: number, y: number, width: number, height: number}, srcWidth: number, srcHeight: number) => {
-    if (!maskCanvasRef.current) return false;
-    const mCtx = maskCanvasRef.current.getContext('2d');
-    if (!mCtx) return false;
-    
-    const scaleX = maskCanvasRef.current.width / srcWidth;
-    const scaleY = maskCanvasRef.current.height / srcHeight;
-    const sx = Math.max(0, Math.floor(box.x * scaleX));
-    const sy = Math.max(0, Math.floor(box.y * scaleY));
-    const sw = Math.min(maskCanvasRef.current.width - sx, Math.floor(box.width * scaleX));
-    const sh = Math.min(maskCanvasRef.current.height - sy, Math.floor(box.height * scaleY));
-    
-    if (sw <= 0 || sh <= 0) return false;
-
-    const imgData = mCtx.getImageData(sx, sy, sw, sh);
-    const data = imgData.data;
-    let personPixels = 0;
-    
-    for (let i = 0; i < data.length; i += 4) {
-      if (data[i] > 50 || data[i+3] > 50) personPixels++;
-    }
-    
-    const totalPixels = sw * sh;
-    const overlapRatio = personPixels / totalPixels;
-    
-    // 10% overlap ensures the candidate is physically interacting with or heavily occluding the object.
-    return overlapRatio > 0.10;
-  };
-
-  const isHistoryStationary = (history: Array<{x: number, y: number, w: number, h: number}>) => {
-    if (history.length < 5) return false;
-    let maxDist = 0;
-    for (let i = 0; i < history.length; i++) {
-      for (let j = i + 1; j < history.length; j++) {
-        const h1 = history[i];
-        const h2 = history[j];
-        const cx1 = h1.x + h1.w / 2;
-        const cy1 = h1.y + h1.h / 2;
-        const cx2 = h2.x + h2.w / 2;
-        const cy2 = h2.y + h2.h / 2;
-        const dist = Math.sqrt((cx1 - cx2) ** 2 + (cy1 - cy2) ** 2);
-        if (dist > maxDist) maxDist = dist;
-      }
-    }
-    return maxDist < 25;
-  };
 
   // 2. Establish YOLOv8 WebSocket Connection
   useEffect(() => {
