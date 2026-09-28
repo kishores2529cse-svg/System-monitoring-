@@ -103,6 +103,11 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
     snapshot: undefined
   });
 
+  const [multiplePersons, setMultiplePersons] = useState<{ detected: boolean; snapshot?: string }>({
+    detected: false,
+    snapshot: undefined
+  });
+
   // Focus Shift State (MediaPipe / Face Yaw)
   const [focusShift, setFocusShift] = useState<boolean>(false);
   const faceMeshRef = useRef<any>(null);
@@ -127,21 +132,22 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
   const isDetectingRef = useRef<boolean>(false);
   const detectedBoxesRef = useRef<DetectedBox[]>([]);
   const frameBufferRef = useRef<Map<string, string>>(new Map());
-  const prevInfractionRef = useRef<{ mobile: boolean; turnedAround: boolean; unauthorizedObject?: boolean; objectName?: string; focusShift?: boolean }>({
+  const prevInfractionRef = useRef<{ mobile: boolean; turnedAround: boolean; unauthorizedObject?: boolean; objectName?: string; focusShift?: boolean; multiplePersons?: boolean }>({
     mobile: false,
     turnedAround: false,
     unauthorizedObject: false,
     objectName: '',
-    focusShift: false
+    focusShift: false,
+    multiplePersons: false
   });
   const visualStateRef = useRef<{ isAlert: boolean; alertLabel: string }>({ isAlert: false, alertLabel: '' });
 
   useEffect(() => {
     visualStateRef.current = {
-      isAlert: unauthObject.detected || focusShift || warningsCount > 0,
-      alertLabel: unauthObject.detected ? unauthObject.object.toUpperCase() : (focusShift ? 'FOCUS SHIFT' : '')
+      isAlert: unauthObject.detected || multiplePersons.detected || focusShift || warningsCount > 0,
+      alertLabel: multiplePersons.detected ? 'MULTIPLE PERSONS DETECTED' : (unauthObject.detected ? unauthObject.object.toUpperCase() : (focusShift ? 'FOCUS SHIFT' : ''))
     };
-  }, [unauthObject.detected, unauthObject.object, focusShift, warningsCount]);
+  }, [unauthObject.detected, unauthObject.object, multiplePersons.detected, focusShift, warningsCount]);
 
   // 1. Load Bundled TensorFlow.js / COCO-SSD and MediaPipe FaceMesh
   useEffect(() => {
@@ -365,23 +371,22 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
         ws.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data);
+            const matchedSnapshot = data.id ? frameBufferRef.current.get(data.id) : undefined;
+            
+            if (data.multiple_persons) {
+              setMultiplePersons({ detected: true, snapshot: matchedSnapshot });
+            } else {
+              setMultiplePersons({ detected: false });
+            }
+
             if (data.detected) {
-              const matchedSnapshot = data.id ? frameBufferRef.current.get(data.id) : undefined;
               let isAssociated = true;
               let scaledBox = { x: 30, y: 40, width: 220, height: 100 };
               
               if (data.bbox) {
-                 isAssociated = checkGadgetAssociation(data.bbox, 480, 360);
+                 // Instant detection - avoid stationary override and complex association
+                 isAssociated = true;
                  
-                 const now = Date.now();
-                 gadgetHistoryRef.current.push({ x: data.bbox.x, y: data.bbox.y, w: data.bbox.width, h: data.bbox.height, time: now });
-                 gadgetHistoryRef.current = gadgetHistoryRef.current.filter(h => now - h.time < 3000);
-                 
-                 const isStationary = isHistoryStationary(gadgetHistoryRef.current);
-                 if (isStationary) {
-                    isAssociated = false; // Override to false if stationary
-                 }
-
                  scaledBox = {
                     x: (data.bbox.x / 480) * 280,
                     y: (data.bbox.y / 360) * 144,
@@ -403,7 +408,8 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
                     }
                  ];
 
-                 if (gadgetConfirmationRef.current >= 3) {
+                 // Instant alert
+                 if (gadgetConfirmationRef.current >= 1) {
                    setUnauthObject({
                      detected: true,
                      object: data.object || 'cell phone',
@@ -579,12 +585,7 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
           const forbiddenPredictions = predictions.filter((p: any) => {
             const cls = (p.class || '').toLowerCase();
             const isPhone = cls.includes('phone') || cls.includes('cell') || cls.includes('mobile');
-            const isForbidden = isPhone ||
-              cls.includes('remote') ||
-              cls.includes('calculator') ||
-              cls.includes('book') ||
-              cls.includes('laptop') ||
-              cls.includes('tablet');
+            const isForbidden = isPhone;
 
             const minConfidence = isPhone ? 0.28 : 0.35;
             return isForbidden && p.score >= minConfidence;
@@ -596,22 +597,9 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
             const vH = videoRef.current.videoHeight || 480;
             
             for (const p of forbiddenPredictions) {
-               const bbox = { x: p.bbox[0], y: p.bbox[1], width: p.bbox[2], height: p.bbox[3] };
-               let isAssociated = checkGadgetAssociation(bbox, vW, vH);
-               
-               const now = Date.now();
-               gadgetHistoryRef.current.push({ x: bbox.x, y: bbox.y, w: bbox.width, h: bbox.height, time: now });
-               gadgetHistoryRef.current = gadgetHistoryRef.current.filter(h => now - h.time < 3000);
-               
-               const isStationary = isHistoryStationary(gadgetHistoryRef.current);
-               if (isStationary) {
-                  isAssociated = false;
-               }
-
-               if (isAssociated) {
-                  associatedPrediction = p;
-                  break;
-               }
+               // Instant detection, don't require checking gadget association
+               associatedPrediction = p;
+               break;
             }
             
             if (associatedPrediction) {
@@ -631,7 +619,8 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
 
                detectedBoxesRef.current = [box];
                
-               if (gadgetConfirmationRef.current >= 3) {
+               // Instant alert
+               if (gadgetConfirmationRef.current >= 1) {
                  setUnauthObject({
                    detected: true,
                    object: target.class,
@@ -679,7 +668,8 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
       unauthorizedObject: unauthObject.detected,
       objectName: unauthObject.object || 'cell phone',
       turnedAround: focusShift,
-      focusShift
+      focusShift,
+      multiplePersons: multiplePersons.detected
     };
 
     const prev = prevInfractionRef.current;
@@ -688,13 +678,23 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
       prev.unauthorizedObject !== nextState.unauthorizedObject ||
       prev.objectName !== nextState.objectName ||
       prev.turnedAround !== nextState.turnedAround ||
-      prev.focusShift !== nextState.focusShift;
+      prev.focusShift !== nextState.focusShift ||
+      prev.multiplePersons !== nextState.multiplePersons;
 
     if (hasChanged) {
       prevInfractionRef.current = nextState;
       onInfractionChange(nextState);
 
-      if (unauthObject.detected) {
+      if (multiplePersons.detected) {
+        reportViolation(
+          'MULTIPLE PERSONS DETECTED',
+          'Critical',
+          -40,
+          'Real-time AI detected multiple persons in the camera frame.',
+          true,
+          multiplePersons.snapshot
+        );
+      } else if (unauthObject.detected) {
         reportViolation(
           'UNAUTHORIZED OBJECT DETECTED!!!',
           'Critical',
@@ -713,7 +713,7 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
         );
       }
     }
-  }, [unauthObject.detected, unauthObject.object, unauthObject.confidence, focusShift, onInfractionChange, reportViolation]);
+  }, [unauthObject.detected, unauthObject.object, unauthObject.confidence, focusShift, multiplePersons.detected, multiplePersons.snapshot, onInfractionChange, reportViolation]);
 
   // 7. Request webcam stream
   useEffect(() => {

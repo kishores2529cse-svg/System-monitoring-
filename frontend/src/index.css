@@ -314,3 +314,11 @@
     transform: rotate(0deg);
   }
 }
+
+* {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><defs><filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.5" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter></defs><g filter="url(%23glow)"><path d="M 6 6 L 14 26 L 17 18 L 26 14 Z" fill="%23000000" stroke="%2339FF14" stroke-width="1.5" /></g></svg>') 6 6, auto !important;
+}
+
+a, button, [role="button"], input[type="submit"], input[type="button"], select {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><defs><filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.5" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter></defs><g filter="url(%23glow)"><path d="M 12 4 L 12 12 L 20 12 L 20 16 L 12 16 L 12 24 L 8 24 L 8 16 L 0 16 L 0 12 L 8 12 L 8 4 Z" fill="%23000000" stroke="%2339FF14" stroke-width="1.5" transform="rotate(45 10 14) scale(0.7)" /></g></svg>') 10 14, pointer !important;
+}

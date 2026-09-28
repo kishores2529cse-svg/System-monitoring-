@@ -60,35 +60,50 @@ async def websocket_endpoint(websocket: WebSocket):
             detected_object = ""
             highest_conf = 0.0
             detected_bbox = None
+            person_count = 0
 
             for box in results.boxes:
                 class_id = int(box.cls[0])
                 confidence = float(box.conf[0])
                 class_name = str(model.names[class_id]).lower()
 
+                if "person" in class_name or class_id == 0:
+                    if confidence >= 0.35:
+                        person_count += 1
+
                 # Robust detection for mobile phone and forbidden exam objects
                 is_phone = "phone" in class_name or "cell" in class_name or "mobile" in class_name or class_id == 67
-                is_forbidden = is_phone or any(f in class_name for f in ["laptop", "book", "remote", "calculator", "tablet", "headphone", "earphone", "backpack", "watch"]) or class_id in [63, 64, 65, 66, 67, 73]
+                is_forbidden = is_phone
 
                 min_thresh = 0.30 if is_phone else 0.35
 
-                if is_forbidden and confidence >= min_thresh:
+                if is_forbidden and confidence >= min_thresh and not phone_detected:
                     phone_detected = True
                     detected_object = class_name
                     highest_conf = confidence
                     bx1, by1, bx2, by2 = box.xyxy[0].tolist()
                     detected_bbox = {"x": bx1, "y": by1, "width": bx2 - bx1, "height": by2 - by1}
                     print(f"🚨 VERIFIED FORBIDDEN OBJECT: {class_name} ({confidence*100:.1f}%)")
-                    break
+
+            multiple_persons = person_count >= 2
+            if multiple_persons:
+                print(f"🚨 MULTIPLE PERSONS DETECTED: {person_count} people")
 
             # Send detection logs back to frontend client
+            message = "NORMAL"
+            if multiple_persons:
+                message = "MULTIPLE PERSONS DETECTED"
+            elif phone_detected:
+                message = "Unauthorized forbidden object detected Malpractice"
+
             await websocket.send_json({
                 "id": frame_id,
                 "detected": phone_detected,
+                "multiple_persons": multiple_persons,
                 "object": detected_object if phone_detected else "",
                 "confidence": round(highest_conf, 3),
                 "bbox": detected_bbox if phone_detected else None,
-                "message": "UNAUTHORIZED OBJECT DETECTED!!!" if phone_detected else "NORMAL"
+                "message": message
             })
 
     except Exception as e:
