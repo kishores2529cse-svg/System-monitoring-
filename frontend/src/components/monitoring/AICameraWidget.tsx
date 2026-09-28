@@ -80,15 +80,27 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
 
   useEffect(() => {
     registerSnapshotProvider(() => {
+      // Retrieve the last known good frame before the browser suspended the tab
+      if (frameBufferRef.current && frameBufferRef.current.size > 0) {
+         const keys = Array.from(frameBufferRef.current.keys());
+         const lastKey = keys[keys.length - 1];
+         const latestSnapshot = frameBufferRef.current.get(lastKey);
+         if (latestSnapshot) return latestSnapshot;
+      }
+
+      // Fallback: Try live capture if buffer is empty
       if (videoRef.current && videoRef.current.readyState >= 2) {
         const c = document.createElement('canvas');
         c.width = videoRef.current.videoWidth || 640;
         c.height = videoRef.current.videoHeight || 480;
         const ctx = c.getContext('2d');
         if (ctx) {
-          ctx.drawImage(videoRef.current, 0, 0, c.width, c.height);
-          // Compress to JPEG at max 80% quality to save space
-          return c.toDataURL('image/jpeg', 0.80);
+          try {
+            ctx.drawImage(videoRef.current, 0, 0, c.width, c.height);
+            return c.toDataURL('image/jpeg', 0.80);
+          } catch (e) {
+            console.warn('Canvas draw failed during snapshot capture', e);
+          }
         }
       }
       return null;
@@ -579,12 +591,7 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
           const forbiddenPredictions = predictions.filter((p: any) => {
             const cls = (p.class || '').toLowerCase();
             const isPhone = cls.includes('phone') || cls.includes('cell') || cls.includes('mobile');
-            const isForbidden = isPhone ||
-              cls.includes('remote') ||
-              cls.includes('calculator') ||
-              cls.includes('book') ||
-              cls.includes('laptop') ||
-              cls.includes('tablet');
+            const isForbidden = isPhone;
 
             const minConfidence = isPhone ? 0.28 : 0.35;
             return isForbidden && p.score >= minConfidence;
@@ -698,7 +705,7 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
         reportViolation(
           'UNAUTHORIZED OBJECT DETECTED!!!',
           'Critical',
-          -35,
+          -100,
           `Real-time AI detected forbidden device: ${unauthObject.object.toUpperCase()} (${Math.round(unauthObject.confidence * 100)}% confidence).`,
           true,
           unauthObject.snapshot

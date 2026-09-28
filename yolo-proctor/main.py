@@ -54,21 +54,22 @@ async def websocket_endpoint(websocket: WebSocket):
                 continue
 
             # Run inference using YOLOv8 with lower confidence for faster detection
-            results = model(frame, conf=0.25, verbose=False)[0]
+            results_list = model.predict(frame, conf=0.25, verbose=False)
+            results = results_list[0]  # type: ignore
 
             phone_detected = False
             detected_object = ""
             highest_conf = 0.0
             detected_bbox = None
 
-            for box in results.boxes:
+            for box in getattr(results, 'boxes', []):
                 class_id = int(box.cls[0])
                 confidence = float(box.conf[0])
-                class_name = str(model.names[class_id]).lower()
+                class_name = model.names[class_id].lower()
 
                 # Robust detection for mobile phone and forbidden exam objects
                 is_phone = "phone" in class_name or "cell" in class_name or "mobile" in class_name or class_id == 67
-                is_forbidden = is_phone or any(f in class_name for f in ["laptop", "book", "remote", "calculator", "tablet", "headphone", "earphone", "backpack", "watch"]) or class_id in [63, 64, 65, 66, 67, 73]
+                is_forbidden = is_phone
 
                 min_thresh = 0.30 if is_phone else 0.35
 

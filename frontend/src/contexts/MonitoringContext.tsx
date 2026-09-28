@@ -199,7 +199,8 @@ export const MonitoringProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
     setEvents(prev => [newEvt, ...prev]);
     setConfidenceScore(prev => Math.max(0, Math.min(100, prev + impact)));
-    setRiskScore(prev => Math.min(100, prev + Math.min(18, Math.abs(impact))));
+    const riskIncrease = severity === 'Critical' ? 100 : Math.min(18, Math.abs(impact));
+    setRiskScore(prev => Math.min(100, prev + riskIncrease));
 
     if (severity === 'High' || severity === 'Critical') {
       const nextWarnings = warningsCountRef.current + 1;
