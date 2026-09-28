@@ -990,6 +990,8 @@ export const api = {
           eventType = 'TAB_SWITCH';
         } else if (event.event.includes('Fullscreen')) {
           eventType = 'EXIT_FULLSCREEN';
+        } else if (event.event.includes('MULTIPLE PERSONS')) {
+          eventType = 'MULTIPLE_FACES';
         } else {
           eventType = event.event.toUpperCase().replace(/\s+/g, '_');
         }
