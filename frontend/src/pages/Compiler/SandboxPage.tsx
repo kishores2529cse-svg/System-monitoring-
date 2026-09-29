@@ -34,13 +34,8 @@ export const SandboxPage: React.FC = () => {
   const [detectedClass, setDetectedClass] = useState<string>('');
 
   const triggerObjectMalpractice = async (detectedClass: string = 'unauthorized object') => {
-    const type = 'Forbidden Object Detected';
-    const details = `Candidate was detected holding an unauthorized object (${detectedClass}) in front of the camera.`;
-    
-    // Log the malpractice event
-    await reportViolation(type, 'Critical', -40, details, true);
-    
-    // Immediately redirect to the dashboard
+    // AICameraWidget already logged the violation WITH the snapshot instantly.
+    // We only need to handle the UI redirection here.
     navigate('/dashboard');
   };
 
