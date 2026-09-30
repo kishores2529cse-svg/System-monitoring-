@@ -14,13 +14,6 @@ export const MonacoWrapper: React.FC = React.memo(() => {
     autoSaveStatus
   } = useExam();
 
-  const [localCode, setLocalCode] = React.useState(codeMap[selectedLanguage]);
-
-  // Sync local code when language or problem changes
-  React.useEffect(() => {
-    setLocalCode(codeMap[selectedLanguage]);
-  }, [selectedLanguage, currentProblem.id]);
-
   const handleLanguageChange = (lang: SupportedLanguage) => {
     setSelectedLanguage(lang);
   };
@@ -37,20 +30,27 @@ export const MonacoWrapper: React.FC = React.memo(() => {
   ];
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(localCode);
+    await navigator.clipboard.writeText(codeMap[selectedLanguage] || '');
   };
 
   const handleReset = () => {
-    if (localCode.trim()) {
+    if ((codeMap[selectedLanguage] || '').trim()) {
       setCodeForLang('');
-      setLocalCode('');
     }
   };
 
+  const typingTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const handleEditorChange = (val: string | undefined) => {
     const code = val || '';
-    setLocalCode(code);
-    setCodeForLang(code);
+    
+    if (typingTimerRef.current) {
+      clearTimeout(typingTimerRef.current);
+    }
+    
+    typingTimerRef.current = setTimeout(() => {
+      setCodeForLang(code);
+    }, 400); // 400ms debounce
   };
 
   return (
@@ -102,10 +102,11 @@ export const MonacoWrapper: React.FC = React.memo(() => {
 
       <div className="flex-1 min-h-[350px] w-full">
         <Editor
+          key={`${currentProblem.id}-${selectedLanguage}`}
           height="100%"
           language={selectedLanguage === 'cpp' ? 'cpp' : selectedLanguage}
           theme="vs-dark"
-          value={localCode}
+          defaultValue={codeMap[selectedLanguage]}
           onChange={handleEditorChange}
           onMount={(_editor, monaco) => {
             document.fonts.ready.then(() => {
