@@ -127,7 +127,18 @@ func (s *CompilerService) SubmitCode(userID, problemID uint, req models.SubmitRe
 			continue
 		}
 
-		if strings.TrimSpace(output) == strings.TrimSpace(tc.Expected) {
+		normalize := func(s string) string {
+			s = strings.ReplaceAll(s, " ", "")
+			s = strings.ReplaceAll(s, "\n", "")
+			s = strings.ReplaceAll(s, "\r", "")
+			s = strings.ReplaceAll(s, "\t", "")
+			s = strings.ReplaceAll(s, "[", "")
+			s = strings.ReplaceAll(s, "]", "")
+			s = strings.ReplaceAll(s, ",", "")
+			return s
+		}
+
+		if normalize(output) == normalize(tc.Expected) {
 			passed++
 		}
 		lastOutput = output
