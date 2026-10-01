@@ -246,7 +246,7 @@ export const api = {
           college: found.college || 'Sri Shakthi Institute of Engineering and Technology',
           department: (found as any).department || 'Computer Science & Engineering',
           phone: found.phone || '',
-          avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80'
+          avatarUrl: (found as any).avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80'
         };
         localStorage.setItem('codeshield_auth_user', JSON.stringify(offlineProfile));
         return offlineProfile;
@@ -487,6 +487,8 @@ export const api = {
         const resData = await response.json();
         if (response.ok && resData.success && resData.data) {
           const u = resData.data;
+          const savedStr = localStorage.getItem('codeshield_auth_user');
+          const savedProfile = savedStr ? JSON.parse(savedStr) : null;
           const profile: UserProfile = {
             id: `USR-${u.id}`,
             name: u.name,
@@ -495,7 +497,7 @@ export const api = {
             college: u.college || '',
             department: u.department || '',
             phone: u.phone || '',
-            avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80'
+            avatarUrl: u.avatar_url || savedProfile?.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80'
           };
           localStorage.setItem('codeshield_auth_user', JSON.stringify(profile));
           return profile;
@@ -517,17 +519,18 @@ export const api = {
       }
     },
 
-    updateProfile: async (data: { name?: string; college?: string; department?: string; phone?: string }): Promise<UserProfile> => {
+    updateProfile: async (data: { name?: string; college?: string; department?: string; phone?: string; avatarUrl?: string }): Promise<UserProfile> => {
       const token = localStorage.getItem('codeshield_token');
       if (token) {
         try {
+          const payload = { ...data, avatar_url: data.avatarUrl };
           const response = await fetch(`${API_BASE}/user/profile`, {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify(data)
+            body: JSON.stringify(payload)
           });
           const resData = await response.json();
           if (response.ok && resData.success && resData.data) {
@@ -540,7 +543,7 @@ export const api = {
               college: u.college || '',
               department: u.department || '',
               phone: u.phone || '',
-              avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80'
+              avatarUrl: u.avatar_url || data.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80'
             };
             localStorage.setItem('codeshield_auth_user', JSON.stringify(updated));
             return updated;
@@ -564,6 +567,7 @@ export const api = {
         college: data.college !== undefined ? data.college : current.college,
         department: data.department !== undefined ? data.department : current.department,
         phone: data.phone !== undefined ? data.phone : current.phone,
+        avatarUrl: data.avatarUrl !== undefined ? data.avatarUrl : current.avatarUrl,
       };
       localStorage.setItem('codeshield_auth_user', JSON.stringify(updated));
 
@@ -576,7 +580,8 @@ export const api = {
             name: updated.name,
             college: updated.college,
             department: updated.department,
-            phone: updated.phone
+            phone: updated.phone,
+            avatarUrl: updated.avatarUrl
           } as any;
           setStore('registered_users', registeredUsers);
         }

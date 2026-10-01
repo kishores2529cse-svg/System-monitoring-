@@ -58,6 +58,7 @@ type User struct {
 	College    string         `gorm:"size:255" json:"college"`
 	Department string         `gorm:"size:255" json:"department"`
 	RegNo      string         `gorm:"size:50" json:"reg_no"`
+	AvatarUrl  string         `gorm:"type:text" json:"avatar_url"`
 	CreatedAt  time.Time      `json:"created_at"`
 	UpdatedAt  time.Time      `json:"updated_at"`
 	DeletedAt  gorm.DeletedAt `gorm:"index" json:"-"`
@@ -88,6 +89,7 @@ type UpdateProfileRequest struct {
 	Phone      string `json:"phone" binding:"omitempty"`
 	College    string `json:"college" binding:"omitempty"`
 	Department string `json:"department" binding:"omitempty"`
+	AvatarUrl  string `json:"avatar_url" binding:"omitempty"`
 }
 
 // UserResponse is the DTO returned to the client for user data.
@@ -101,6 +103,7 @@ type UserResponse struct {
 	College    string    `json:"college"`
 	Department string    `json:"department"`
 	RegNo      string    `json:"reg_no"`
+	AvatarUrl  string    `json:"avatar_url"`
 	CreatedAt  time.Time `json:"created_at"`
 }
 
@@ -116,6 +119,7 @@ func (u *User) ToUserResponse() UserResponse {
 		College:    u.College,
 		Department: u.Department,
 		RegNo:      u.RegNo,
+		AvatarUrl:  u.AvatarUrl,
 		CreatedAt:  u.CreatedAt,
 	}
 }

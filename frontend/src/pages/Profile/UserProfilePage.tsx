@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Award, ShieldCheck, Check, Sparkles, UserCheck, Shield, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Award, ShieldCheck, Check, Sparkles, UserCheck, Shield, AlertCircle, Edit2 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Navbar } from '../../components/common/Navbar';
 import { Footer } from '../../components/common/Footer';
@@ -16,11 +16,36 @@ export const UserProfilePage: React.FC = () => {
     email: user?.email || '',
     college: user?.college || '',
     department: user?.department || '',
-    phone: user?.phone || ''
+    phone: user?.phone || '',
+    avatarUrl: user?.avatarUrl || ''
   });
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const newAvatarUrl = reader.result as string;
+        setFormData(prev => ({ ...prev, avatarUrl: newAvatarUrl }));
+        try {
+          await updateProfile({
+            name: formData.name.trim(),
+            college: formData.college.trim(),
+            department: formData.department.trim(),
+            phone: formData.phone.trim(),
+            avatarUrl: newAvatarUrl
+          });
+        } catch (err) {
+          console.error("Failed to auto-save avatar", err);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   // Synchronize form whenever authenticated user profile updates
   useEffect(() => {
@@ -30,7 +55,8 @@ export const UserProfilePage: React.FC = () => {
         email: user.email || '',
         college: user.college || '',
         department: user.department || '',
-        phone: user.phone || ''
+        phone: user.phone || '',
+        avatarUrl: user.avatarUrl || ''
       });
     }
   }, [user]);
@@ -44,7 +70,8 @@ export const UserProfilePage: React.FC = () => {
         name: formData.name.trim(),
         college: formData.college.trim(),
         department: formData.department.trim(),
-        phone: formData.phone.trim()
+        phone: formData.phone.trim(),
+        avatarUrl: formData.avatarUrl.trim()
       });
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
@@ -61,14 +88,30 @@ export const UserProfilePage: React.FC = () => {
         <Navbar />
 
         <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-          
+
           {/* Profile Banner Header */}
           <GlassCard className="p-6 border border-slate-800 bg-slate-900/80 flex flex-col sm:flex-row items-center gap-6 shadow-xl backdrop-blur-xl">
-            <img
-              src={user?.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80'}
-              alt="Avatar"
-              className="w-20 h-20 rounded-2xl object-cover border-2 border-[#7CFF4D]/60 shadow-lg shadow-[#7CFF4D]/10"
-            />
+            <div className="relative group">
+              <input
+                type="file"
+                accept="image/*"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                className="hidden"
+              />
+              <img
+                src={formData.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80'}
+                alt="Avatar"
+                className="w-20 h-20 rounded-2xl object-cover border-2 border-[#7CFF4D]/60 shadow-lg shadow-[#7CFF4D]/10"
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl cursor-pointer"
+              >
+                <Edit2 className="w-6 h-6 text-white" />
+              </button>
+            </div>
             <div className="space-y-1 text-center sm:text-left">
               <div className={cn("inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-[0.25em]", isAdmin ? "border-rose-400/30 bg-rose-400/10 text-rose-300" : "border-sky-400/30 bg-sky-400/10 text-sky-300")}>
                 <Sparkles className="w-3 h-3" /> {isAdmin ? 'Admin Profile' : 'Candidate Profile'}
@@ -87,7 +130,7 @@ export const UserProfilePage: React.FC = () => {
 
           {/* Profile Settings Form & Achievements */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 font-sans">
-            
+
             <GlassCard className="lg:col-span-2 p-6 border border-slate-800 bg-slate-900/80 space-y-5 shadow-xl">
               <div className="flex items-center justify-between border-b border-slate-800 pb-3">
                 <div>
@@ -174,31 +217,31 @@ export const UserProfilePage: React.FC = () => {
             <div className="space-y-6">
               {!isAdmin && (
                 <GlassCard className="p-6 border border-slate-800 bg-slate-900/80 space-y-4 text-xs shadow-xl">
-                <h3 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-800 pb-2">
-                  <Award className="w-4 h-4 text-amber-400" /> Verified Achievements
-                </h3>
-                <div className="space-y-3">
-                  <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 flex items-center gap-3 shadow-sm">
-                    <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 font-bold shrink-0">
-                      <Award className="w-5 h-5" />
+                  <h3 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-800 pb-2">
+                    <Award className="w-4 h-4 text-amber-400" /> Verified Achievements
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 flex items-center gap-3 shadow-sm">
+                      <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 font-bold shrink-0">
+                        <Award className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <div className="font-bold text-white text-xs sm:text-sm">#1 Rank Algorithm Master</div>
+                        <div className="text-[11px] text-slate-400">Awarded for top score in algorithm challenge</div>
+                      </div>
                     </div>
-                    <div>
-                      <div className="font-bold text-white text-xs sm:text-sm">#1 Rank Algorithm Master</div>
-                      <div className="text-[11px] text-slate-400">Awarded for top score in algorithm challenge</div>
-                    </div>
-                  </div>
 
-                  <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 flex items-center gap-3 shadow-sm">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold shrink-0">
-                      <ShieldCheck className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <div className="font-bold text-white text-xs sm:text-sm">100% Clean Proctor Audit</div>
-                      <div className="text-[11px] text-slate-400">Zero security flags across 10 assessments</div>
+                    <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 flex items-center gap-3 shadow-sm">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold shrink-0">
+                        <ShieldCheck className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <div className="font-bold text-white text-xs sm:text-sm">100% Clean Proctor Audit</div>
+                        <div className="text-[11px] text-slate-400">Zero security flags across 10 assessments</div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </GlassCard>
+                </GlassCard>
               )}
 
               <GlassCard className="p-6 border border-slate-800 bg-slate-900/80 space-y-3 text-xs shadow-xl">
