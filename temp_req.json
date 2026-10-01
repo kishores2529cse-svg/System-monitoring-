@@ -1,4 +1,0 @@
-{
-  "code": "func main() { fmt.Println(twoSum([]int{2,7},9)) }",
-  "language": "go"
-}
