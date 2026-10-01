@@ -910,8 +910,8 @@ export const api = {
         }));
 
       const customCases = testCaseSources.map((tc, idx) => {
-        const actual = simulatedOutput !== null ? simulatedOutput : tc.expectedOutput;
-        const passed = simulatedOutput !== null ? (simulatedOutput.trim() === tc.expectedOutput.trim()) : true;
+        const actual = simulatedOutput !== null ? simulatedOutput : 'No output produced';
+        const passed = simulatedOutput !== null ? (simulatedOutput.trim() === tc.expectedOutput.trim()) : false;
         return {
           testId: idx + 1,
           passed,
