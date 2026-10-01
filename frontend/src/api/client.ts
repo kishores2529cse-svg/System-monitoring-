@@ -782,8 +782,8 @@ export const api = {
         ];
 
       const customCases = testCaseSources.map((tc, idx) => {
-        const actual = simulatedOutput !== null ? simulatedOutput : tc.expectedOutput;
-        const passed = simulatedOutput !== null ? (simulatedOutput.trim() === tc.expectedOutput.trim()) : true;
+        const actual = simulatedOutput !== null ? simulatedOutput : 'No output produced';
+        const passed = simulatedOutput !== null ? (simulatedOutput.trim() === tc.expectedOutput.trim()) : false;
         return {
           testId: idx + 1,
           passed,
@@ -869,7 +869,7 @@ export const api = {
               passed: data.verdict === 'Accepted' || idx < data.test_cases_passed,
               input: tc.input,
               expectedOutput: tc.expectedOutput,
-              actualOutput: data.verdict === 'Accepted' ? tc.expectedOutput : (data.output || 'Output mismatch'),
+              actualOutput: data.verdict === 'Accepted' ? tc.expectedOutput : (data.error_message || data.output || 'Output mismatch'),
               timeMs: Math.round((data.execution_time || 0.012) * 1000)
             }))
             : Array.from({ length: data.total_test_cases || 5 }).map((_, i) => ({
@@ -877,7 +877,7 @@ export const api = {
               passed: data.verdict === 'Accepted' || i < data.test_cases_passed,
               input: `Sample Testcase #${i + 1}`,
               expectedOutput: `Valid Output #${i + 1}`,
-              actualOutput: data.output || `Valid Output #${i + 1}`,
+              actualOutput: data.error_message || data.output || `Valid Output #${i + 1}`,
               timeMs: 2 + i * 3
             }));
 
@@ -887,7 +887,7 @@ export const api = {
             stderr: data.error_message || '',
             executionTimeMs: Math.round((data.execution_time || 0.012) * 1000),
             memoryKb: data.memory_used || 1920,
-            passedTests: data.test_cases_passed || cases.filter(c => c.passed).length,
+            passedTests: (data.test_cases_passed !== undefined && data.test_cases_passed !== null) ? data.test_cases_passed : cases.filter(c => c.passed).length,
             totalTests: data.total_test_cases || cases.length,
             testDetails: cases
           };
