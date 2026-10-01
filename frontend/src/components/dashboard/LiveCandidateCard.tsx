@@ -25,13 +25,12 @@ export const LiveCandidateCard: React.FC<LiveCandidateCardProps> = ({
 
   return (
     <div
-      className={`rounded-2xl p-4 transition-all duration-300 relative overflow-hidden border font-sans ${
-        candidate.status === 'Locked'
-          ? 'bg-rose-950/70 border-rose-500/50 shadow-xl shadow-rose-950/30'
-          : candidate.status === 'Warning'
+      className={`rounded-2xl p-4 transition-all duration-300 relative overflow-hidden border font-sans ${candidate.status === 'Locked'
+        ? 'bg-rose-950/70 border-rose-500/50 shadow-xl shadow-rose-950/30'
+        : candidate.status === 'Warning'
           ? 'bg-amber-950/70 border-amber-500/50 shadow-xl shadow-amber-950/30'
           : 'bg-slate-900/90 border-slate-800 hover:border-sky-400/40 shadow-lg'
-      }`}
+        }`}
     >
       {/* Header Info */}
       <div className="flex items-start justify-between gap-3 mb-2">
@@ -60,13 +59,12 @@ export const LiveCandidateCard: React.FC<LiveCandidateCardProps> = ({
 
         {/* Status Pill */}
         <span
-          className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider border shrink-0 ${
-            candidate.status === 'Locked'
-              ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
-              : candidate.status === 'Warning'
+          className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider border shrink-0 ${candidate.status === 'Locked'
+            ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
+            : candidate.status === 'Warning'
               ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
               : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
-          }`}
+            }`}
         >
           {candidate.status}
         </span>

@@ -28,20 +28,43 @@ export const UserProfilePage: React.FC = () => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = async () => {
-        const newAvatarUrl = reader.result as string;
-        setFormData(prev => ({ ...prev, avatarUrl: newAvatarUrl }));
-        try {
-          await updateProfile({
-            name: formData.name.trim(),
-            college: formData.college.trim(),
-            department: formData.department.trim(),
-            phone: formData.phone.trim(),
-            avatarUrl: newAvatarUrl
-          });
-        } catch (err) {
-          console.error("Failed to auto-save avatar", err);
-        }
+      reader.onloadend = () => {
+        const img = new Image();
+        img.onload = async () => {
+          const canvas = document.createElement('canvas');
+          const MAX_SIZE = 256;
+          let { width, height } = img;
+          if (width > height) {
+            if (width > MAX_SIZE) {
+              height *= MAX_SIZE / width;
+              width = MAX_SIZE;
+            }
+          } else {
+            if (height > MAX_SIZE) {
+              width *= MAX_SIZE / height;
+              height = MAX_SIZE;
+            }
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+          const newAvatarUrl = canvas.toDataURL('image/jpeg', 0.85);
+
+          setFormData(prev => ({ ...prev, avatarUrl: newAvatarUrl }));
+          try {
+            await updateProfile({
+              name: formData.name.trim(),
+              college: formData.college.trim(),
+              department: formData.department.trim(),
+              phone: formData.phone.trim(),
+              avatarUrl: newAvatarUrl
+            });
+          } catch (err) {
+            console.error("Failed to auto-save avatar", err);
+          }
+        };
+        img.src = reader.result as string;
       };
       reader.readAsDataURL(file);
     }

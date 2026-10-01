@@ -7,7 +7,6 @@ import { ConsoleOutput } from '../../components/compiler/ConsoleOutput';
 import { PageTransition } from '../../components/ui/PageTransition';
 import { useAntiCheating } from '../../hooks/useAntiCheating';
 import { useExam } from '../../contexts/ExamContext';
-import { useMonitoring } from '../../contexts/MonitoringContext';
 import { AICameraWidget } from '../../components/monitoring/AICameraWidget';
 import { GlowingButton } from '../../components/ui/GlowingButton';
 import { formatTime } from '../../utils/cn';
@@ -18,7 +17,6 @@ export const SandboxPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isAssessment = searchParams.has('assessment');
-  const { reportViolation } = useMonitoring();
   const {
     runCode,
     submitCode,
@@ -33,7 +31,7 @@ export const SandboxPage: React.FC = () => {
   const [countdown, setCountdown] = useState<number | null>(null);
   const [detectedClass, setDetectedClass] = useState<string>('');
 
-  const triggerObjectMalpractice = async (detectedClass: string = 'unauthorized object') => {
+  const triggerObjectMalpractice = async (_detectedClass: string = 'unauthorized object') => {
     // AICameraWidget already logged the violation WITH the snapshot instantly.
     // We only need to handle the UI redirection here.
     navigate('/dashboard');
