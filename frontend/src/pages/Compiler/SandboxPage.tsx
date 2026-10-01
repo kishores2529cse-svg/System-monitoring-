@@ -101,8 +101,18 @@ export const SandboxPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Synchronized Portal Timer Readout */}
-            <div className="flex items-center gap-2">
+            {/* Synchronized Portal Timer Readout & Actions */}
+            <div className="flex items-center gap-4">
+              <GlowingButton
+                variant="secondary"
+                size="sm"
+                onClick={runCode}
+                disabled={isRunning || isSubmitting}
+                icon={<Play className="h-4 w-4 text-sky-600" />}
+              >
+                {isRunning ? 'Compiling...' : 'Run Code'}
+              </GlowingButton>
+
               {timerStatus === 'PAUSED' ? (
                 <span className="rounded-full border border-amber-300/40 bg-amber-500/20 px-3 py-1.5 text-xs font-semibold text-amber-300 animate-pulse flex items-center">
                   <PauseCircle className="mr-1.5 inline h-4 w-4" /> Paused by Admin
@@ -136,27 +146,6 @@ export const SandboxPage: React.FC = () => {
               </div>
             </div>
           </div>
-          <div className="sticky bottom-4 z-10 flex justify-end pt-2">
-            <div className="flex items-center gap-2 rounded-2xl border border-white/10 bg-slate-950/90 p-2 shadow-xl backdrop-blur-xl">
-              <GlowingButton
-                variant="secondary"
-                size="md"
-                onClick={runCode}
-                disabled={isRunning || isSubmitting}
-                icon={<Play className="h-4 w-4 text-sky-600" />}
-              >
-                {isRunning ? 'Compiling...' : 'Run Code'}
-              </GlowingButton>
-              <GlowingButton
-                variant="cyan"
-                size="md"
-                onClick={submitCode}
-                disabled={isRunning || isSubmitting}
-                icon={<CheckCircle className="h-4 w-4" />}
-              >
-                {isSubmitting ? 'Submitting...' : 'Submit Code'}
-              </GlowingButton>
-            </div>
           </div>
         </main>
         

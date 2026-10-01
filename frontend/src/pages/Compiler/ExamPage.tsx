@@ -113,6 +113,16 @@ export const ExamPage: React.FC = () => {
             {currentProblem ? `Question ${currentProblem.id} of ${problems.length}` : 'Question in progress'}
           </span>
 
+          <GlowingButton
+            variant="secondary"
+            size="sm"
+            onClick={runCode}
+            disabled={isRunning || isSubmitting || !isExamUnlocked}
+            icon={<Play className="h-3.5 w-3.5 text-sky-600" />}
+          >
+            {isRunning ? 'Running...' : 'Run Code'}
+          </GlowingButton>
+
           {/* Synchronized Timer Readout */}
           {timerStatus === 'PAUSED' ? (
             <span className="rounded-full border border-amber-500/40 bg-amber-500/20 px-3 py-1.5 text-xs font-bold text-amber-300 animate-pulse flex items-center font-mono">
@@ -172,27 +182,6 @@ export const ExamPage: React.FC = () => {
           </div>
           <div className="h-56 shrink-0 relative">
             <ConsoleOutput />
-            {/* Embedded Action Bar */}
-            <div className="absolute right-3 top-2.5 z-10 flex items-center gap-2">
-              <GlowingButton
-                variant="secondary"
-                size="sm"
-                onClick={runCode}
-                disabled={isRunning || isSubmitting || !isExamUnlocked}
-                icon={<Play className="h-3.5 w-3.5 text-sky-600" />}
-              >
-                {isRunning ? 'Running...' : 'Run Code'}
-              </GlowingButton>
-              <GlowingButton
-                variant="cyan"
-                size="sm"
-                onClick={submitCode}
-                disabled={isRunning || isSubmitting || !isExamUnlocked}
-                icon={<CheckCircle className="h-3.5 w-3.5" />}
-              >
-                {isSubmitting ? 'Submitting...' : 'Submit Code'}
-              </GlowingButton>
-            </div>
           </div>
         </div>
       </div>
