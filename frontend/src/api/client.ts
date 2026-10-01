@@ -662,9 +662,11 @@ export const api = {
 
   // Compiler Execution & Validation API (Backend Integration)
   compiler: {
-    run: async (code: string, language: string, input?: string, problemId?: number): Promise<CompilerResult> => {
+    run: async (code?: string, language?: string, input?: string, problemId?: number): Promise<CompilerResult> => {
+      // User only has one button now; map it to submit so it evaluates all test cases and writes to the DB.
+      return api.compiler.submit(code, language, problemId);
       // Step 1: Pre-validate syntax for errors e.g. "vidttfjnrij"
-      const syntaxCheck = validateCodeSyntax(code, language);
+      const syntaxCheck = validateCodeSyntax(code || '', language || 'go');
       if (!syntaxCheck.isValid) {
         return {
           status: 'Compilation Error',
