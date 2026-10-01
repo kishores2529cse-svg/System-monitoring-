@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Shield, Camera, Monitor, Clock3, LogOut, PauseCircle, Play, CheckCircle } from 'lucide-react';
+import { Shield, Camera, Monitor, Clock3, LogOut, PauseCircle, Play } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useExam } from '../../contexts/ExamContext';
 import { useMonitoring } from '../../contexts/MonitoringContext';
@@ -18,7 +18,7 @@ import { AICameraWidget } from '../../components/monitoring/AICameraWidget';
 
 export const ExamPage: React.FC = () => {
   const navigate = useNavigate();
-  const { problems, currentProblem, secondsRemaining, timerStatus, isExamExpired, runCode, submitCode, isRunning, isSubmitting } = useExam();
+  const { problems, currentProblem, secondsRemaining, timerStatus, isExamExpired, runCode, isRunning } = useExam();
   const { riskScore, requestFullscreen, cameraActive, isFullscreen, reportViolation } = useMonitoring();
   const [isExamUnlocked, setIsExamUnlocked] = useState<boolean>(false);
   const [infractions, setInfractions] = useState<{ mobile: boolean; turnedAround: boolean; unauthorizedObject?: boolean; objectName?: string; focusShift?: boolean }>({ mobile: false, turnedAround: false });
@@ -117,7 +117,7 @@ export const ExamPage: React.FC = () => {
             variant="secondary"
             size="sm"
             onClick={runCode}
-            disabled={isRunning || isSubmitting || !isExamUnlocked}
+            disabled={isRunning || !isExamUnlocked}
             icon={<Play className="h-3.5 w-3.5 text-sky-600" />}
           >
             {isRunning ? 'Running...' : 'Run Code'}

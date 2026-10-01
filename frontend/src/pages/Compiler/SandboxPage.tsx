@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { ArrowLeft, Code2, Play, CheckCircle, Clock3, PauseCircle } from 'lucide-react';
+import { ArrowLeft, Code2, Play, Clock3, PauseCircle } from 'lucide-react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { ProblemDescription } from '../../components/compiler/ProblemDescription';
 import { MonacoWrapper } from '../../components/compiler/MonacoWrapper';
@@ -19,9 +19,7 @@ export const SandboxPage: React.FC = () => {
   const isAssessment = searchParams.has('assessment');
   const {
     runCode,
-    submitCode,
     isRunning,
-    isSubmitting,
     setCurrentProblemId,
     secondsRemaining,
     timerStatus,
@@ -107,7 +105,7 @@ export const SandboxPage: React.FC = () => {
                 variant="secondary"
                 size="sm"
                 onClick={runCode}
-                disabled={isRunning || isSubmitting}
+                disabled={isRunning}
                 icon={<Play className="h-4 w-4 text-sky-600" />}
               >
                 {isRunning ? 'Compiling...' : 'Run Code'}
@@ -145,7 +143,6 @@ export const SandboxPage: React.FC = () => {
                 <ConsoleOutput />
               </div>
             </div>
-          </div>
           </div>
         </main>
         

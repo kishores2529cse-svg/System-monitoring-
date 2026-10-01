@@ -57,10 +57,11 @@ func (s *TimerService) ConfigureTimer(minutes, seconds int, examPassword string)
 	}
 
 	// If timer has not started, reset accumulated time
-	if timer.Status == models.TimerStatusNotStarted {
+	switch timer.Status {
+	case models.TimerStatusNotStarted:
 		timer.AccumulatedSeconds = 0
 		timer.StartTime = nil
-	} else if timer.Status == models.TimerStatusRunning || timer.Status == models.TimerStatusPaused {
+	case models.TimerStatusRunning, models.TimerStatusPaused:
 		// Adjust status if new duration is less than elapsed time
 		rem := timer.GetRemainingSeconds()
 		if rem <= 0 {
