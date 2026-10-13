@@ -69,6 +69,25 @@ func InitDB(cfg *Config) *gorm.DB {
 		log.Fatalf("Failed to migrate database: %v", err)
 	}
 
+	// Schema reconciliation: Ensure legacy question_id column in test_cases doesn't violate NOT NULL if present
+	_ = db.Exec(`
+		DO $$ 
+		BEGIN 
+			IF EXISTS (
+				SELECT 1 FROM information_schema.columns 
+				WHERE table_name = 'test_cases' AND column_name = 'question_id'
+			) THEN 
+				ALTER TABLE test_cases ALTER COLUMN question_id DROP NOT NULL;
+				IF EXISTS (
+					SELECT 1 FROM information_schema.columns 
+					WHERE table_name = 'test_cases' AND column_name = 'problem_id'
+				) THEN
+					UPDATE test_cases SET question_id = problem_id WHERE question_id IS NULL;
+				END IF;
+			END IF; 
+		END $$;
+	`).Error
+
 	log.Println("Database connected and migrated successfully")
 	SeedInitialData(db)
 	return db

@@ -157,7 +157,7 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
   const isDetectingRef = useRef<boolean>(false);
   const detectedBoxesRef = useRef<DetectedBox[]>([]);
   const frameBufferRef = useRef<Map<string, string>>(new Map());
-  const prevInfractionRef = useRef<{ mobile: boolean; turnedAround: boolean; unauthorizedObject?: boolean; objectName?: string; focusShift?: boolean; multiplePersons?: boolean; missingPerson?: boolean }>({
+  const prevInfractionRef = useRef<AICameraInfraction>({
     mobile: false,
     turnedAround: false,
     unauthorizedObject: false,
