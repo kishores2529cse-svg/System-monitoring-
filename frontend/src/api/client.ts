@@ -305,6 +305,24 @@ export const api = {
       const cleanPhone = (data.phone || '').trim();
       const cleanRegNo = (data.regNo || '').trim();
 
+      const cleanAvatar = (data.avatarUrl || '').trim();
+
+      // Proactively sync master photo to Python YOLO proctor service
+      if (cleanAvatar && cleanEmail) {
+        try {
+          const yoloHttpUrl = import.meta.env.VITE_YOLO_HTTP_URL || (
+            window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+              ? 'http://localhost:8082'
+              : 'https://yolo-proctor.onrender.com'
+          );
+          fetch(`${yoloHttpUrl}/api/register-master-photo`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: cleanEmail, image: cleanAvatar })
+          }).catch(e => console.warn('Non-blocking: could not sync master photo to YOLO directly', e));
+        } catch (e) {}
+      }
+
       try {
         const response = await fetchWithTimeout(`${API_BASE}/auth/register`, {
           method: 'POST',
@@ -318,6 +336,7 @@ export const api = {
             college: cleanCollege,
             department: cleanDept,
             reg_no: cleanRegNo,
+            avatar_url: cleanAvatar,
             role: 'user'
           })
         }, 3500);
@@ -336,7 +355,7 @@ export const api = {
               college: userObj.college || cleanCollege,
               department: userObj.department || cleanDept,
               phone: userObj.phone || cleanPhone,
-              avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80'
+              avatarUrl: userObj.avatar_url || cleanAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80'
             };
             localStorage.setItem('codeshield_auth_user', JSON.stringify(profile));
             return profile;

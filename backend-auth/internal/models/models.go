@@ -75,6 +75,7 @@ type RegisterRequest struct {
 	College    string `json:"college"`
 	Department string `json:"department"`
 	RegNo      string `json:"reg_no"`
+	AvatarUrl  string `json:"avatar_url"`
 }
 
 // LoginRequest is the DTO for user login.

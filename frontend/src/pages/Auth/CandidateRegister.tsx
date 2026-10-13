@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Shield, User, Building, BookOpen, Mail, Phone, Lock, Sparkles, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { Shield, User, Building, BookOpen, Mail, Phone, Lock, Sparkles, AlertCircle, Eye, EyeOff, Camera, CheckCircle2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 import { GlowingButton } from '../../components/ui/GlowingButton';
@@ -23,8 +23,64 @@ export const CandidateRegister: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [cameraActive, setCameraActive] = useState(false);
+  const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
+
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+
   const { registerCandidate } = useAuth();
   const navigate = useNavigate();
+
+  // Start webcam for biometric onboarding verification
+  useEffect(() => {
+    let mounted = true;
+    const startCam = async () => {
+      try {
+        if (!navigator.mediaDevices?.getUserMedia) return;
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { width: { ideal: 640 }, height: { ideal: 480 } },
+          audio: false
+        });
+        if (!mounted) {
+          stream.getTracks().forEach(t => t.stop());
+          return;
+        }
+        streamRef.current = stream;
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+        setCameraActive(true);
+      } catch (err) {
+        console.warn('Webcam not permitted during registration:', err);
+      }
+    };
+
+    startCam();
+
+    return () => {
+      mounted = false;
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(t => t.stop());
+      }
+    };
+  }, []);
+
+  const captureLivePhoto = (): string | null => {
+    if (videoRef.current && videoRef.current.readyState >= 2) {
+      const canvas = document.createElement('canvas');
+      canvas.width = videoRef.current.videoWidth || 640;
+      canvas.height = videoRef.current.videoHeight || 480;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        setCapturedPhoto(dataUrl);
+        return dataUrl;
+      }
+    }
+    return capturedPhoto;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,6 +108,10 @@ export const CandidateRegister: React.FC = () => {
     }
 
     setLoading(true);
+
+    // Instant biometric snapshot capture right at the moment register is clicked
+    const liveMasterPhoto = captureLivePhoto() || capturedPhoto || '';
+
     try {
       await registerCandidate({
         name: formData.name.trim(),
@@ -60,7 +120,8 @@ export const CandidateRegister: React.FC = () => {
         password: formData.password,
         college: formData.college.trim(),
         department: formData.department.trim(),
-        phone: formData.phone.trim()
+        phone: formData.phone.trim(),
+        avatarUrl: liveMasterPhoto
       });
       navigate('/dashboard');
     } catch (err: any) {
@@ -95,6 +156,37 @@ export const CandidateRegister: React.FC = () => {
                 <span>{errorMessage}</span>
               </div>
             )}
+
+            {/* Live Biometric Master Photo Capture Badge */}
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-3.5 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-slate-950 border border-slate-700 shrink-0 flex items-center justify-center">
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className="w-full h-full object-cover"
+                  />
+                  {!cameraActive && (
+                    <Camera className="w-5 h-5 text-slate-500 animate-pulse" />
+                  )}
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-white">
+                    <span className={`w-2 h-2 rounded-full ${cameraActive ? 'bg-emerald-400 animate-ping' : 'bg-amber-400'}`} />
+                    <span>Live Biometric Identity Verification</span>
+                  </div>
+                  <p className="text-[11px] text-slate-400">
+                    Your live face will be registered as your official Master Reference Photo upon submission.
+                  </p>
+                </div>
+              </div>
+              <div className="shrink-0 hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-mono">
+                <CheckCircle2 className="w-3 h-3" />
+                <span>Auto-Captured</span>
+              </div>
+            </div>
 
             <form onSubmit={handleSubmit} className="space-y-4 text-sm font-sans">
           

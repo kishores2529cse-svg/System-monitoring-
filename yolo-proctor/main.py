@@ -59,6 +59,33 @@ if DEEPFACE_AVAILABLE:
 def health_check():
     return {"status": "ok", "service": "YOLO Proctoring AI", "version": "v8n"}
 
+from pydantic import BaseModel
+
+class MasterPhotoPayload(BaseModel):
+    email: str
+    image: str
+
+@app.post("/api/register-master-photo")
+def register_master_photo(payload: MasterPhotoPayload):
+    try:
+        clean_email = payload.email.strip().lower()
+        img_b64 = payload.image
+        if "," in img_b64:
+            img_b64 = img_b64.split(",")[1]
+        img_bytes = base64.b64decode(img_b64)
+        nparr = np.frombuffer(img_bytes, np.uint8)
+        frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        if frame is None:
+            return {"status": "error", "message": "Failed to decode image"}
+        
+        target_path = os.path.join(REFERENCE_DIR, f"{clean_email}.jpg")
+        cv2.imwrite(target_path, frame)
+        print(f"📸 Master photo registered for {clean_email} -> {target_path}")
+        return {"status": "ok", "message": f"Master photo saved for {clean_email}"}
+    except Exception as e:
+        print(f"Error saving master photo: {e}")
+        return {"status": "error", "message": str(e)}
+
 @app.websocket("/ws/proctor")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()

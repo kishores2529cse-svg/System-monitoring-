@@ -38,7 +38,7 @@ func main() {
 	leaderboardService := services.NewLeaderboardService(leaderboardRepo, submissionRepo, userRepo)
 	timerService := services.NewTimerService(timerRepo)
 	supabaseService := services.NewSupabaseService(cfg)
-	emailService := services.NewEmailService(cfg, adminRepo, supabaseService)
+	emailService := services.NewEmailService(cfg, adminRepo, userRepo, supabaseService)
 	malpracticeService := services.NewMalpracticeService(malpracticeRepo, userRepo, emailService, supabaseService)
 
 	// Initialize controllers

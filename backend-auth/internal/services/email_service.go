@@ -18,14 +18,16 @@ import (
 type EmailService struct {
 	cfg       *config.Config
 	adminRepo *repositories.AdminRepo
+	userRepo  *repositories.UserRepo
 	supabase  *SupabaseService
 }
 
 // NewEmailService creates a new EmailService.
-func NewEmailService(cfg *config.Config, adminRepo *repositories.AdminRepo, supabase *SupabaseService) *EmailService {
+func NewEmailService(cfg *config.Config, adminRepo *repositories.AdminRepo, userRepo *repositories.UserRepo, supabase *SupabaseService) *EmailService {
 	return &EmailService{
 		cfg:       cfg,
 		adminRepo: adminRepo,
+		userRepo:  userRepo,
 		supabase:  supabase,
 	}
 }
@@ -189,7 +191,48 @@ func (s *EmailService) buildHTMLBody(logEntry *models.MalpracticeLog, signedURL 
 	}
 
 	evidenceCTA := ""
-	if signedURL != "" {
+	isImpersonation := strings.Contains(strings.ToUpper(logEntry.EventType), "IMPERSONATION") || strings.Contains(strings.ToLower(logEntry.Details), "master photo")
+
+	if isImpersonation && logEntry.UserID > 0 {
+		var masterPhotoURL string
+		if s.userRepo != nil {
+			if user, err := s.userRepo.FindByID(logEntry.UserID); err == nil && user != nil && user.AvatarUrl != "" {
+				masterPhotoURL = user.AvatarUrl
+			}
+		}
+
+		if masterPhotoURL != "" || signedURL != "" {
+			evidenceCTA = fmt.Sprintf(`
+<!-- Dual Impersonation Evidence Comparison -->
+<tr><td style="padding:0 30px 24px;text-align:center;">
+<div style="background-color:#0f172a;border-radius:10px;padding:16px;border:1px solid #334155;margin-bottom:16px;">
+  <p style="margin:0 0 14px;color:#ef4444;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">🚨 Impersonation Facial Mismatch Evidence</p>
+  <table role="presentation" width="100%%" cellspacing="0" cellpadding="0" style="table-layout:fixed;">
+    <tr>
+      <td width="48%%" style="vertical-align:top;text-align:center;padding:8px;background:#1e293b;border-radius:8px;border:2px solid #22c55e;">
+        <p style="margin:0 0 8px;font-size:11px;font-weight:700;color:#22c55e;text-transform:uppercase;letter-spacing:0.5px;">✓ 1st: Registered Master Photo</p>
+        <img src="%s" alt="Official Master Photo" style="width:100%%;max-height:180px;object-fit:cover;border-radius:6px;display:block;margin:0 auto;" />
+        <p style="margin:6px 0 0;font-size:10px;color:#94a3b8;">Captured upon Registration</p>
+      </td>
+      <td width="4%%"></td>
+      <td width="48%%" style="vertical-align:top;text-align:center;padding:8px;background:#1e293b;border-radius:8px;border:2px solid #ef4444;">
+        <p style="margin:0 0 8px;font-size:11px;font-weight:700;color:#ef4444;text-transform:uppercase;letter-spacing:0.5px;">⚠️ 2nd: Live Attendee Flagged</p>
+        <img src="%s" alt="Live Flagged Snapshot" style="width:100%%;max-height:180px;object-fit:cover;border-radius:6px;display:block;margin:0 auto;" />
+        <p style="margin:6px 0 0;font-size:10px;color:#fca5a5;font-weight:600;">Mismatch Detected Live</p>
+      </td>
+    </tr>
+  </table>
+</div>
+%s
+</td></tr>
+`, esc(masterPhotoURL), esc(signedURL), func() string {
+				if signedURL != "" {
+					return fmt.Sprintf(`<a href="%s" style="background-color:#ef4444;color:#ffffff;padding:10px 20px;text-decoration:none;border-radius:6px;font-weight:700;font-size:13px;display:inline-block;">View Full-Resolution Attendee Evidence</a>`, esc(signedURL))
+				}
+				return ""
+			}())
+		}
+	} else if signedURL != "" {
 		evidenceCTA = fmt.Sprintf(`
 <!-- Evidence -->
 <tr><td style="padding:0 40px 24px;text-align:center;">
