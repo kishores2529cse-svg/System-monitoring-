@@ -56,6 +56,9 @@ export interface AICameraInfraction {
   unauthorizedObject?: boolean;
   objectName?: string;
   focusShift?: boolean;
+  multiplePersons?: boolean;
+  missingPerson?: boolean;
+  impersonation?: boolean;
 }
 
 interface DetectedBox {
@@ -120,6 +123,16 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
     snapshot: undefined
   });
 
+  const [missingPerson, setMissingPerson] = useState<{ detected: boolean; snapshot?: string }>({
+    detected: false,
+    snapshot: undefined
+  });
+
+  const [impersonation, setImpersonation] = useState<{ detected: boolean; snapshot?: string }>({
+    detected: false,
+    snapshot: undefined
+  });
+
   // Focus Shift State (MediaPipe / Face Yaw)
   const [focusShift, setFocusShift] = useState<boolean>(false);
   const faceMeshRef = useRef<any>(null);
@@ -128,6 +141,7 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
   const personCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const consecutiveShiftRef = useRef<number>(0);
   const gadgetConfirmationRef = useRef<number>(0);
+  const zeroPersonStartRef = useRef<number | null>(null);
 
   const [model, setModel] = useState<any>(null);
   const [modelLoading, setModelLoading] = useState<boolean>(true);
@@ -143,22 +157,24 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
   const isDetectingRef = useRef<boolean>(false);
   const detectedBoxesRef = useRef<DetectedBox[]>([]);
   const frameBufferRef = useRef<Map<string, string>>(new Map());
-  const prevInfractionRef = useRef<{ mobile: boolean; turnedAround: boolean; unauthorizedObject?: boolean; objectName?: string; focusShift?: boolean; multiplePersons?: boolean }>({
+  const prevInfractionRef = useRef<{ mobile: boolean; turnedAround: boolean; unauthorizedObject?: boolean; objectName?: string; focusShift?: boolean; multiplePersons?: boolean; missingPerson?: boolean }>({
     mobile: false,
     turnedAround: false,
     unauthorizedObject: false,
     objectName: '',
     focusShift: false,
-    multiplePersons: false
+    multiplePersons: false,
+    missingPerson: false,
+    impersonation: false
   });
   const visualStateRef = useRef<{ isAlert: boolean; alertLabel: string }>({ isAlert: false, alertLabel: '' });
 
   useEffect(() => {
     visualStateRef.current = {
-      isAlert: unauthObject.detected || multiplePersons.detected || focusShift || warningsCount > 0,
-      alertLabel: multiplePersons.detected ? 'MULTIPLE PERSONS DETECTED' : (unauthObject.detected ? unauthObject.object.toUpperCase() : (focusShift ? 'FOCUS SHIFT' : ''))
+      isAlert: unauthObject.detected || multiplePersons.detected || missingPerson.detected || impersonation.detected || focusShift || warningsCount > 0,
+      alertLabel: impersonation.detected ? 'IMPERSONATION DETECTED' : (multiplePersons.detected ? 'MULTIPLE PERSONS DETECTED' : (missingPerson.detected ? 'CANDIDATE MISSING' : (unauthObject.detected ? unauthObject.object.toUpperCase() : (focusShift ? 'FOCUS SHIFT' : ''))))
     };
-  }, [unauthObject.detected, unauthObject.object, multiplePersons.detected, focusShift, warningsCount]);
+  }, [unauthObject.detected, unauthObject.object, multiplePersons.detected, missingPerson.detected, impersonation.detected, focusShift, warningsCount]);
 
   // 1. Load Bundled TensorFlow.js / COCO-SSD and MediaPipe FaceMesh
   useEffect(() => {
@@ -313,11 +329,22 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
 
     const connectWS = () => {
       if (isCleanedUp) return;
-      const wsUrl = import.meta.env.VITE_YOLO_WS_URL || (
+      
+      let candidateEmail = 'kishores25cs@srishakthi.ac.in';
+      try {
+        const savedUser = localStorage.getItem('codeshield_auth_user');
+        if (savedUser) {
+          const u = JSON.parse(savedUser);
+          if (u.email) candidateEmail = u.email;
+        }
+      } catch (e) {}
+
+      const rawBase = import.meta.env.VITE_YOLO_WS_URL || (
         window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
           ? 'ws://localhost:8082/ws/proctor'
           : 'wss://yolo-proctor.onrender.com/ws/proctor'
       );
+      const wsUrl = `${rawBase}?email=${encodeURIComponent(candidateEmail)}`;
 
       try {
         const ws = new WebSocket(wsUrl);
@@ -342,6 +369,23 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
               setMultiplePersons({ detected: true, snapshot: matchedSnapshot });
             } else {
               setMultiplePersons({ detected: false });
+            }
+
+            if (data.zero_persons) {
+              if (zeroPersonStartRef.current === null) {
+                zeroPersonStartRef.current = Date.now();
+              } else if (Date.now() - zeroPersonStartRef.current >= 3000) {
+                setMissingPerson({ detected: true, snapshot: matchedSnapshot });
+              }
+            } else {
+              zeroPersonStartRef.current = null;
+              setMissingPerson({ detected: false });
+            }
+
+            if (data.impersonation) {
+              setImpersonation({ detected: true, snapshot: matchedSnapshot });
+            } else {
+              setImpersonation({ detected: false });
             }
 
             if (data.detected) {
@@ -454,7 +498,16 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
              if (firstKey) frameBufferRef.current.delete(firstKey);
           }
 
-          wsRef.current.send(JSON.stringify({ id: frameId, image: base64Data }));
+          let candidateEmail = 'kishores25cs@srishakthi.ac.in';
+          try {
+            const savedUser = localStorage.getItem('codeshield_auth_user');
+            if (savedUser) {
+              const u = JSON.parse(savedUser);
+              if (u.email) candidateEmail = u.email;
+            }
+          } catch (e) {}
+
+          wsRef.current.send(JSON.stringify({ id: frameId, image: base64Data, email: candidateEmail }));
         }
 
         if (faceMeshRef.current) {
@@ -634,7 +687,9 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
       objectName: unauthObject.object || 'cell phone',
       turnedAround: focusShift,
       focusShift,
-      multiplePersons: multiplePersons.detected
+      multiplePersons: multiplePersons.detected,
+      missingPerson: missingPerson.detected,
+      impersonation: impersonation.detected
     };
 
     const prev = prevInfractionRef.current;
@@ -644,7 +699,9 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
       prev.objectName !== nextState.objectName ||
       prev.turnedAround !== nextState.turnedAround ||
       prev.focusShift !== nextState.focusShift ||
-      prev.multiplePersons !== nextState.multiplePersons;
+      prev.multiplePersons !== nextState.multiplePersons ||
+      prev.missingPerson !== nextState.missingPerson ||
+      prev.impersonation !== nextState.impersonation;
 
     if (hasChanged) {
       prevInfractionRef.current = nextState;
@@ -658,6 +715,24 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
           'Real-time AI detected multiple persons in the camera frame.',
           true,
           multiplePersons.snapshot
+        );
+      } else if (impersonation.detected) {
+        reportViolation(
+          'IMPERSONATION DETECTED',
+          'Critical',
+          -100,
+          "Live face does not match the registered candidate's master photo",
+          true,
+          impersonation.snapshot
+        );
+      } else if (missingPerson.detected) {
+        reportViolation(
+          'CANDIDATE MISSING FROM FRAME',
+          'Critical',
+          -40,
+          'Real-time AI detected no person in the camera frame for over 3 seconds.',
+          true,
+          missingPerson.snapshot
         );
       } else if (unauthObject.detected) {
         reportViolation(
@@ -678,7 +753,7 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
         );
       }
     }
-  }, [unauthObject.detected, unauthObject.object, unauthObject.confidence, focusShift, multiplePersons.detected, multiplePersons.snapshot, onInfractionChange, reportViolation]);
+  }, [unauthObject.detected, unauthObject.object, unauthObject.confidence, focusShift, multiplePersons.detected, multiplePersons.snapshot, missingPerson.detected, missingPerson.snapshot, impersonation.detected, impersonation.snapshot, onInfractionChange, reportViolation]);
 
   // 7. Request webcam stream
   useEffect(() => {
@@ -966,7 +1041,43 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
         </div>
 
         {/* Malpractice Visual Banner Feedback Overlay */}
-        {unauthObject.detected && (
+        {impersonation.detected && (
+          <div className="absolute inset-0 bg-red-600/95 backdrop-blur-xs flex flex-col items-center justify-center text-center p-2 z-20 animate-pulse border-2 border-red-800">
+            <span className="text-xl animate-bounce">🚨</span>
+            <span className="text-[11px] font-mono font-black uppercase tracking-tight text-white mt-1">
+              IMPERSONATION DETECTED
+            </span>
+            <span className="text-[10px] font-mono text-red-100 mt-0.5 bg-black/60 px-2 py-0.5 rounded border border-red-500/40">
+              Live face does not match registered photo
+            </span>
+          </div>
+        )}
+
+        {!impersonation.detected && missingPerson.detected && (
+          <div className="absolute inset-0 bg-gradient-to-b from-rose-950/95 via-red-950/95 to-rose-950/95 backdrop-blur-xs flex flex-col items-center justify-center text-center p-2 z-20 animate-pulse border-2 border-rose-500">
+            <span className="text-xl animate-bounce">⚠️</span>
+            <span className="text-[11px] font-mono font-black uppercase tracking-tight text-white mt-1">
+              The candidate missing!...
+            </span>
+            <span className="text-[10px] font-mono text-rose-200 mt-0.5 bg-black/60 px-2 py-0.5 rounded border border-rose-500/40">
+              No person detected in camera frame
+            </span>
+          </div>
+        )}
+
+        {!impersonation.detected && !missingPerson.detected && multiplePersons.detected && (
+          <div className="absolute inset-0 bg-gradient-to-b from-rose-950/95 via-red-950/95 to-rose-950/95 backdrop-blur-xs flex flex-col items-center justify-center text-center p-2 z-20 animate-pulse border-2 border-rose-500">
+            <span className="text-xl animate-bounce">👥</span>
+            <span className="text-[11px] font-mono font-black uppercase tracking-tight text-white mt-1">
+              MULTIPLE PERSONS DETECTED
+            </span>
+            <span className="text-[10px] font-mono text-rose-200 mt-0.5 bg-black/60 px-2 py-0.5 rounded border border-rose-500/40">
+              More than one person in frame
+            </span>
+          </div>
+        )}
+
+        {!impersonation.detected && !missingPerson.detected && !multiplePersons.detected && unauthObject.detected && (
           <div className="absolute inset-0 bg-gradient-to-b from-rose-950/95 via-red-950/95 to-rose-950/95 backdrop-blur-xs flex flex-col items-center justify-center text-center p-2 z-20 animate-pulse border-2 border-rose-500">
             <span className="text-xl animate-bounce">🚨</span>
             <span className="text-[11px] font-mono font-black uppercase tracking-tight text-white mt-1">
@@ -978,7 +1089,7 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
           </div>
         )}
 
-        {!unauthObject.detected && focusShift && (
+        {!impersonation.detected && !missingPerson.detected && !multiplePersons.detected && !unauthObject.detected && focusShift && (
           <div className="absolute inset-0 bg-gradient-to-b from-amber-950/90 to-orange-950/90 backdrop-blur-xs flex flex-col items-center justify-center text-center p-2 z-20 animate-pulse border-2 border-amber-500">
             <span className="text-xl">⚠️</span>
             <span className="text-[11px] font-mono font-black uppercase tracking-tight text-amber-200 mt-1">

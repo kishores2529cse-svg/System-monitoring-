@@ -1,12 +1,46 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Lock, AlertTriangle, UserCheck } from 'lucide-react';
 import { useMonitoring } from '../../contexts/MonitoringContext';
 import { GlowingButton } from '../ui/GlowingButton';
+import { useNavigate } from 'react-router-dom';
 
 export const LockScreenOverlay: React.FC = () => {
   const { isLocked, lockReason, unlockExam } = useMonitoring();
+  const navigate = useNavigate();
+
+  const isImpersonation = lockReason?.includes("Live face does not match the registered candidate's master photo") || lockReason?.toLowerCase().includes("impersonation");
+
+  useEffect(() => {
+    if (isLocked && isImpersonation) {
+      const timer = setTimeout(() => {
+        // Unlock to clear the state, then redirect
+        unlockExam();
+        navigate('/dashboard');
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [isLocked, isImpersonation, navigate, unlockExam]);
 
   if (!isLocked) return null;
+
+  if (isImpersonation) {
+    return (
+      <div className="fixed inset-0 z-[100] bg-red-600 flex flex-col items-center justify-center p-4 animate-in fade-in duration-500">
+        <div className="bg-white p-10 rounded-2xl shadow-2xl max-w-3xl text-center flex flex-col items-center border-4 border-red-900">
+          <AlertTriangle className="w-20 h-20 text-red-600 mb-6 animate-pulse" />
+          <h1 
+            style={{ fontFamily: '"Times New Roman", Times, serif', fontSize: '16px' }}
+            className="text-red-700 font-bold"
+          >
+            Live face does not match the registered candidate's master photo
+          </h1>
+          <p className="mt-8 text-sm text-gray-500 font-sans">
+            Redirecting to dashboard...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 backdrop-blur-2xl bg-black/85 flex items-center justify-center p-4">

@@ -209,7 +209,11 @@ export const MonitoringProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
       if (nextWarnings >= 3 || severity === 'Critical') {
         setIsLocked(true);
-        setLockReason(`Multiple security violations detected (${eventTitle}). Your exam session has been locked.`);
+        if (eventTitle === 'IMPERSONATION DETECTED' || (details && details.includes("Live face does not match"))) {
+          setLockReason("Live face does not match the registered candidate's master photo");
+        } else {
+          setLockReason(`Multiple security violations detected (${eventTitle}). Your exam session has been locked.`);
+        }
       } else if (showAlert) {
         setActiveWarningModal({
           open: true,

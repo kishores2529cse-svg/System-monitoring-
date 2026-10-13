@@ -46,6 +46,12 @@ func (s *EmailService) SendMalpracticeAlert(logEntry *models.MalpracticeLog) {
 		return
 	}
 
+	// 1.5. Skip sending emails for routine browser focus/tab switch events to avoid spam
+	if logEntry.EventType == "BROWSER_WINDOW_LOST_FOCUS" || logEntry.EventType == "TAB_SWITCH_/_BROWSER_MINIMIZED" {
+		log.Printf("[EMAIL] malpractice email skipped reason=routine_browser_event malpractice_id=%d event_type=%s", logEntry.ID, logEntry.EventType)
+		return
+	}
+
 	// 2. Fetch all admins
 	admins, err := s.adminRepo.GetAllAdmins()
 	if err != nil || len(admins) == 0 {
@@ -187,9 +193,11 @@ func (s *EmailService) buildHTMLBody(logEntry *models.MalpracticeLog, signedURL 
 		evidenceCTA = fmt.Sprintf(`
 <!-- Evidence -->
 <tr><td style="padding:0 40px 24px;text-align:center;">
-<a href="%s" style="background-color:#ef4444;color:#ffffff;padding:12px 24px;text-decoration:none;border-radius:6px;font-weight:700;font-size:14px;display:inline-block;">View Webcam Evidence</a>
+<img src="%s" alt="Webcam Evidence Snapshot" style="max-width:100%%; border-radius:8px; border: 2px solid #ef4444; margin-bottom:16px;" />
+<br/>
+<a href="%s" style="background-color:#ef4444;color:#ffffff;padding:12px 24px;text-decoration:none;border-radius:6px;font-weight:700;font-size:14px;display:inline-block;">View High-Res Webcam Evidence</a>
 </td></tr>
-`, esc(signedURL))
+`, esc(signedURL), esc(signedURL))
 	}
 
 	return fmt.Sprintf(`<!DOCTYPE html>
