@@ -1,1 +1,5 @@
-﻿server.exe
+.env
+*.exe
+server
+test_build.exe
+*.db

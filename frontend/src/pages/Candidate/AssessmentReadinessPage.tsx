@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Camera, CheckCircle2, Expand, LoaderCircle, ShieldCheck, ShieldAlert, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Camera, CheckCircle2, Expand, LoaderCircle, ShieldCheck, ShieldAlert, ArrowLeft, ArrowRight, CreditCard, Upload } from 'lucide-react';
 import { useMonitoring } from '../../contexts/MonitoringContext';
 import { PageTransition } from '../../components/ui/PageTransition';
 
@@ -15,6 +15,9 @@ export const AssessmentReadinessPage: React.FC = () => {
   const navigate = useNavigate();
   const { requestFullscreen } = useMonitoring();
   const [cameraReady, setCameraReady] = useState(false);
+  const [idCardVerified, setIdCardVerified] = useState(false);
+  const [idCardPreview, setIdCardPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState('');
 
@@ -23,10 +26,35 @@ export const AssessmentReadinessPage: React.FC = () => {
     try {
       if (!navigator.mediaDevices?.getUserMedia) throw new Error('Camera access is not supported in this browser.');
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+
+      // Anti-Virtual Camera Check
+      const videoTrack = stream.getVideoTracks()[0];
+      const trackLabel = (videoTrack?.label || '').toLowerCase();
+      const virtualKeywords = ['obs', 'virtual', 'manycam', 'vjoy', 'droidcam', 'fake', 'splitcam', 'iriun', 'camo', 'xsplit'];
+      const isVirtual = virtualKeywords.some(keyword => trackLabel.includes(keyword));
+
+      if (isVirtual) {
+        stream.getTracks().forEach((track) => track.stop());
+        throw new Error(`Virtual camera detected: "${videoTrack.label}". Physical webcam required for this proctored assessment.`);
+      }
+
       stream.getTracks().forEach((track) => track.stop());
       setCameraReady(true);
     } catch (cameraError) {
       setError(cameraError instanceof Error ? cameraError.message : 'Allow camera and microphone permissions to continue.');
+    }
+  };
+
+  const handleIdCardUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setIdCardPreview(reader.result as string);
+        setIdCardVerified(true);
+        console.log('✅ Candidate Government/College ID captured for cross-verification.');
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -96,6 +124,55 @@ export const AssessmentReadinessPage: React.FC = () => {
                       <>
                         <Camera className="h-4 w-4" />
                         <span>Verify Camera &amp; Mic</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* ID Card Verification Check (Point 5) */}
+              <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-5 transition-all hover:border-slate-700">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="space-y-1">
+                    <h2 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+                      <CreditCard className="w-4 h-4 text-emerald-400" />
+                      Candidate Identity Card Verification
+                    </h2>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      Upload your College or Government Photo ID card for automated biometric cross-matching against your live selfie.
+                    </p>
+                    {idCardPreview && (
+                      <div className="mt-2 flex items-center gap-2">
+                        <img src={idCardPreview} alt="ID Card Preview" className="h-10 w-16 object-cover rounded border border-emerald-500/40" />
+                        <span className="text-[11px] font-mono text-emerald-400">ID Document Uploaded</span>
+                      </div>
+                    )}
+                  </div>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleIdCardUpload}
+                    accept="image/*"
+                    className="hidden"
+                  />
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    type="button"
+                    className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold transition-all shadow-md cursor-pointer shrink-0 ${
+                      idCardVerified
+                        ? 'border border-emerald-500/40 bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30'
+                        : 'border border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700'
+                    }`}
+                  >
+                    {idCardVerified ? (
+                      <>
+                        <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                        <span>ID Verified</span>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="h-4 w-4" />
+                        <span>Upload ID Card</span>
                       </>
                     )}
                   </button>

@@ -91,15 +91,19 @@ func (s *EmailService) SendMalpracticeAlert(logEntry *models.MalpracticeLog) {
 	}
 }
 
-// sendViaResend sends an HTML email via the Resend HTTP API
+// sendViaResend sends an HTML email via the Resend HTTP API with automatic fallback
 func (s *EmailService) sendViaResend(to string, subject string, htmlBody string) error {
-	client := resend.NewClient(s.cfg.ResendAPIKey)
+	primaryKey := s.cfg.ResendAPIKey
+	if primaryKey == "" {
+		primaryKey = s.cfg.FallbackResendAPIKey
+	}
 
 	from := s.cfg.MailFrom
 	if from == "" {
 		from = "onboarding@resend.dev"
 	}
 
+	client := resend.NewClient(primaryKey)
 	params := &resend.SendEmailRequest{
 		From:    from,
 		To:      []string{to},
@@ -109,6 +113,28 @@ func (s *EmailService) sendViaResend(to string, subject string, htmlBody string)
 
 	_, err := client.Emails.Send(params)
 	if err != nil {
+		log.Printf("[EMAIL] Primary Resend send failed (%v). Attempting fallback Resend account...", err)
+		if s.cfg.FallbackResendAPIKey != "" && s.cfg.FallbackResendAPIKey != primaryKey {
+			fallbackClient := resend.NewClient(s.cfg.FallbackResendAPIKey)
+			fallbackTo := to
+			// If sending to unverified recipient failed on free tier, try fallback verified admin email
+			if s.cfg.FallbackEmail != "" && s.cfg.FallbackEmail != to {
+				fallbackTo = s.cfg.FallbackEmail
+			}
+
+			fallbackParams := &resend.SendEmailRequest{
+				From:    from,
+				To:      []string{fallbackTo},
+				Subject: subject,
+				Html:    htmlBody,
+			}
+			_, fbErr := fallbackClient.Emails.Send(fallbackParams)
+			if fbErr == nil {
+				log.Printf("[EMAIL] Successfully sent email via fallback Resend account to %s", fallbackTo)
+				return nil
+			}
+			log.Printf("[EMAIL] Fallback Resend also failed: %v", fbErr)
+		}
 		return fmt.Errorf("resend_send_error: %w", err)
 	}
 
@@ -198,6 +224,12 @@ func (s *EmailService) buildHTMLBody(logEntry *models.MalpracticeLog, signedURL 
 		if s.userRepo != nil {
 			if user, err := s.userRepo.FindByID(logEntry.UserID); err == nil && user != nil && user.AvatarUrl != "" {
 				masterPhotoURL = user.AvatarUrl
+			}
+		}
+
+		if masterPhotoURL != "" && !strings.HasPrefix(masterPhotoURL, "http") && !strings.HasPrefix(masterPhotoURL, "data:") && s.supabase != nil {
+			if url, err := s.supabase.GetSignedURL("master-photos", masterPhotoURL, 86400); err == nil {
+				masterPhotoURL = url
 			}
 		}
 

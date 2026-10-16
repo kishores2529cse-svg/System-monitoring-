@@ -85,10 +85,10 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
     registerSnapshotProvider(() => {
       // Retrieve the last known good frame before the browser suspended the tab
       if (frameBufferRef.current && frameBufferRef.current.size > 0) {
-         const keys = Array.from(frameBufferRef.current.keys());
-         const lastKey = keys[keys.length - 1];
-         const latestSnapshot = frameBufferRef.current.get(lastKey);
-         if (latestSnapshot) return latestSnapshot;
+        const keys = Array.from(frameBufferRef.current.keys());
+        const lastKey = keys[keys.length - 1];
+        const latestSnapshot = frameBufferRef.current.get(lastKey);
+        if (latestSnapshot) return latestSnapshot;
       }
 
       // Fallback: Try live capture if buffer is empty
@@ -135,6 +135,7 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
 
   // Focus Shift State (MediaPipe / Face Yaw)
   const [focusShift, setFocusShift] = useState<boolean>(false);
+
   const faceMeshRef = useRef<any>(null);
   const selfieSegmentationRef = useRef<any>(null);
   const maskCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -148,7 +149,7 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
   const [modelType, setModelType] = useState<string>('Initializing AI Engine...');
   const [showVideo, setShowVideo] = useState<boolean>(true);
   const streamRef = useRef<MediaStream | null>(null);
-  
+
   const wsRef = useRef<WebSocket | null>(null);
   const [wsConnected, setWsConnected] = useState<boolean>(false);
 
@@ -193,7 +194,7 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
           const loadPromise = cocoSsd.load({ base: 'lite_mobilenet_v2' });
           const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 15000));
           const loadedModel = await Promise.race([loadPromise, timeoutPromise]);
-          
+
           if (active && loadedModel) {
             setModel(loadedModel);
             setModelType('COCO-SSD Neural Vision');
@@ -213,7 +214,7 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
             const loadPromise = (window as any).cocoSsd.load({ base: 'lite_mobilenet_v2' });
             const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 20000));
             const loadedModel = await Promise.race([loadPromise, timeoutPromise]);
-            
+
             if (active && loadedModel) {
               setModel(loadedModel);
               setModelType('COCO-SSD Neural Vision');
@@ -303,7 +304,7 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
       setModel(null);
       if (active) initVisionAI();
     };
-    
+
     // Attach to the document canvas to catch global context loss
     window.addEventListener('webglcontextlost', handleContextLost, false);
 
@@ -315,7 +316,7 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
         if (tf && tf.engine) {
           tf.disposeVariables();
         }
-      } catch (e) {}
+      } catch (e) { }
     };
   }, []);
 
@@ -329,7 +330,7 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
 
     const connectWS = () => {
       if (isCleanedUp) return;
-      
+
       let candidateEmail = 'kishores25cs@srishakthi.ac.in';
       try {
         const savedUser = localStorage.getItem('codeshield_auth_user');
@@ -337,7 +338,7 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
           const u = JSON.parse(savedUser);
           if (u.email) candidateEmail = u.email;
         }
-      } catch (e) {}
+      } catch (e) { }
 
       const rawBase = import.meta.env.VITE_YOLO_WS_URL || (
         window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
@@ -364,7 +365,7 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
           try {
             const data = JSON.parse(event.data);
             const matchedSnapshot = data.id ? frameBufferRef.current.get(data.id) : undefined;
-            
+
             if (data.multiple_persons) {
               setMultiplePersons({ detected: true, snapshot: matchedSnapshot });
             } else {
@@ -383,7 +384,7 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
             }
 
             if (data.impersonation) {
-              setImpersonation({ detected: true, snapshot: matchedSnapshot });
+              setImpersonation({ detected: true, snapshot: data.impersonator_snapshot || matchedSnapshot });
             } else {
               setImpersonation({ detected: false });
             }
@@ -391,45 +392,45 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
             if (data.detected) {
               let isAssociated = true;
               let scaledBox = { x: 30, y: 40, width: 220, height: 100 };
-              
-              if (data.bbox) {
-                 // Instant detection - avoid stationary override and complex association
-                 isAssociated = true;
-                 
-                 scaledBox = {
-                    x: (data.bbox.x / 480) * 280,
-                    y: (data.bbox.y / 360) * 144,
-                    width: (data.bbox.width / 480) * 280,
-                    height: (data.bbox.height / 360) * 144
-                 };
-              }
-              
-              if (isAssociated) {
-                 gadgetConfirmationRef.current += 1;
-                 detectedBoxesRef.current = [
-                    {
-                       x: scaledBox.x,
-                       y: scaledBox.y,
-                       width: scaledBox.width,
-                       height: scaledBox.height,
-                       label: data.object || 'cell phone',
-                       score: data.confidence || 0.88
-                    }
-                 ];
 
-                 // Instant alert
-                 if (gadgetConfirmationRef.current >= 1) {
-                   setUnauthObject({
-                     detected: true,
-                     object: data.object || 'cell phone',
-                     confidence: data.confidence || 0.88,
-                     snapshot: matchedSnapshot
-                   });
-                 }
+              if (data.bbox) {
+                // Instant detection - avoid stationary override and complex association
+                isAssociated = true;
+
+                scaledBox = {
+                  x: (data.bbox.x / 480) * 280,
+                  y: (data.bbox.y / 360) * 144,
+                  width: (data.bbox.width / 480) * 280,
+                  height: (data.bbox.height / 360) * 144
+                };
+              }
+
+              if (isAssociated) {
+                gadgetConfirmationRef.current += 1;
+                detectedBoxesRef.current = [
+                  {
+                    x: scaledBox.x,
+                    y: scaledBox.y,
+                    width: scaledBox.width,
+                    height: scaledBox.height,
+                    label: data.object || 'cell phone',
+                    score: data.confidence || 0.88
+                  }
+                ];
+
+                // Instant alert
+                if (gadgetConfirmationRef.current >= 1) {
+                  setUnauthObject({
+                    detected: true,
+                    object: data.object || 'cell phone',
+                    confidence: data.confidence || 0.88,
+                    snapshot: matchedSnapshot
+                  });
+                }
               } else {
-                 gadgetConfirmationRef.current = 0;
-                 setUnauthObject(prev => prev.detected ? { detected: false, object: '', confidence: 0 } : prev);
-                 detectedBoxesRef.current = [];
+                gadgetConfirmationRef.current = 0;
+                setUnauthObject(prev => prev.detected ? { detected: false, object: '', confidence: 0 } : prev);
+                detectedBoxesRef.current = [];
               }
             } else {
               gadgetConfirmationRef.current = 0;
@@ -490,12 +491,12 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
         if (wsConnected && wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
           ctx?.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
           const base64Data = canvas.toDataURL('image/jpeg', 0.55);
-          
+
           const frameId = Date.now().toString();
           frameBufferRef.current.set(frameId, base64Data);
           if (frameBufferRef.current.size > 20) {
-             const firstKey = frameBufferRef.current.keys().next().value;
-             if (firstKey) frameBufferRef.current.delete(firstKey);
+            const firstKey = frameBufferRef.current.keys().next().value;
+            if (firstKey) frameBufferRef.current.delete(firstKey);
           }
 
           let candidateEmail = 'kishores25cs@srishakthi.ac.in';
@@ -505,7 +506,7 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
               const u = JSON.parse(savedUser);
               if (u.email) candidateEmail = u.email;
             }
-          } catch (e) {}
+          } catch (e) { }
 
           wsRef.current.send(JSON.stringify({ id: frameId, image: base64Data, email: candidateEmail }));
         }
@@ -513,12 +514,12 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
         if (faceMeshRef.current) {
           try {
             await faceMeshRef.current.send({ image: videoRef.current });
-          } catch (e) {}
+          } catch (e) { }
         }
         if (selfieSegmentationRef.current) {
           try {
             await selfieSegmentationRef.current.send({ image: videoRef.current });
-          } catch (e) {}
+          } catch (e) { }
         }
       } catch (err) {
       } finally {
@@ -533,7 +534,7 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
     };
   }, [wsConnected, cameraActive]);
 
-  // 4. MediaPipe Face Landmark Analysis
+  // 4. MediaPipe Face Landmark Analysis & Interactive Liveness Verification
   const handleMediaPipeResults = (results: any) => {
     if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) {
       consecutiveShiftRef.current = Math.min(consecutiveShiftRef.current + 1, 6);
@@ -588,18 +589,18 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
         if (model) {
           let currentSnapshot: string | undefined;
           if (videoRef.current && videoRef.current.readyState >= 2) {
-             const c = document.createElement('canvas');
-             c.width = videoRef.current.videoWidth || 640;
-             c.height = videoRef.current.videoHeight || 480;
-             const ctx = c.getContext('2d');
-             if (ctx) {
-               ctx.drawImage(videoRef.current, 0, 0, c.width, c.height);
-               currentSnapshot = c.toDataURL('image/jpeg', 0.80);
-             }
+            const c = document.createElement('canvas');
+            c.width = videoRef.current.videoWidth || 640;
+            c.height = videoRef.current.videoHeight || 480;
+            const ctx = c.getContext('2d');
+            if (ctx) {
+              ctx.drawImage(videoRef.current, 0, 0, c.width, c.height);
+              currentSnapshot = c.toDataURL('image/jpeg', 0.80);
+            }
           }
 
           const predictions = await model.detect(videoRef.current, 10, 0.25);
-          
+
           const forbiddenPredictions = predictions.filter((p: any) => {
             const cls = (p.class || '').toLowerCase();
             const isPhone = cls.includes('phone') || cls.includes('cell') || cls.includes('mobile');
@@ -613,45 +614,45 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
             let associatedPrediction = null;
             const vW = videoRef.current.videoWidth || 640;
             const vH = videoRef.current.videoHeight || 480;
-            
-            for (const p of forbiddenPredictions) {
-               // Instant detection, don't require checking gadget association
-               associatedPrediction = p;
-               break;
-            }
-            
-            if (associatedPrediction) {
-               gadgetConfirmationRef.current += 1;
-               const target = associatedPrediction;
-               const cW = 280;
-               const cH = 144;
-               
-               const box: DetectedBox = {
-                  x: (target.bbox[0] / vW) * cW,
-                  y: (target.bbox[1] / vH) * cH,
-                  width: (target.bbox[2] / vW) * cW,
-                  height: (target.bbox[3] / vH) * cH,
-                  label: target.class,
-                  score: target.score
-               };
 
-               detectedBoxesRef.current = [box];
-               
-               // Instant alert
-               if (gadgetConfirmationRef.current >= 1) {
-                 setUnauthObject({
-                   detected: true,
-                   object: target.class,
-                   confidence: target.score,
-                   snapshot: currentSnapshot
-                 });
-               }
-               return;
+            for (const p of forbiddenPredictions) {
+              // Instant detection, don't require checking gadget association
+              associatedPrediction = p;
+              break;
+            }
+
+            if (associatedPrediction) {
+              gadgetConfirmationRef.current += 1;
+              const target = associatedPrediction;
+              const cW = 280;
+              const cH = 144;
+
+              const box: DetectedBox = {
+                x: (target.bbox[0] / vW) * cW,
+                y: (target.bbox[1] / vH) * cH,
+                width: (target.bbox[2] / vW) * cW,
+                height: (target.bbox[3] / vH) * cH,
+                label: target.class,
+                score: target.score
+              };
+
+              detectedBoxesRef.current = [box];
+
+              // Instant alert
+              if (gadgetConfirmationRef.current >= 1) {
+                setUnauthObject({
+                  detected: true,
+                  object: target.class,
+                  confidence: target.score,
+                  snapshot: currentSnapshot
+                });
+              }
+              return;
             } else {
-               gadgetConfirmationRef.current = 0;
-               detectedBoxesRef.current = [];
-               setUnauthObject(prev => prev.detected ? { detected: false, object: '', confidence: 0 } : prev);
-               return;
+              gadgetConfirmationRef.current = 0;
+              detectedBoxesRef.current = [];
+              setUnauthObject(prev => prev.detected ? { detected: false, object: '', confidence: 0 } : prev);
+              return;
             }
           }
         }
@@ -693,7 +694,7 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
     };
 
     const prev = prevInfractionRef.current;
-    const hasChanged = 
+    const hasChanged =
       prev.mobile !== nextState.mobile ||
       prev.unauthorizedObject !== nextState.unauthorizedObject ||
       prev.objectName !== nextState.objectName ||
@@ -761,10 +762,30 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
     const startCamera = async () => {
       try {
         if (!navigator.mediaDevices?.getUserMedia) return;
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-          video: { width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 20, max: 30 } }, 
-          audio: false 
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 20, max: 30 } },
+          audio: false
         });
+
+        // 🛡️ POINT 4: Anti-Virtual Camera & Injection Shield
+        const videoTrack = stream.getVideoTracks()[0];
+        const trackLabel = (videoTrack?.label || '').toLowerCase();
+        const virtualKeywords = ['obs', 'virtual', 'manycam', 'vjoy', 'droidcam', 'fake', 'splitcam', 'iriun', 'camo', 'xsplit'];
+        const isVirtual = virtualKeywords.some(keyword => trackLabel.includes(keyword));
+
+        if (isVirtual) {
+          stream.getTracks().forEach(track => track.stop());
+          console.error(`🚨 Virtual camera injection blocked: ${trackLabel}`);
+          reportViolation(
+            'Virtual Camera Stream Injected',
+            'Critical',
+            -30,
+            `Unauthorized virtual camera driver detected: "${videoTrack.label}". Physical webcam required.`,
+            true
+          );
+          return;
+        }
+
         if (isCancelled) {
           stream.getTracks().forEach(track => track.stop());
           return;
@@ -816,36 +837,36 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
 
     const renderOverlay = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
+
       // Draw Privacy Background & Candidate
       if (videoRef.current && videoRef.current.readyState >= 2) {
-         if (maskCanvasRef.current) {
-            ctx.save();
-            // 1. Draw blurred background
-            ctx.filter = 'blur(16px)';
-            ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-            ctx.filter = 'none';
+        if (maskCanvasRef.current) {
+          ctx.save();
+          // 1. Draw blurred background
+          ctx.filter = 'blur(16px)';
+          ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+          ctx.filter = 'none';
 
-            // 2. Composite candidate sharp image
-            if (!personCanvasRef.current) {
-               personCanvasRef.current = document.createElement('canvas');
-               personCanvasRef.current.width = canvas.width;
-               personCanvasRef.current.height = canvas.height;
-            }
-            const pCtx = personCanvasRef.current.getContext('2d');
-            if (pCtx) {
-               pCtx.clearRect(0, 0, canvas.width, canvas.height);
-               pCtx.drawImage(maskCanvasRef.current, 0, 0, canvas.width, canvas.height);
-               pCtx.globalCompositeOperation = 'source-in';
-               pCtx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-               pCtx.globalCompositeOperation = 'source-over';
-               
-               ctx.drawImage(personCanvasRef.current, 0, 0, canvas.width, canvas.height);
-            }
-            ctx.restore();
-         } else {
-            ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-         }
+          // 2. Composite candidate sharp image
+          if (!personCanvasRef.current) {
+            personCanvasRef.current = document.createElement('canvas');
+            personCanvasRef.current.width = canvas.width;
+            personCanvasRef.current.height = canvas.height;
+          }
+          const pCtx = personCanvasRef.current.getContext('2d');
+          if (pCtx) {
+            pCtx.clearRect(0, 0, canvas.width, canvas.height);
+            pCtx.drawImage(maskCanvasRef.current, 0, 0, canvas.width, canvas.height);
+            pCtx.globalCompositeOperation = 'source-in';
+            pCtx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+            pCtx.globalCompositeOperation = 'source-over';
+
+            ctx.drawImage(personCanvasRef.current, 0, 0, canvas.width, canvas.height);
+          }
+          ctx.restore();
+        } else {
+          ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+        }
       }
 
       const centerX = canvas.width / 2;
@@ -976,7 +997,7 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
 
   return (
     <div className="glass-panel rounded-2xl p-3 border border-slate-800 shadow-2xl relative overflow-hidden transition-all w-[18vw] min-w-[260px] max-w-[320px]">
-      
+
       {/* Top Header & Status Badge */}
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-1.5 select-none">
@@ -1022,7 +1043,7 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
         {/* Live HUD Model Badge */}
         <div className="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/80 backdrop-blur text-[9px] font-mono text-cyan-300 flex items-center gap-1 border border-cyan-500/30">
           <Cpu className="w-3 h-3 animate-spin text-cyan-400" />
-          <span>{modelLoading ? 'INITIALIZING AI...' : modelType}</span>
+          <span>{wsConnected ? 'YOLOv8-N Python Core' : (modelLoading ? 'INITIALIZING AI...' : modelType)}</span>
         </div>
 
         {/* Focus & Eye Tracker Readout */}
@@ -1110,7 +1131,7 @@ export const AICameraWidget: React.FC<AICameraWidgetProps> = React.memo(({
             {events.length} violations
           </span>
         </div>
-        
+
         {events.length === 0 ? (
           <p className="text-[10px] text-slate-500 font-sans italic text-center py-1">
             Zero security flags. Telemetry clear.

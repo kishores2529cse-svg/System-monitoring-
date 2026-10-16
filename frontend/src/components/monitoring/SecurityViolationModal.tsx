@@ -11,7 +11,7 @@ export const SecurityViolationModal: React.FC = () => {
   return (
     <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4">
       <div className="max-w-md w-full glass-panel rounded-2xl p-6 border border-amber-500/40 text-center space-y-4 animate-in fade-in zoom-in duration-200">
-        
+
         <div className="w-12 h-12 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center mx-auto text-amber-400">
           <AlertOctagon className="w-6 h-6" />
         </div>
@@ -34,7 +34,7 @@ export const SecurityViolationModal: React.FC = () => {
             className="w-full"
             onClick={dismissWarningModal}
           >
-            I Acknowledge & Return to Exam
+            I Acknowledge & Return to Exam!
           </GlowingButton>
         </div>
 

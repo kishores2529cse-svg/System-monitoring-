@@ -54,7 +54,7 @@ export const InteractiveBackground: React.FC = () => {
       const px = (Math.random() - 0.5) * W * 1.5;
       const py = (Math.random() - 0.5) * H * 1.5;
       const pz = Math.random() * 800 + 100;
-      
+
       const colors = [
         'rgba(124, 255, 77, ',  // Neon Green
         'rgba(163, 255, 26, ',  // Electric Lime
@@ -125,7 +125,7 @@ export const InteractiveBackground: React.FC = () => {
           const dist = Math.sqrt(dx * dx + dy * dy);
           const limit = W * 0.25;
           const sameSide = (nodes[i].x < W * 0.5 && nodes[j].x < W * 0.5) ||
-                           (nodes[i].x > W * 0.5 && nodes[j].x > W * 0.5);
+            (nodes[i].x > W * 0.5 && nodes[j].x > W * 0.5);
           if (sameSide && dist < limit) {
             nodes[i].connections.push(j);
             nodes[j].connections.push(i);
@@ -189,7 +189,7 @@ export const InteractiveBackground: React.FC = () => {
       // ─── 2. PERSPECTIVE GRID ───
       ctx.strokeStyle = 'rgba(124, 255, 77, 0.02)';
       ctx.lineWidth = 1;
-      
+
       const gridY = H * 0.8;
       const horizonZ = 600;
       const stepZ = 40;
@@ -213,11 +213,11 @@ export const InteractiveBackground: React.FC = () => {
       const cols = 26;
       for (let i = -cols / 2; i <= cols / 2; i++) {
         const xOffset = i * 65 + mouseX * -30;
-        
+
         ctx.beginPath();
         const startX = W * 0.5 + mouseX * -15;
         ctx.moveTo(startX, gridY);
-        
+
         const bottomX = W * 0.5 + xOffset * (focalLength / 30);
         ctx.lineTo(bottomX, H);
         ctx.stroke();
@@ -259,12 +259,12 @@ export const InteractiveBackground: React.FC = () => {
             const target = nodes[connIdx];
             ctx.beginPath();
             ctx.moveTo(node.x + mouseX * -10, node.y + mouseY * -10);
-            
+
             const midX = (node.x + target.x) / 2;
             ctx.lineTo(midX + mouseX * -10, node.y + mouseY * -10);
             ctx.lineTo(midX + mouseX * -10, target.y + mouseY * -10);
             ctx.lineTo(target.x + mouseX * -10, target.y + mouseY * -10);
-            
+
             ctx.strokeStyle = 'rgba(124, 255, 77, 0.015)';
             ctx.stroke();
           }

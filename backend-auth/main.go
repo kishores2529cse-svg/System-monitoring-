@@ -30,14 +30,14 @@ func main() {
 	malpracticeRepo := repositories.NewMalpracticeRepo(db)
 
 	// Initialize services
-	authService := services.NewAuthService(userRepo, adminRepo, cfg)
-	userService := services.NewUserService(userRepo)
+	supabaseService := services.NewSupabaseService(cfg)
+	authService := services.NewAuthService(userRepo, adminRepo, cfg, supabaseService)
+	userService := services.NewUserService(userRepo, supabaseService, cfg)
 	examService := services.NewExamService(examRepo)
 	problemService := services.NewProblemService(problemRepo)
 	compilerService := services.NewCompilerService(problemRepo, submissionRepo, cfg)
 	leaderboardService := services.NewLeaderboardService(leaderboardRepo, submissionRepo, userRepo)
 	timerService := services.NewTimerService(timerRepo)
-	supabaseService := services.NewSupabaseService(cfg)
 	emailService := services.NewEmailService(cfg, adminRepo, userRepo, supabaseService)
 	malpracticeService := services.NewMalpracticeService(malpracticeRepo, userRepo, emailService, supabaseService)
 

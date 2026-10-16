@@ -2,7 +2,10 @@ package services
 
 import (
 	"errors"
+	"fmt"
+	"strings"
 
+	"backend-auth/internal/config"
 	"backend-auth/internal/models"
 	"backend-auth/internal/repositories"
 
@@ -12,11 +15,17 @@ import (
 // UserService handles user profile operations.
 type UserService struct {
 	userRepo *repositories.UserRepo
+	supabase *SupabaseService
+	cfg      *config.Config
 }
 
 // NewUserService creates a new UserService.
-func NewUserService(userRepo *repositories.UserRepo) *UserService {
-	return &UserService{userRepo: userRepo}
+func NewUserService(userRepo *repositories.UserRepo, supabase *SupabaseService, cfg *config.Config) *UserService {
+	return &UserService{
+		userRepo: userRepo,
+		supabase: supabase,
+		cfg:      cfg,
+	}
 }
 
 // GetProfile retrieves the user profile by ID.
@@ -55,7 +64,17 @@ func (s *UserService) UpdateProfile(userID uint, req models.UpdateProfileRequest
 		user.Department = req.Department
 	}
 	if req.AvatarUrl != "" {
-		user.AvatarUrl = req.AvatarUrl
+		avatarURL := req.AvatarUrl
+		if s.supabase != nil && strings.HasPrefix(avatarURL, "data:image") {
+			cleanEmail := strings.ToLower(strings.TrimSpace(user.Email))
+			path := fmt.Sprintf("%s.jpg", cleanEmail)
+			if _, err := s.supabase.UploadBase64Image("master-photos", path, avatarURL); err == nil {
+				if s.cfg != nil && s.cfg.SupabaseURL != "" {
+					avatarURL = fmt.Sprintf("%s/storage/v1/object/public/master-photos/%s", strings.TrimRight(s.cfg.SupabaseURL, "/"), path)
+				}
+			}
+		}
+		user.AvatarUrl = avatarURL
 	}
 
 	if err := s.userRepo.Update(user); err != nil {

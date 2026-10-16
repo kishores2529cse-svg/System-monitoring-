@@ -1,5 +1,7 @@
 {
+  "venvPath": "c:\\Projects\\System-monitoring-",
+  "venv": "venv",
   "extraPaths": [
-    "C:\\Users\\Hp\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages"
+    "c:\\Projects\\System-monitoring-\\venv\\Lib\\site-packages"
   ]
 }

@@ -53,6 +53,64 @@ export const MonacoWrapper: React.FC = React.memo(() => {
     }, 400); // 400ms debounce
   };
 
+  // 🛡️ POINT 6: Keystroke Biometrics & Typing Dynamics
+  const keyPressTimestampsRef = React.useRef<Map<string, number>>(new Map());
+  const lastKeyUpTimeRef = React.useRef<number>(0);
+  const dwellTimesRef = React.useRef<number[]>([]);
+  const flightTimesRef = React.useRef<number[]>([]);
+  const baselineDwellAvgRef = React.useRef<number | null>(null);
+  const baselineFlightAvgRef = React.useRef<number | null>(null);
+
+  const handleKeyDown = (e: any) => {
+    const key = e.code || e.key;
+    const now = performance.now();
+    if (!keyPressTimestampsRef.current.has(key)) {
+      keyPressTimestampsRef.current.set(key, now);
+    }
+    if (lastKeyUpTimeRef.current > 0) {
+      const flight = now - lastKeyUpTimeRef.current;
+      if (flight >= 10 && flight <= 1500) {
+        flightTimesRef.current.push(flight);
+        if (flightTimesRef.current.length > 40) flightTimesRef.current.shift();
+      }
+    }
+  };
+
+  const handleKeyUp = (e: any) => {
+    const key = e.code || e.key;
+    const now = performance.now();
+    lastKeyUpTimeRef.current = now;
+    const pressTime = keyPressTimestampsRef.current.get(key);
+    if (pressTime) {
+      keyPressTimestampsRef.current.delete(key);
+      const dwell = now - pressTime;
+      if (dwell >= 10 && dwell <= 1000) {
+        dwellTimesRef.current.push(dwell);
+        if (dwellTimesRef.current.length > 40) dwellTimesRef.current.shift();
+      }
+    }
+
+    // After 25 initial keystrokes, establish candidate's baseline cadence
+    if (dwellTimesRef.current.length >= 25 && flightTimesRef.current.length >= 25) {
+      const currentAvgDwell = dwellTimesRef.current.reduce((a, b) => a + b, 0) / dwellTimesRef.current.length;
+      const currentAvgFlight = flightTimesRef.current.reduce((a, b) => a + b, 0) / flightTimesRef.current.length;
+
+      if (baselineDwellAvgRef.current === null) {
+        baselineDwellAvgRef.current = currentAvgDwell;
+        baselineFlightAvgRef.current = currentAvgFlight;
+        console.log(`🎹 Candidate Keystroke Baseline Established: Dwell=${currentAvgDwell.toFixed(1)}ms, Flight=${currentAvgFlight.toFixed(1)}ms`);
+      } else {
+        // Detect sudden typing rhythm shift > 40% indicating hands swapped or proxy typing
+        const dwellDiff = Math.abs(currentAvgDwell - baselineDwellAvgRef.current) / baselineDwellAvgRef.current;
+        const flightDiff = Math.abs(currentAvgFlight - baselineFlightAvgRef.current) / baselineFlightAvgRef.current;
+
+        if (dwellDiff > 0.45 && flightDiff > 0.45) {
+          console.warn(`🚨 Keystroke Dynamics Anomaly: Dwell deviation=${(dwellDiff * 100).toFixed(0)}%, Flight deviation=${(flightDiff * 100).toFixed(0)}%`);
+        }
+      }
+    }
+  };
+
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-[24px] border border-white/10 bg-[#050816] shadow-[0_24px_100px_rgba(2,6,23,0.55)]">
       <div className="flex items-center justify-between gap-3 border-b border-white/10 bg-slate-900/80 px-4 py-2.5 font-sans">
@@ -108,10 +166,14 @@ export const MonacoWrapper: React.FC = React.memo(() => {
           theme="vs-dark"
           defaultValue={codeMap[selectedLanguage]}
           onChange={handleEditorChange}
-          onMount={(_editor, monaco) => {
+          onMount={(editor, monaco) => {
             document.fonts.ready.then(() => {
               monaco.editor.remeasureFonts();
             });
+
+            // Bind keystroke dynamics listeners
+            editor.onKeyDown(handleKeyDown);
+            editor.onKeyUp(handleKeyUp);
           }}
           options={{
             fontSize: 14,

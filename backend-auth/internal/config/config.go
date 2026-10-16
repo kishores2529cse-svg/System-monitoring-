@@ -35,8 +35,10 @@ type Config struct {
 	TempDir         string
 
 	// Resend Email settings
-	ResendAPIKey string
-	MailFrom     string
+	ResendAPIKey         string
+	FallbackResendAPIKey string
+	FallbackEmail        string
+	MailFrom             string
 
 	// SMTP settings
 	SMTPHost     string
@@ -69,8 +71,10 @@ func Load() *Config {
 		CompilerTimeout: getDurationEnv("COMPILER_TIMEOUT_SECONDS", 5),
 		MaxCodeSize:     getIntEnv("MAX_CODE_SIZE_KB", 100) * 1024,
 		TempDir:         validateTempDir(getEnv("TEMP_DIR", os.TempDir())),
-		ResendAPIKey:    getEnv("RESEND_API_KEY", ""),
-		MailFrom:        getEnv("MAIL_FROM", "onboarding@resend.dev"),
+		ResendAPIKey:         getEnv("RESEND_API_KEY", ""),
+		FallbackResendAPIKey: getEnv("FALLBACK_RESEND_API_KEY", ""),
+		FallbackEmail:        getEnv("FALLBACK_EMAIL", ""),
+		MailFrom:             getEnv("MAIL_FROM", "onboarding@resend.dev"),
 		SMTPHost:        getEnv("SMTP_HOST", "smtp.resend.com"),
 		SMTPPort:        getEnv("SMTP_PORT", "465"),
 		SMTPUser:        getEnv("SMTP_USER", "resend"),

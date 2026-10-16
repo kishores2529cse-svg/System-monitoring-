@@ -5,6 +5,10 @@ import (
 	"errors"
 	"time"
 
+	"fmt"
+	"log"
+	"strings"
+
 	"backend-auth/internal/config"
 	"backend-auth/internal/models"
 	"backend-auth/internal/repositories"
@@ -19,14 +23,16 @@ type AuthService struct {
 	userRepo  *repositories.UserRepo
 	adminRepo *repositories.AdminRepo
 	cfg       *config.Config
+	supabase  *SupabaseService
 }
 
 // NewAuthService creates a new AuthService.
-func NewAuthService(userRepo *repositories.UserRepo, adminRepo *repositories.AdminRepo, cfg *config.Config) *AuthService {
+func NewAuthService(userRepo *repositories.UserRepo, adminRepo *repositories.AdminRepo, cfg *config.Config, supabase *SupabaseService) *AuthService {
 	return &AuthService{
 		userRepo:  userRepo,
 		adminRepo: adminRepo,
 		cfg:       cfg,
+		supabase:  supabase,
 	}
 }
 
@@ -60,6 +66,26 @@ func (s *AuthService) Register(req models.RegisterRequest) (*models.User, string
 		username = req.Email
 	}
 
+	avatarURL := req.AvatarUrl
+	if avatarURL != "" && s.supabase != nil && strings.HasPrefix(avatarURL, "data:image") {
+		cleanEmail := strings.ToLower(strings.TrimSpace(req.Email))
+		path := fmt.Sprintf("%s.jpg", cleanEmail)
+		if _, err := s.supabase.UploadBase64Image("master-photos", path, avatarURL); err == nil {
+			if s.cfg != nil && s.cfg.SupabaseURL != "" {
+				avatarURL = fmt.Sprintf("%s/storage/v1/object/public/master-photos/%s", strings.TrimRight(s.cfg.SupabaseURL, "/"), path)
+			}
+			log.Printf("[Register] Successfully saved candidate master photo to Supabase master-photos bucket: %s\n", avatarURL)
+		} else {
+			log.Printf("[Register] Notice: Upload to master-photos failed (%v), attempting fallback to malpractice-evidence...\n", err)
+			fallbackPath := fmt.Sprintf("master_photos/%s", path)
+			if _, err2 := s.supabase.UploadBase64Image("malpractice-evidence", fallbackPath, avatarURL); err2 == nil {
+				log.Printf("[Register] Successfully saved master photo to Supabase malpractice-evidence bucket: %s\n", fallbackPath)
+			} else {
+				log.Printf("[Register] Supabase upload error: %v\n", err2)
+			}
+		}
+	}
+
 	user := &models.User{
 		Username:   username,
 		Email:      req.Email,
@@ -70,7 +96,7 @@ func (s *AuthService) Register(req models.RegisterRequest) (*models.User, string
 		College:    req.College,
 		Department: req.Department,
 		RegNo:      req.RegNo,
-		AvatarUrl:  req.AvatarUrl,
+		AvatarUrl:  avatarURL,
 	}
 
 	if err := s.userRepo.Create(user); err != nil {
